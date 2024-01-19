@@ -4,39 +4,39 @@ const validator = require('validator');
 const userSchema = new mongoose.Schema({
     firstName: {
       type: String,
-      required: true,
+      required: [true , 'first name is required'],
       trim: true,
     },
     lastName: {
       type: String,
-      required: true,
+      required: [true , 'last name is required'],
       trim: true,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true , 'email is required'],
+      unique: [true , 'user with email is already registered'],
       trim: true,
       lowercase: true,
       validate : [validator.isEmail , 'please enter a valid email'],
     },
     password: {
       type: String,
-      required: true,
-      minlength: 8,
+      required: [true , 'please enter a password'],
       validate: {
         validator: function (value) {
-          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(value);
+            if (value.length<8)
+            return false;
+          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&]/.test(value);
         },
         message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character',
       },
     },
     dateOfBirth: {
         type: Date,
-        required: true,
+        required: [true , 'please enter your date of birth'],
         validate: {
           validator: (value) => {
-            // Validate date format (YYYY-MM-DD)
             if (!moment(value, 'YYYY-MM-DD', true).isValid()) {
               return false;
             }
@@ -55,18 +55,19 @@ const userSchema = new mongoose.Schema({
       },
       country : {
         type : String , 
-        required : true 
+        required : [true , 'please enter your country'] 
       } , 
       gender: {
         type: String,
         enum: ['Male', 'Female'], 
-        required: true,
+        required: [true , 'please select your gender'],
       },
     bio :{
     type : String ,
     } , 
    profilePicture:{
-   type : string ,
+   type : String ,
+   default:"" ,
    } , 
    languages: {
     type: [String],
