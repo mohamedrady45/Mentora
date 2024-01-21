@@ -1,6 +1,7 @@
 const User=require('../Models/user')
+
 const authService =require('../Services/auth')
-const bcrypt = require('bcryptjs');
+const userService=require('../Services/user')
 
 
 
@@ -10,10 +11,8 @@ const login = async(req, res, next) => {
         const { email, password } = req.body;
         
         //search for email in database
-        const user = await User.findOne({ email: email}).exec();
-        console.log(user.password);
+        const user = await userService.findUser('email',email);
             
-        
         //send error if user dosen't exist
         if(!user)
         {
@@ -35,12 +34,12 @@ const login = async(req, res, next) => {
 
         //creat token 
         
-        // TODO:Spacifice token data
+        /* TODO:Spacifice token data*/
         const tokenData={userId:user._id};
         const token = await authService.genrateToken(tokenData,"10 days")
 
-        //response token , success msg ,stats 200
-        res.status(200).json({Token:token,msg:' login successfully done!'})
+        //response token , success msg ,status 200
+        res.status(200).json({Token:token,msg:'Login successfully done!'})
     }
     catch (err) {
         if (!err.statusCode) {
