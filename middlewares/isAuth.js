@@ -1,25 +1,23 @@
 const jwt = require('jsonwebtoken');
 
-const isAuth = (req, res, next) => {
+const isAuth = async(req, res, next) => {
 
     //get token from request
-    const token = req.query.token || req.headers.authoriation?.split(' ')[1];
+    const token = req.headers['authorization'].split(' ')[1];
+    console.log(token);
 
     //cheak if token = NULL
     if (!token) {
-        const err = new error('You can\'t accsess this feature befor login! ');
+        const err = new Error('You can\'t accsess this feature befor login! ');
         err.statsCode = 401;
         throw err;
     }
 
     //decode token
     let decodedToken;
-    try {
-        decodedToken = jwt.verify(token, process.env.SEKRET_KEY);
-    } catch (err) {
-        err.statusCode = 500;
-        throw err;
-    }
+
+    decodedToken = await jwt.verify(token, process.env.SEKRET_KEY);
+    console.log(decodedToken);
 
     //check decode
     if (!decodedToken) {
@@ -27,12 +25,12 @@ const isAuth = (req, res, next) => {
         error.statusCode = 401;
         throw error;
     }
-    //assecc userId to req
+
+    //access userId to req
     req.userId = decodedToken.userId;
 
     //go to next middleware
     next();
-
 
 }
 
