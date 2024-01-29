@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
     type : String ,
     } , 
    profilePicture:{
-   type : string ,
+   type : String ,
    } , 
    languages: {
     type: [String],
