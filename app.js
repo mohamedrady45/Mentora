@@ -5,7 +5,9 @@ const authRouter = require('./routers/authRouter');
 require('dotenv').config();
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 mongoose.connect(DB, {
