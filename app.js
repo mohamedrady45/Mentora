@@ -1,8 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const authController = require('./controllers/authController');
-
 const authRouter = require('./routers/authRouter');
 require('dotenv').config();
 
@@ -24,7 +22,6 @@ mongoose.connect(DB, {
 app.use(bodyParser.json());
 
 app.use('/api/user', authRouter);
-app.get('/getAll'  ,  authController.getAllUsers)
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
