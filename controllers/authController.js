@@ -1,13 +1,13 @@
-
+const bcrypt = require('bcrypt');
 const User = require('../Models/user')
 
-const authService = require('../Services/auth')
-const userService = require('../Services/user')
+const authService = require('../services/auth')
+const userService = require('../services/user')
 
-const hashingService = require('../Services/hashing');
+const hashingService = require('../services/hashing');
 
 
-const verifyResetOTP   = async(req, res, next) => {
+/*const verifyResetOTP   = async(req, res, next) => {
     try {
         const { email, otp, newPassword } = req.body;
 
@@ -33,15 +33,48 @@ const verifyResetOTP   = async(req, res, next) => {
         await userService.updateUser(user);
 
         res.status(200).json({ message: 'Password reset successfully' });
-    }
-
-const User=require('../Models/user')
-
-const authService =require('../Services/auth')
-const userService=require('../Services/user')
-
-
-
+    } */
+    const register =  async (req, res) => {
+        try {
+          const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
+          const olduser = await User.findOne ({email: email});
+          if (olduser) {
+            return res.status(400).json({error: 'email is already registered'});
+          }
+          const saltRounds = 10;
+          const hashedPassword = await bcrypt.hash(password, saltRounds);
+          const newUser = new User({
+            firstName,
+            lastName,
+            email,
+            password,
+            dateOfBirth,
+            gender,
+            country,
+            bio,
+            profilePicture,
+            languages,
+            interests,
+          });
+          newUser.password = hashedPassword;      
+          await newUser.save();
+          res.status(201).json({ message: 'User registered successfully' });
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ error: 'Internal Server Error' , err});
+        }
+      }; 
+      const getAllUsers = async (req, res) => {
+        try {
+            const users = await User.find();
+            console.log(users);
+            res.status(200).json(users);
+          } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+          }
+      } ;
+    
 const login = async(req, res, next) => {
     try {
         //take data
@@ -59,7 +92,7 @@ const login = async(req, res, next) => {
         }
 
         //check if password match user password
-        const isMatch = await authService.comparePassword(password,user.password);
+        const isMatch = await authService.authService.comparePassword(password,user.password);
 
         //send error if password in wrong
         if(!isMatch)
@@ -73,7 +106,7 @@ const login = async(req, res, next) => {
         
         /* TODO:Spacifice token data*/
         const tokenData={userId:user._id};
-        const token = await authService.genrateToken(tokenData,"10 days")
+        const token = await authService.authService.genrateToken(tokenData,"10 days")
 
         //response token , success msg ,status 200
         res.status(200).json({Token:token,msg:'Login successfully done!'})
@@ -86,6 +119,7 @@ const login = async(req, res, next) => {
     }
 }
 module.exports = {
-    verifyResetOTP, 
+    register , 
+    getAllUsers , 
     login , 
 }
