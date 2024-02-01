@@ -1,53 +1,32 @@
 const bcrypt = require('bcrypt');
 const User = require('../Models/user')
-
+const OTPService = require ('../services/OTP')
 const authService = require('../services/auth')
 const userService = require('../services/user')
-
+const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+const otpGenerator = require('otp-generator');
+const Mailgen = require('mailgen');
 const hashingService = require('../services/hashing');
-
-
-/*const verifyResetOTP   = async(req, res, next) => {
-    try {
-        const { email, otp, newPassword } = req.body;
-
-        // Find user by email
-        const user = await userService.findUser('email', email);
-
-        // Send error if user doesn't exist
-        if (!user) {
-            const err = new Error('This email does not exist');
-            err.statusCode = 404;
-            throw err;
-        }
-
-        // Check if OTP is valid
-        if (user.otp !== otp) {
-            const err = new Error('Invalid OTP');
-            err.statusCode = 401;
-            throw err;
-        }
-        
-        // Update user's password
-        user.password = await hashingService.hashPassword(newPassword);
-        await userService.updateUser(user);
-
-        res.status(200).json({ message: 'Password reset successfully' });
-    } */
-    const register =  async (req, res) => {
+let otp;
+let newUser;
+    const register =  async (req, res , next) => {
         try {
           const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
           const olduser = await User.findOne ({email: email});
           if (olduser) {
             return res.status(400).json({error: 'email is already registered'});
           }
-          const saltRounds = 10;
-          const hashedPassword = await bcrypt.hash(password, saltRounds);
-          const newUser = new User({
+          const otpService = new OTPService();
+          otp = await otpService.generateOTP();
+          console.log(otp);
+          await otpService.sendEmail (email , otp);
+          const hashedPassword = await hashingService.hashPassword(password);
+           newUser = new User({
             firstName,
             lastName,
             email,
-            password,
+            password : hashedPassword,
             dateOfBirth,
             gender,
             country,
@@ -56,14 +35,29 @@ const hashingService = require('../services/hashing');
             languages,
             interests,
           });
-          newUser.password = hashedPassword;      
-          await newUser.save();
-          res.status(201).json({ message: 'User registered successfully' });
+          return res.status(201).json({ message: 'otp sent seccessfuly' });
         } catch (err) {
           console.error(err);
           res.status(500).json({ error: 'Internal Server Error' , err});
         }
       }; 
+      const verifyOTP = async ( req , res) =>{
+       try { 
+         const {inputOtp } = req.body;
+        if (otp== inputOtp ) {
+         await newUser.save();
+         newUser = null ;
+         otp = null ;
+         res.status(200).json({ success: true, message: 'Registration completed successfully' });
+      }
+      else {
+        res.status(400).json({ success: false, message: 'Invalid OTP' });
+      }
+    } catch(error){
+      console.error('Error verifying OTP:', error);
+     res.status(500).json({ success: false, message: 'Failed to verify OTP' });
+    }
+  }
       const getAllUsers = async (req, res) => {
         try {
             const users = await User.find();
@@ -122,4 +116,5 @@ module.exports = {
     register , 
     getAllUsers , 
     login , 
+    verifyOTP ,
 }
