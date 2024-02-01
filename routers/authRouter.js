@@ -11,5 +11,6 @@ router.post('/verifyOTP', authController.verifyOTP);
 //router.post('/reset-password/verify', authController.verifyResetOTP);
 
 router.post('/login', authController.login);
+router.post('facebooklogin',authController.facebookLogin)
 
 module.exports = router;
