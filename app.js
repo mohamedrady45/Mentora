@@ -7,7 +7,6 @@ const authRouter=require('./routers/authRouter')
 
 const app = express();
 
-
 require('dotenv').config();
 
 
@@ -18,6 +17,24 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 app.use(bodyParser.json());
  
 app.use(cors());
+
+//googleAuth
+import React from 'react';
+import GoogleLogin from 'react-google-login';
+import axios from 'axios';
+const responseSuccessGoogle = (response) => {
+  console.log(response);
+  axios({
+    method: "POST",
+    url: "http://localhost:3000/api/googlelogin",
+    data: {tokenId: response.tokenId}
+  }).then(response => {
+    console.log("Google login success",response);
+  })
+}
+const responseErrorGoogle = (response) => {
+  
+}
 
 //Routes
 app.get('/', (req, res) => {
@@ -41,4 +58,15 @@ mongoose.connect(DB, {}).then(con => {
   app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
   });
+});
+
+//googleAuth
+<GoogleLogin
+    clientId="899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com"
+    buttonText="Login"
+    onSuccess={responseSuccessGoogle}
+    onFailure={responseErrorGoogle}
+    cookiePolicy={'single_host_origin'}
+  />
+
 });

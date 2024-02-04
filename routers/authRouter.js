@@ -10,4 +10,7 @@ router.post('/verifyOTP', authController.verifyOTP);
 router.post('/login', authController.login);
 router.post('facebooklogin',authController.facebookLogin)
 
+//google Auth
+router.post('/googlelogin',googlelogin);
+
 module.exports = router;
