@@ -78,9 +78,6 @@ const resetPassword = async(req, res, next) =>{
         // reset password 
         await User.findOneAndUpdate({email : email}, {password : hashPassword})
 
-        
-        
-
         res.status(200).json({ message: 'Password reset successfully' });
 
     }
@@ -188,7 +185,7 @@ const facebookLogin = async (req, res, next) => {
 }
 
 //googleAuth
-exports.googlelogin = (req, res) => {
+const googlelogin = (req, res,next) => {
   const{tokenId} = req.body;
   client.verifyIdToken({idToken: tokenId, audience: "899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com"}).then(response => {
     const {email_verfied, name, email} = response.Payload;
@@ -226,9 +223,8 @@ exports.googlelogin = (req, res) => {
    }
   })
 }
- 
+})}
   module.exports = {
-
     register,
     getAllUsers,
     login,
@@ -237,4 +233,7 @@ exports.googlelogin = (req, res) => {
   facebookLogin ,
   resetPassword,
 };
+
+
+
 
