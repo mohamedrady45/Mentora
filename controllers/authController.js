@@ -31,7 +31,6 @@ const register = async (req, res, next) => {
         if (oldUser) {
             return res.status(400).json({ error: 'Email is already registered' });
         }
-
         // Generate OTP and send email
          otp = await generateOTPAndSendEmail(email);
 
@@ -67,6 +66,28 @@ const verifyOTP = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to verify OTP' });
     }
 };
+const resetPassword = async(req, res, next) =>{
+    try{
+        const { email, newPassword} = req.body;
+
+        const hashPassword = await hashingService.hashPassword(newPassword);
+        
+        // reset password 
+        await User.findOneAndUpdate({email : email}, {password : hashPassword})
+
+        
+        
+
+        res.status(200).json({ message: 'Password reset successfully' });
+
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+        next(err);
+    }
+}
 
 const getAllUsers = async (req, res) => {
     try {
@@ -163,9 +184,11 @@ const facebookLogin = async (req, res, next) => {
     })
 }
 module.exports = {
+
     register,
     getAllUsers,
     login,
     verifyOTP,
   facebookLogin ,
+  resetPassword,
 };
