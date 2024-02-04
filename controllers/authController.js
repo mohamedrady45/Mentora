@@ -4,12 +4,15 @@ const User = require('../Models/user')
 const authService = require('../Services/auth')
 const userService = require('../Services/user')
 
-const hashingService = require('../Services/hashing');
+const hashingService = require('../Services/hashingService');
+const OTPService = require ('../Services/OTP')
+const nodemailer = require('nodemailer');
+const otpGenerator = require('otp-generator');
 
-
-const verifyResetOTP   = async(req, res, next) => {
-    try {
-        const { email, otp, newPassword } = req.body;
+const sendOTP = async(req, res, next) =>{
+    try{
+        
+        const{ email } = req.body;
 
         // Find user by email
         const user = await userService.findUser('email', email);
@@ -20,26 +23,61 @@ const verifyResetOTP   = async(req, res, next) => {
             err.statusCode = 404;
             throw err;
         }
-
-        // Check if OTP is valid
-        if (user.otp !== otp) {
-            const err = new Error('Invalid OTP');
-            err.statusCode = 401;
-            throw err;
-        }
         
-        // Update user's password
-        user.password = await hashingService.hashPassword(newPassword);
-        await userService.updateUser(user);
+        // send OTP
+        const otpService = new OTPService();
+        const otp = await otpService.generateOTP();
+        console.log(otp);
+        await otpService.sendEmail (email , otp);
+
+        res.status(200).json({ message: 'OTP sent successfully', OTP : otp });
+
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+const verifyOTP = async ( req , res) =>{
+    try { 
+      const {inputOtp , otp} = req.body;
+     if (otp == inputOtp ) {
+      res.status(200).json({ success: true, message: ' You entered rigth OTP.' });
+    }
+     else {
+      res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+  } 
+ catch(error){
+   console.error('Error verifying OTP:', error);
+   res.status(500).json({ success: false, message: 'Failed to verify OTP' });
+ }
+}
+
+const resetPassword = async(req, res, next) =>{
+    try{
+        const { email, newPassword} = req.body;
+
+        const hashPassword = await hashingService.hashPassword(newPassword);
+        
+        // reset password 
+        await User.findOneAndUpdate({email : email}, {password : hashPassword})
+
+        
+        
 
         res.status(200).json({ message: 'Password reset successfully' });
+
     }
-
-const User=require('../Models/user')
-
-const authService =require('../Services/auth')
-const userService=require('../Services/user')
-
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+        next(err);
+    }
+}
 
 
 const login = async(req, res, next) => {
@@ -86,6 +124,8 @@ const login = async(req, res, next) => {
     }
 }
 module.exports = {
-    verifyResetOTP, 
+    sendOTP,
+    verifyOTP,
+    resetPassword, 
     login , 
 }
