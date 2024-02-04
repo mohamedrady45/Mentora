@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const authRouter=require('./routers/authRouter')
 
@@ -9,10 +10,13 @@ const app = express();
 require('dotenv').config();
 
 
-const PORT = 3000;
+const PORT = process.env.PORT || 4000;
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
+
 app.use(bodyParser.json());
+ 
+app.use(cors());
 
 //googleAuth
 import React from 'react';
@@ -33,6 +37,9 @@ const responseErrorGoogle = (response) => {
 }
 
 //Routes
+app.get('/', (req, res) => {
+  res.send('Server is running');
+});
 app.use('/api/user', authRouter);
 
 
@@ -61,3 +68,5 @@ mongoose.connect(DB, {}).then(con => {
     onFailure={responseErrorGoogle}
     cookiePolicy={'single_host_origin'}
   />
+
+});

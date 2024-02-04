@@ -4,7 +4,7 @@ class userService {
    
     static async findUser(parama,value)
     {
-      return User.findOne({[parama]: value}).exec();
+      return await User.findOne({[parama]: value}).exec();
     }
     
 }
