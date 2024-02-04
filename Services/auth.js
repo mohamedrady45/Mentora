@@ -7,10 +7,12 @@ class authService {
     {
       return bcrypt.compare(inputPassword,userPassword);
     }
-    static async genrateToken(tokenData,jwt_expire)
+    static async generateToken(tokenData,jwt_expire)
     {
       return jwt.sign(tokenData, process.env.SEKRET_KEY ,{expiresIn:jwt_expire});
     }
 }
   
-  module.exports = authService;
+  module.exports = {
+    authService
+  };

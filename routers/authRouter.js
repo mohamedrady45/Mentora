@@ -2,13 +2,12 @@ const express = require('express');
 
 const authController = require('../controllers/authController');
 
+
 const router = express.Router();
-
-router.post('/send-OTP', authController.sendOTP);
-router.post('/verify-OTP', authController.verifyOTP);
-//localhost:3000/api/user/reset-password
-router.post('/reset-password', authController.resetPassword);
-
+router.get('/getAll'  ,  authController.getAllUsers)
+router.post('/register', authController.register);
+router.post('/verifyOTP', authController.verifyOTP);
 router.post('/login', authController.login);
+router.post('facebooklogin',authController.facebookLogin)
 
 module.exports = router;
