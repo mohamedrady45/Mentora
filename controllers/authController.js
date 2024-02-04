@@ -1,11 +1,18 @@
 const bcrypt = require('bcrypt');
-const User = require('../Models/user');
-const OTPService = require('../services/OTP');
-const authService = require('../services/auth');
-const userService = require('../services/user');
+const User = require('../Models/user')
+const OTPService = require('../services/OTP')
+const authService = require('../services/auth')
+const userService = require('../services/user')
+const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+const otpGenerator = require('otp-generator');
+const Mailgen = require('mailgen');
 const hashingService = require('../services/hashing');
-let otp ;
-let newUser ;
+//const fetch = require('node-fetch');
+const { datacatalog } = require('googleapis/build/src/apis/datacatalog');
+let otp;
+let newUser;
+
 const generateOTPAndSendEmail = async (email) => {
     const otpService = new OTPService();
     const otp = await otpService.generateOTP();
@@ -111,9 +118,54 @@ const login = async (req, res, next) => {
     }
 };
 
+const facebookLogin = async (req, res, next) => {
+  const { userId, accessToken } = req.body;
+
+  const urlGraphFacebook = `https://graph.facebook.com/v22.11/${userId}/?fields=id,name,email&access_token=${accessToken}`;
+  fetch(urlGraphFacebook, {
+    method: 'GET',
+  }).then(resp => resp.json())
+    .then(resp => {
+      const { email, name } = resp;
+      User.findOne({ email }).exec((err, user) => {
+        if (err) {
+          return register.status(400).json({
+            error: "something went wrong ....."
+          })
+        }
+        else {
+          if (user) {
+            const token = genrateToken({ _id: userId }, '10h');
+            const { _id, name, email } = user;
+            res.json({
+              token,
+              user: { _id, name, email },
+            })
+          }
+          else {
+            const password = email;
+            const newUser = new User({ name, email, password });
+            newUser.save((err, data) => {
+              if (err) {
+                return res.status(400).json({ error: "something went wrong." })
+              }
+            })
+            const token = genrateToken({ _id: data._id }, '10h');
+            const { _id, name, email } = newUser;
+            res.json({
+              token,
+              user: { _id, name, email },
+            })
+          }
+        }
+      })
+
+    })
+}
 module.exports = {
     register,
     getAllUsers,
     login,
     verifyOTP,
+  facebookLogin ,
 };
