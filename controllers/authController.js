@@ -8,11 +8,13 @@ const { google } = require('googleapis');
 const otpGenerator = require('otp-generator');
 const Mailgen = require('mailgen');
 const hashingService = require('../services/hashing');
+const {OAuth2Client} = require('google-auth-library');
+const client = new OAuth2Client("899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com")
 let otp;
 let newUser;
     const register =  async (req, res , next) => {
         try {
-          const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
+          const { firstName, lastName, email, password, googlelogin, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
           const olduser = await User.findOne ({email: email});
           if (olduser) {
             return res.status(400).json({error: 'email is already registered'});
@@ -117,4 +119,53 @@ module.exports = {
     getAllUsers , 
     login , 
     verifyOTP ,
+}
+
+//googleAuth
+exports.googlelogin = (req, res) => {
+  const{tokenId} = req.body;
+  client.verifyIdToken({idToken: tokenId, audience: "899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com"}).then(response => {
+    const {email_verfied, name, email} = response.Payload;
+   if(email_verfied){
+    user.findOne({email}).exec((err, user) => {
+      if(err) {
+        return res.status(400).json({
+        error: "Something went wrong..."
+        })
+      } else {
+       if(user) {
+        const token = jwt.sign({_id: user._id});
+        const {_id, name, email} = user;
+        res.json({
+          token,
+          user: {_id, name, email}
+        })
+       } else {
+        let password = email;
+          let newUser = new User({name, email, password});
+          newUser.save ((err, data) => {
+            if(err) {
+              return res.status(400).json({
+              error: "Something went wrong..."
+          })
+       }
+       const token = jwt.sign({_id: data._id});
+        const {_id, name, email} = newUser;
+        res.json({
+          token,
+          user: {_id, name, email}
+        })
+      })
+    }
+   }
+  })
+}
+  })
+  module.exports = {
+    register,
+    getAllUsers,
+    login,
+    verifyOTP,
+    googlelogin
+  }
 }

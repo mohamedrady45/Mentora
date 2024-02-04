@@ -12,4 +12,7 @@ router.post('/verifyOTP', authController.verifyOTP);
 
 router.post('/login', authController.login);
 
+//google Auth
+router.post('/googlelogin',googlelogin);
+
 module.exports = router;
