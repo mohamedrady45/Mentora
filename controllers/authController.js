@@ -8,7 +8,7 @@ const { google } = require('googleapis');
 const otpGenerator = require('otp-generator');
 const Mailgen = require('mailgen');
 const hashingService = require('../services/hashing');
-const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 const { datacatalog } = require('googleapis/build/src/apis/datacatalog');
 let otp;
 let newUser;
@@ -20,7 +20,7 @@ const register = async (req, res, next) => {
       return res.status(400).json({ error: 'email is already registered' });
     }
     const otpService = new OTPService();
-    otp = await otpService.generateOTP();
+     otp = await otpService.generateOTP();
     console.log(otp);
     await otpService.sendEmail(email, otp);
     const hashedPassword = await hashingService.hashPassword(password);
@@ -37,6 +37,7 @@ const register = async (req, res, next) => {
       languages,
       interests,
     });
+    await newUser.save();
     return res.status(201).json({ message: 'otp sent seccessfuly' });
   } catch (err) {
     console.error(err);
@@ -76,9 +77,10 @@ const login = async (req, res, next) => {
     //take data
     const { email, password } = req.body;
 
+    
     //search for email in database
     const user = await userService.findUser('email', email);
-
+    
     //send error if user dosen't exist
     if (!user) {
       const err = new Error('This email does not exist');
@@ -112,24 +114,7 @@ const login = async (req, res, next) => {
     next(err);
   }
 }
-const logout = async (req, res, next) => {
-  try {
-    //delete the token from request object    
-    req.requestedToken = req.headers.authorization.split(" ")[1];
-    let deleted = await blackList.deleteOne({ token: req.requestedToken });
-    if (!deleted) {
-      throw new Error('Failed to delete token')
-    }
 
-    res.status(200).json({ msg: "Logged out" })
-  } catch (err) {
-    console.log(err)
-    const error = new Error(err)
-    error.statusCode = 500
-    next(error)
-  }
-
-};
 const facebookLogin = async (req, res, next) => {
   const { userId, accessToken } = req.body;
 
