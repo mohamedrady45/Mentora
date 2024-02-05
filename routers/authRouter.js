@@ -11,6 +11,9 @@ router.post('/login', authController.login);
 router.post('facebooklogin',authController.facebookLogin)
 
 //google Auth
-router.post('/googlelogin',googlelogin);
+router.post('/googlelogin',authController.googlelogin);
+
+router.post('/resetPassword',authController.resetPassword);
+
 
 module.exports = router;

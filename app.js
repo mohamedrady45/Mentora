@@ -9,6 +9,7 @@ const app = express();
 
 require('dotenv').config();
 
+app.use(cors())
 
 const PORT = process.env.PORT || 4000;
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
@@ -16,12 +17,8 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 
 app.use(bodyParser.json());
  
-app.use(cors());
 
 //googleAuth
-import React from 'react';
-import GoogleLogin from 'react-google-login';
-import axios from 'axios';
 const responseSuccessGoogle = (response) => {
   console.log(response);
   axios({
@@ -60,13 +57,4 @@ mongoose.connect(DB, {}).then(con => {
   });
 });
 
-//googleAuth
-<GoogleLogin
-    clientId="899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com"
-    buttonText="Login"
-    onSuccess={responseSuccessGoogle}
-    onFailure={responseErrorGoogle}
-    cookiePolicy={'single_host_origin'}
-  />
 
-});
