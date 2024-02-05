@@ -1,21 +1,42 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const authRouter=require('./routers/authRouter')
 
 const app = express();
 
-
 require('dotenv').config();
 
+app.use(cors())
 
-const PORT = 3000;
+const PORT = process.env.PORT || 4000;
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
+
 app.use(bodyParser.json());
+ 
+
+//googleAuth
+const responseSuccessGoogle = (response) => {
+  console.log(response);
+  axios({
+    method: "POST",
+    url: "http://localhost:3000/api/googlelogin",
+    data: {tokenId: response.tokenId}
+  }).then(response => {
+    console.log("Google login success",response);
+  })
+}
+const responseErrorGoogle = (response) => {
+  
+}
 
 //Routes
+app.get('/', (req, res) => {
+  res.send('Server is running');
+});
 app.use('/api/user', authRouter);
 
 
@@ -35,3 +56,5 @@ mongoose.connect(DB, {}).then(con => {
     console.log(`listening on port ${PORT}`);
   });
 });
+
+
