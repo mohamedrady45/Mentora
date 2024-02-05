@@ -63,7 +63,8 @@ let newUser;
             const users = await User.find();
             console.log(users);
             res.status(200).json(users);
-          } catch (error) {
+          }
+          catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Internal Server Error' });
           }
