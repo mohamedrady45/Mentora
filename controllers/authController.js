@@ -73,6 +73,9 @@ const resetPassword = async(req, res, next) =>{
         await User.findOneAndUpdate({email : email}, {password : hashPassword});
 
         res.status(200).json({ message: 'Password reset successfully' });
+    } catch (err){
+      console.log("Error resetting password ", err);
+      next(err);
     }
   }
       const getAllUsers = async (req, res) => {
