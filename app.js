@@ -12,26 +12,13 @@ require('dotenv').config();
 app.use(cors())
 
 const PORT = process.env.PORT || 4000;
+
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 
 app.use(bodyParser.json());
  
 
-//googleAuth
-const responseSuccessGoogle = (response) => {
-  console.log(response);
-  axios({
-    method: "POST",
-    url: "http://localhost:3000/api/googlelogin",
-    data: {tokenId: response.tokenId}
-  }).then(response => {
-    console.log("Google login success",response);
-  })
-}
-const responseErrorGoogle = (response) => {
-  
-}
 
 //Routes
 app.get('/', (req, res) => {
