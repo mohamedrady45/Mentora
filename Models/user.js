@@ -75,6 +75,9 @@ const userSchema = new mongoose.Schema({
   interests: {
     type: [String],
     default: [], 
+  },savedPosts: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
   },
   });
 const User = mongoose.model('User', userSchema);

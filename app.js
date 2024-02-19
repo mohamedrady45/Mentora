@@ -5,6 +5,8 @@ const cors = require('cors');
 
 const authRouter=require('./routers/authRouter')
 
+const postRouter = require('./routers/postRouter')
+
 const app = express();
 
 require('dotenv').config();
@@ -18,26 +20,14 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 app.use(bodyParser.json());
  
 
-//googleAuth
-const responseSuccessGoogle = (response) => {
-  console.log(response);
-  axios({
-    method: "POST",
-    url: "http://localhost:3000/api/googlelogin",
-    data: {tokenId: response.tokenId}
-  }).then(response => {
-    console.log("Google login success",response);
-  })
-}
-const responseErrorGoogle = (response) => {
-  
-}
 
 //Routes
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
 app.use('/api/user', authRouter);
+
+app.use('/api/post', postRouter);
 
 
 //Error handling 
