@@ -6,7 +6,7 @@ const createMessage = async (req, res, next) => {
         const { chatId, senderId, text } = req.body;
         const message = new Message({ chat: chatId, sender: senderId, text });
         await message.save();
-        
+
         //socket io connection
         io.gitIO.emit('create_msg', { action: "Create", message: message });
 
@@ -42,8 +42,82 @@ const getMessages = async (req, res, next) => {
         next(err);
     }
 }
+const deleteMessage = async (req, res, next) => {
+    try {
+        const { messageId } = req.params;
+
+
+        const message = await Message.findOneAndDelete({ _id: messageId });
+        if (!message) {
+            return res.status(404).json({
+                success: false,
+                error: "Message not found"
+            })
+        }
+        //remove the message from array in user chats collection
+
+        return res.status(200).json({
+            success: true,
+            msg: `Message with id ${messageId} has been deleted`
+        })
+
+    } catch (err) {
+        console.error('delete message failed', err);
+        next(err);
+    }
+}
+
+
+const updateMessage = async (req, res, next) => {
+    const { messageId } = req.params;
+    const updates = { ...req.body };
+
+    /**
+     * Fields to be updated must be provided in the request body
+     */
+    if (!Object.keys(updates).length) {
+        return res.status(400).json({
+            error: 'No fields provided to update'
+        });
+    }
+
+    /**
+     * Create or update a field only if it exists in the model and allowed for updating
+     */
+    try {
+        let message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({
+                error: `The message with the id of "${messageId}" does not exist.`
+            })
+        }
+
+        /**
+         * Check that the user is trying to update a field they are authorized to update 
+         */
+        const allowedUpdates = ['text', 'author'];
+        const isValidOperation = updates => allowedUpdates.every((update) => updates[update]);
+
+        if (!isValidOperation(updates)) {
+            return res.status(400).json({
+                error: `You can only edit the text and author fields`
+            })
+        }
+
+        //Return updated message
+        const updatedMessage = await Message.findByIdAndUpdate(messageId, updates, { new: true })
+            .populate('author')
+            .exec();
+        res.status(201).json({ message: updatedMessage });
+    } catch (e) {
+        console.log(e);
+        next(err);
+    }
+}
 module.exports = {
     createMessage,
     getMessages,
+    deleteMessage,
+    updateMessage
 
 };

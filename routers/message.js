@@ -14,4 +14,8 @@ router.post('/', isAuth , messagesController.createMessage );  //add a new messa
 
 router.get('/:ChatId' , isAuth , messagesController.getMessages) ;   // get all messages from
 
+router.delete( '/:messageId' , isAuth, messagesController.deleteMessage);    // delete one specific message
+
+router.put('/:messageId' , isAuth , messagesController.updateMessage);   // update one specific message
+
 module.exports = router;
