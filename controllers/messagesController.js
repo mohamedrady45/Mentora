@@ -92,18 +92,6 @@ const updateMessage = async (req, res, next) => {
             })
         }
 
-        /**
-         * Check that the user is trying to update a field they are authorized to update 
-         */
-        const allowedUpdates = ['text', 'author'];
-        const isValidOperation = updates => allowedUpdates.every((update) => updates[update]);
-
-        if (!isValidOperation(updates)) {
-            return res.status(400).json({
-                error: `You can only edit the text and author fields`
-            })
-        }
-
         //Return updated message
         const updatedMessage = await Message.findByIdAndUpdate(messageId, updates, { new: true })
             .populate('author')
