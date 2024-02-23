@@ -1,9 +1,20 @@
 const mongoose = require('mongoose');
 const shareSchema = new mongoose.Schema({
+    count: {
+      type: Number,
+      default: 0,
+    },
+    users: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     dateShared: {
       type: Date,
       default: Date.now,
     },
+
   });
 const attachmentSchema = new mongoose.Schema({
     type: {
@@ -43,6 +54,16 @@ const replySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  count: {
+    type: Number,
+    default: 0,
+  },
+  users: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
   reacts: {
     type: reactionSchema,
     default: {},
@@ -90,12 +111,14 @@ const postSchema = new mongoose.Schema({
   },
   attachments: [attachmentSchema],
   comments: [commentSchema], 
-  shares : [shareSchema],
+  shares :{
+    type: shareSchema,
+    default: {},
+  },
 });
 
 const Post = mongoose.model('Post', postSchema);
 const Comment = mongoose.model('Comment', commentSchema);
-
-
-
-module.exports = Post, Comment;
+const Reply = mongoose.model('Reply', replySchema);
+const Share = mongoose.model( 'Share', shareSchema );
+module.exports = {Post, Comment, Reply, Share};

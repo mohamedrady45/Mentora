@@ -75,8 +75,9 @@ const userSchema = new mongoose.Schema({
   interests: {
     type: [String],
     default: [], 
-  },savedPosts: {
-    type: mongoose.Schema.Types.ObjectId,
+  },
+  savedPosts: {
+    type: [mongoose.Schema.Types.ObjectId],
     ref: 'Post'
   },
   });
