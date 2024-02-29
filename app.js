@@ -20,6 +20,7 @@ app.use(bodyParser.json());
 
 
 
+
 //Routes
 app.get('/', (req, res) => {
   res.send('Server is running');

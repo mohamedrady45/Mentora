@@ -1,14 +1,21 @@
+const { file } = require('googleapis/build/src/apis/file');
 const Message = require('../Models/message')
 const io = require("../socket")
 
 const createMessage = async (req, res, next) => {
     try {
-        const { chatId, senderId, text } = req.body;
-        const message = new Message({ chat: chatId, sender: senderId, text });
+        const { chatId, text } = req.body;
+        console.log(req.file);
+
+        const message = new Message({ chat: chatId, sender: req.userId, text :text});
+        if(req.file){
+            filePath=req.file.path;
+            message.fileURL=filePath;
+        };
         await message.save();
 
         //socket io connection
-        io.gitIO.emit('create_msg', { action: "Create", message: message });
+        //io.gitIO.emit('create_msg', { action: "Create", message: message });
 
         return res.status(201).json({
             success: true,

@@ -10,7 +10,14 @@ const messageSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
-    text: String,
+   text:{
+    type: String,  
+    required: true 
+   },
+    fileURL:{
+        type:String, 
+        default:"",
+    }
 },
     {
         timestamps: true
