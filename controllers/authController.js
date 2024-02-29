@@ -34,10 +34,10 @@ const register = async (req, res, next) => {
     }
 
     otp = await generateOTPAndSendEmail(email, next);
-    const hashedPassword = await hashingService.hashPassword(password);
+    //const hashedPassword = await hashingService.hashPassword(password);
 
     newUser = new User({
-      firstName, lastName, email, password: hashedPassword, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
+      firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
     });
 
     return res.status(201).json({ message: 'OTP sent successfully' });
