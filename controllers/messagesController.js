@@ -1,6 +1,8 @@
 //const { file } = require('googleapis/build/src/apis/file');
-const Message = require('../Models/message')
+const Message = require('../Models/message');
+const { findById } = require('../Models/user');
 const io = require("../socket")
+const Chat=require('../Models/chat')
 
 const createMessage = async (req, res, next) => {
     try {
@@ -12,6 +14,9 @@ const createMessage = async (req, res, next) => {
             filePath=req.file.path;
             message.fileURL=filePath;
         };
+        const chat=await Chat.findById(chatId).exec();
+        await chat.messages.push(message._id);
+        await chat.save();
         await message.save();
 
         //socket io connection
