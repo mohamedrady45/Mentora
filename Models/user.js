@@ -76,6 +76,12 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  chats:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Chat'
+  }]
+  });
+
   refreshToken: {
     type: String
   }

@@ -186,6 +186,7 @@ const facebookLogin = async (req, res, next) => {
     }
     // Generate token
     const tokenData = { userId: user._id };
+
     const token = await authService.generateToken(tokenData);
     const refreshToken=await authService.generateRefreshToken(tokenData);
 
@@ -218,6 +219,7 @@ const facebookRegister = async (req, res, next) => {
     if (oldUser) {
       // Generate token
       const tokenData = { userId: user._id };
+
       const token = await authService.generateToken(tokenData);
       const refreshToken = await authService.generateRefreshToken(tokenData);
 
@@ -233,6 +235,7 @@ const facebookRegister = async (req, res, next) => {
 
     // Generate token
     const tokenData = { userId: user._id };
+
     const token = await authService.generateToken(tokenData);
     const refreshToken = await authService.generateRefreshToken(tokenData);
 
@@ -268,6 +271,7 @@ const googlelogin = async (req, res, next) => {
       const err = new Error('This email does not exist');
       err.statusCode = 404;
       throw err;
+
     }
     // Generate token
     const tokenData = { userId: user._id };

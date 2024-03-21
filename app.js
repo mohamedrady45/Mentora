@@ -6,8 +6,9 @@ const session = require('express-session');
 
 const cors = require('cors');
 
-const authRouter=require('./routers/authRouter')
-
+const authRouter = require('./routers/authRouter')
+//const chatRouter = require('./routers/chat')
+const messageRouter = require('./routers/message')
 const app = express();
 
 require('dotenv').config();
@@ -21,20 +22,22 @@ app.use(session({
 }));
 
 const PORT = process.env.PORT || 4000;
-
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 
 app.use(bodyParser.json());
- 
+
+
 
 
 //Routes
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
-app.use('/api/user', authRouter);
 
+app.use('/api/user', authRouter);
+//app.use('/api/chat', chatRouter);
+app.use('/api/message', messageRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {
@@ -48,9 +51,30 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(DB, {}).then(con => {
   console.log('DB connection successfully!');
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
   });
+  const io = require('./socket').init(server);
+  const onlineUsers = [];
+  //Online users
+  io.on('connection', socket => {
+    console.log("client connected");
+
+    socket.on('addNewUser', userId => {
+      !onlineUsers.some((user) => user.userId === userId) &&
+        onlineUsers.push({
+          userId: userId,
+          socketId: socket.id
+        })
+      io.emit('getOnlineUsers', onlineUsers)
+    });
+
+   socket.on('disconnect', ()=>{
+     onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
+     io.emit('getOnlineUsers', onlineUsers)
+   })
+
+  })
 });
 
 
