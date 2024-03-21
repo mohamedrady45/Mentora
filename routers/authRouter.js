@@ -15,4 +15,8 @@ router.post('/verifyPasswordResetOTP', authController.verifyPasswordResetOTP);
 /*router.post('/facebooklogin', authController.facebookLogin); 
 router.post('/googlelogin', authController.googleLogin);*/
 
+router.post('/refreshToken',authController.refreshToken);
+
+
+
 module.exports = router;
