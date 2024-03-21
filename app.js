@@ -1,6 +1,9 @@
 const express = require('express');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+
 const cors = require('cors');
 
 const authRouter=require('./routers/authRouter')
@@ -11,7 +14,14 @@ require('dotenv').config();
 
 app.use(cors())
 
+app.use(session({
+  secret: process.env.SESSION_SECRET_KEY,
+  resave: false,
+  saveUninitialized: true
+}));
+
 const PORT = process.env.PORT || 4000;
+
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 
