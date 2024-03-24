@@ -15,7 +15,7 @@ const sendMessage = async (req, res, next) => {
                 filePath: file.path
             }
         });
-        //TODO: msg is readed
+        //TODO: msg is read
         const Nmsg = {
             senderID: senderID,
             message: req.body.message,

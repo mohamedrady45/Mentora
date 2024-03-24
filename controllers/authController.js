@@ -121,15 +121,6 @@ const verifyPasswordResetOTP = async (req, res, next) => {
       next(error);
   }
 };
-
-    await User.findOneAndUpdate({ email: email }, { password: hashPassword });
-
-    res.status(200).json({ message: 'Password reset successfully' });
-  } catch (err) {
-    console.log("Error resetting password ", err);
-    next(err);
-  }
-}
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -365,12 +356,13 @@ module.exports = {
   register,
   getAllUsers,
   login,
-  verifyOTP,
   googlelogin,
   facebookLogin,
   facebookRegister,
   resetPassword,
   googleRegister,
-  refreshToken
+  refreshToken ,
+  verifyPasswordResetOTP ,
+  verifyRegisterOTP
 };
 

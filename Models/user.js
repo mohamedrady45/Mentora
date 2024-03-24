@@ -85,6 +85,5 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String
   }
-});
 const User = mongoose.model('User', userSchema);
 module.exports = User;
