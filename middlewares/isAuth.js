@@ -4,7 +4,7 @@ const isAuth = async(req, res, next) => {
 
     //get token from request
     const token = req.headers['authorization'].split(' ')[1];
-    console.log(token);
+    
 
     //cheak if token = NULL
     if (!token) {
@@ -17,7 +17,7 @@ const isAuth = async(req, res, next) => {
     let decodedToken;
 
     decodedToken = await jwt.verify(token, process.env.SEKRET_KEY);
-    console.log(decodedToken);
+    
 
     //check decode
     if (!decodedToken) {

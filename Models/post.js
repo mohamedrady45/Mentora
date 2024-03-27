@@ -19,7 +19,7 @@ const shareSchema = new mongoose.Schema({
 const attachmentSchema = new mongoose.Schema({
     type: {
       type: String,
-      enum: ['photo', 'video' , 'file'],
+      enum: ['image', 'video' , 'file'],
       required: true,
     },
     url: {
@@ -68,6 +68,7 @@ const replySchema = new mongoose.Schema({
     type: reactionSchema,
     default: {},
   },
+  attachments: [attachmentSchema],
 });
 
 const commentSchema = new mongoose.Schema({
@@ -89,6 +90,7 @@ const commentSchema = new mongoose.Schema({
     default: {},
   },
   replies: [replySchema],
+  attachments: [attachmentSchema],
 });
 
 const postSchema = new mongoose.Schema({

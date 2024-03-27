@@ -4,11 +4,24 @@ const Comment = require('../Models/post').Comment;
 const Reply = require('../Models/post').Reply;
 const Share = require('../Models/post').Share;
 const User = require('../Models/user');
+//const cloudinary = require('../Services/cloudinary');
+const upload = require("../middlewares/uploadFile");
 
 //create post
 const addPost = async (req, res, next) => {
     try{
-        const  newPost  = new Post(req.body);
+        const files = req.files;
+        const { author, content } = req.body;
+
+        // Create a new post instance
+        const newPost = new Post({
+            author: author, 
+            content: content,
+            attachments: files.map(file => ({ 
+                type: file.mimetype.split('/')[0], 
+                url: file.path // Store the file path as the URL (you may need to adjust this based on your file storage setup)
+            }))
+        });
 
         const savedPost = await newPost.save();
         res.status(200).json({ message: 'Your post was shared.' });
@@ -25,6 +38,7 @@ const updatePost = async (req, res, next) => {
         //find the id of the post to be updated
         const post = await Post.findById(req.params.id);
         await post.updateOne({$set:req.body});
+
         res.status(200).json({message:'The post has been successfully updated'})
     }
     catch(err){
@@ -89,12 +103,21 @@ const addComment  = async (req,res,next)=>{
         if (!post) {
             throw new Error('This post does not exist');
         }
+        const files = req.files;
+        const  {author, content} = req.body;
 
-        const  comment = new Comment(req.body);
-
-        post.comments.push(comment);
+        const newComment = new  Comment ({
+            author: author,
+            content:content,
+            dateCreated : Date.now(),
+            attachments: files.map(file => ({
+                type: file.mimetype.split('/')[0], 
+                url: file.path
+            }))
+        });
+        post.comments.push(newComment);
         await post.save(); 
-        await comment.save();
+        await newComment.save();
         res.status(200).json({ message: 'Your comment was shared.' });
 
     } catch (err) {
@@ -103,6 +126,18 @@ const addComment  = async (req,res,next)=>{
     }
 };
 
+const deleteComment = async (req, res, next) => {
+    try{
+        //find the id of the post to be deleted
+        const comment = await Comment.findById(req.params.id);
+        await comment.deleteOne();
+        res.status(200).json({message:'Your comment has been successfully deleted.'})
+    }
+    catch(err){
+      console.error('Error deleting post.', err);
+      next(err);  
+    }
+}
 //react for a comment
 const reactComment = async (req, res, next) => {
     try {
@@ -224,7 +259,7 @@ const  sharePost = async (req, res, next) => {
         console.error("Error sharing the  post.", err);
         next(err);
     }
-}
+};
 
 
 module.exports = {
@@ -232,6 +267,7 @@ module.exports = {
     updatePost,
     deletePost,
     addComment,
+    deleteComment,
     reactPost,
     reactComment,
     replyComment,
