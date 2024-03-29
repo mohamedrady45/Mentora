@@ -7,7 +7,7 @@ const session = require('express-session');
 const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
-//const chatRouter = require('./routers/chat')
+const chatRouter = require('./routers/chat')
 const messageRouter = require('./routers/message')
 const app = express();
 
@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/user', authRouter);
-//app.use('/api/chat', chatRouter);
+app.use('/api/chat', chatRouter);
 app.use('/api/message', messageRouter);
 
 //Error handling 

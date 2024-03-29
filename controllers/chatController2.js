@@ -62,34 +62,53 @@ const sendMessage = async (req, res, next) => {
 
 const getUserChats = async (req, res, next) => {
     try {
-        const userId=req.userId;
-        const user = await  UserModel.findById(userId).populate({
+        const userId = req.userId;
+        const user = await UserModel.findById(userId).populate({
             path: 'chats',
             populate: {
-              path: 'users'
+                path: 'users'
             }
-          });
-        
-        if(!user || !user.chats){
-            return res.status(401).json({success : false , message : 'Error in find chats'})
+        });
+
+        if (!user || !user.chats) {
+            return res.status(401).json({ success: false, message: 'Error in find chats' })
         }
         //array of {last message ,user name,user  image}
-        const data=user.chats.map((chat)=>{
-            const secUser=chat.users.filter(user=>user._id!==userId);
+        const data = user.chats.map((chat) => {
+            const secUser = chat.users.filter(user => user._id !== userId);
             console.log()
-               return{
-                   _id : chat._id ,
-                  user:{
-                    name:secUser[0].firstName+' '+secUser[0].lastName,
-                     //TODO:image:secUser[0].image?`/images/${secUser[0].image}`:"/images/default_avatar.png",
-                  },
-                  last_message:chat.messages[chat.messages.length -1]
-               };
-             }) 
-        res.status(200).json({ success:true ,data:data});
-        
+            return {
+                _id: chat._id,
+                user: {
+                    name: secUser[0].firstName + ' ' + secUser[0].lastName,
+                    //TODO:image:secUser[0].image?`/images/${secUser[0].image}`:"/images/default_avatar.png",
+                },
+                last_message: chat.messages[chat.messages.length - 1]
+            };
+        })
+        res.status(200).json({ success: true, data: data });
+
     } catch (err) {
         console.log("craete chat error");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+
+}
+
+const findChat = async (req, res, next) => {
+    try {
+        const chatId = req.pramas.chatId;
+        const chat = ChatModel.findOne({ _id: chatId }).populate('users messages');
+        if (!chat) {
+             return new Error ('chat not found').statusCode=404;
+             }
+        res.status(200).json({ success: true, data: chat });
+
+    } catch (err) {
+        console.log("error in find chat");
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -101,5 +120,6 @@ const getUserChats = async (req, res, next) => {
 
 module.exports = {
     sendMessage,
-    getUserChats
+    getUserChats,
+    findChat
 }

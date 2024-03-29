@@ -11,7 +11,7 @@ class authService {
 
     static async generateToken(tokenData)
     {
-      return jwt.sign(tokenData, process.env.SEKRET_KEY ,{expiresIn:'5s'});
+      return jwt.sign(tokenData, process.env.SEKRET_KEY ,{expiresIn:'1d'});
     }
     
     static async generateRefreshToken(refreshTokenData) {
