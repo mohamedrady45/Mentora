@@ -1,11 +1,13 @@
 const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
+const MassageModel = require('../Models/message')
 const upload = require("../middlewares/uploadFile");
 
 const sendMessage = async (req, res, next) => {
     try {
+        console.log(req.body);
         const senderID = req.userId;
-        const resecerID = req.body.resecerId;
+        const receiveID = req.body.receiveId;
         const files = req.files;
 
 
@@ -15,17 +17,12 @@ const sendMessage = async (req, res, next) => {
                 filePath: file.path
             }
         });
-        //TODO: msg is read
-        const Nmsg = {
-            senderID: senderID,
-            message: req.body.message,
-            files: Nfiles,
-        }
-        let chat = await ChatModel.findOne({ users: { $all: [senderID, resecerID] } });
+
+        let chat = await ChatModel.findOne({ users: { $all: [senderID, receiveID] } });
         if (!chat) {
             // create new chat between the two users
             chat = new ChatModel({
-                users: [senderID, resecerID],
+                users: [senderID, receiveID],
             })
             await chat.save();
 
@@ -36,17 +33,26 @@ const sendMessage = async (req, res, next) => {
             await user1.save();
 
 
-            const user2 = await UserModel.findById(resecerID);
+            const user2 = await UserModel.findById(receiveID);
             const chats2 = user2.chats;
             chats2.push(chat._id);
             user2.chats = chats2;
             await user2.save();
         }
+        //TODO: msg is read
+        const Nmsg = new MassageModel({
+            chatId: chat._id,
+            senderID: senderID,
+            message: req.body.message,
+            files: Nfiles,
+        })
+        await Nmsg.save();
 
-        const messages = chat.messages;
-        messages.push(Nmsg);
-        chat.messages = messages;
+        chat.messages.push(Nmsg);
         await chat.save();
+        TODO:
+        // io.to(`${senderID}`).emit('getMessage',Nmsg);
+        // io.to(`${resecerID}`) .emit('getReceiveMessage',Nmsg);
 
         res.status(200).json({ success: true, data: "Message Sent" });
 
@@ -66,7 +72,8 @@ const getUserChats = async (req, res, next) => {
         const user = await UserModel.findById(userId).populate({
             path: 'chats',
             populate: {
-                path: 'users'
+                path: 'users',
+                select: 'firstName lastName'
             }
         });
 
@@ -74,19 +81,23 @@ const getUserChats = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Error in find chats' })
         }
         //array of {last message ,user name,user  image}
-        const data = user.chats.map((chat) => {
+        const data = user.chats.map(async (chat) => {
             const secUser = chat.users.filter(user => user._id !== userId);
-            console.log()
+            const lst_msg_id = chat.messages[chat.messages.length - 1];
+            let lst_msg = await MassageModel.findOne({ _id: lst_msg_id });
+
             return {
                 _id: chat._id,
-                user: {
-                    name: secUser[0].firstName + ' ' + secUser[0].lastName,
-                    //TODO:image:secUser[0].image?`/images/${secUser[0].image}`:"/images/default_avatar.png",
-                },
-                last_message: chat.messages[chat.messages.length - 1]
+                user: secUser,
+                last_message: lst_msg,
             };
         })
-        res.status(200).json({ success: true, data: data });
+
+        Promise.all(data)
+            .then((result) => {
+
+                return res.status(200).json({ success: true, data: result });
+            })
 
     } catch (err) {
         console.log("craete chat error");
@@ -100,11 +111,12 @@ const getUserChats = async (req, res, next) => {
 
 const findChat = async (req, res, next) => {
     try {
-        const chatId = req.pramas.chatId;
-        const chat = ChatModel.findOne({ _id: chatId }).populate('users messages');
+
+        const chatId = req.params.chatId;
+        const chat = await ChatModel.findOne({ _id: chatId }).populate('users', 'firstName lastName ').populate('messages');
         if (!chat) {
-             return new Error ('chat not found').statusCode=404;
-             }
+            return new Error('chat not found').statusCode = 404;
+        }
         res.status(200).json({ success: true, data: chat });
 
     } catch (err) {
@@ -117,9 +129,70 @@ const findChat = async (req, res, next) => {
 
 }
 
+const updateMessage = async (req, res, next) => {
+    try {
+
+        const messageId = req.params.messageId;
+        const newMessage = req.body.message;
+        const message = await MassageModel.findById(messageId);
+        if(!message){
+         return res.status(400).json({success : false , msg:"No such Message"});
+        }
+        if (message.senderID != req.userId) {
+            return new Error('Unauthorized access', 'You are not the sender of this message').statusCode = 401;
+        }
+        message.message = newMessage;
+        await message.save();
+        return res.status(201).json({ success: true, msg:'message updated' });
+
+
+    } catch (err) {
+        console.log("error in edit message");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+
+}
+
+const deleteMessage = async (req, res, next) => {
+    try {
+
+        const messageId = req.params.messageId;
+        
+        const message = await MassageModel.findById(messageId);
+        if(!message){
+         return res.status(400).json({success : false , msg:"No such Message"});
+        }
+        if (message.senderID != req.userId) {
+            return new Error('Unauthorized access', 'You are not the sender of this message').statusCode = 401;
+        }
+
+        //remove  the messge from chat messages array
+        let chat = await ChatModel.findOne({_id:message.chatId});
+        chat.messages = chat.messages.filter((m)=> m!=messageId );
+        await chat.save();
+        
+        //delete the message
+        await message.deleteOne();
+        return res.status(201).json({ success: true, msg:'message deleted' });
+
+
+    } catch (err) {
+        console.log("error in edit message");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+
+}
 
 module.exports = {
     sendMessage,
     getUserChats,
-    findChat
+    findChat,
+    updateMessage,
+    deleteMessage
 }

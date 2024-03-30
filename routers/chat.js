@@ -10,8 +10,9 @@ const router = express.Router();
 
 // router.get('/getChats', isAuth, chatController.getUserChats);
 
-router.post('/', isAuth ,upload.array('files'), chatController.sendMessage );  //add a new message to the database
+router.post('/', isAuth ,upload.array('files'), chatController.sendMessage );  
 router.get('/getChats', isAuth, chatController.getUserChats);
-router.get('/getChat/:chatId', isAuth, chatController.findChat);
-
+router.get('/findChat/:chatId', isAuth, chatController.findChat);
+router.put('/editMessage/:messageId', isAuth, chatController.updateMessage );
+router.delete('/deleteMessage/:messageId', isAuth, chatController.deleteMessage );
 module.exports = router;
