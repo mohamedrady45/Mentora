@@ -1,6 +1,6 @@
 const express = require('express');
 
-const chatController = require('../controllers/chatController2');
+const chatController = require('../controllers/chatController');
 const isAuth = require("../middlewares/isAuth");
 const upload=require('../middlewares/uploadFile')
 
