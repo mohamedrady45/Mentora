@@ -8,7 +8,7 @@ const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
 const chatRouter = require('./routers/chat')
-const messageRouter = require('./routers/message')
+
 const app = express();
 
 require('dotenv').config();
@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/user', authRouter);
 app.use('/api/chat', chatRouter);
-app.use('/api/message', messageRouter);
+
 
 //Error handling 
 app.use((error, req, res, next) => {
