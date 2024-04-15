@@ -15,7 +15,7 @@ router.delete('/:id/deleteComment', postController.deleteComment);
 router.post('/:id/reactComment', postController.reactComment);
 router.post('/:id/replyComment', postController.replyComment);
 router.post('/:id/sharePost', postController.sharePost);
-router.post('/:id/savedPosts', postController.savedPosts);
+router.post('/:id/savePosts', postController.savePosts);
 
 
 module.exports = router;

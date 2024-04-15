@@ -4,7 +4,6 @@ const Comment = require('../Models/post').Comment;
 const Reply = require('../Models/post').Reply;
 const Share = require('../Models/post').Share;
 const User = require('../Models/user');
-//const cloudinary = require('../Services/cloudinary');
 const upload = require("../middlewares/uploadFile");
 
 //create post
@@ -17,17 +16,21 @@ const addPost = async (req, res, next) => {
         const newPost = new Post({
             author: author, 
             content: content,
+            dateCreated : Date.now(),
             attachments: files.map(file => ({ 
                 type: file.mimetype.split('/')[0], 
                 url: file.path // Store the file path as the URL (you may need to adjust this based on your file storage setup)
             }))
         });
 
-        const savedPost = await newPost.save();
+        await newPost.save();
         res.status(200).json({ message: 'Your post was shared.' });
     }
     catch(err){ 
         console.error('Error creating post.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
         next(err);
     }
 }
@@ -43,6 +46,9 @@ const updatePost = async (req, res, next) => {
     }
     catch(err){
         console.error('Error updating post.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
         next(err);  
     }
 }
@@ -57,6 +63,9 @@ const deletePost = async (req, res, next) => {
     }
     catch(err){
       console.error('Error deleting post.', err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
       next(err);  
     }
 }
@@ -67,7 +76,7 @@ const reactPost = async (req, res, next) => {
         const post = await Post.findById(req.params.id);
 
         if (!post) {
-            throw new Error('This post does not exist');
+            return res.status(404).json({ error: 'This post does not exist' });
         }
 
       //Check if the user has already reacted to the post
@@ -86,12 +95,15 @@ const reactPost = async (req, res, next) => {
         res.status(200).json({message:'You disliked the post.'})
       }
 
-      const savedPost = await post.save();
+      await post.save();
       
       res.status(200).json({ message: 'Your post was reacted.' });
 
     } catch (err) {
       console.error("Error reacting post.", err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
       next(err);
     }
 };
@@ -101,7 +113,7 @@ const addComment  = async (req,res,next)=>{
     try{    
         const post = await Post.findById(req.params.id);
         if (!post) {
-            throw new Error('This post does not exist');
+            return res.status(404).json({ error: 'This post does not exist' });
         }
         const files = req.files;
         const  {author, content} = req.body;
@@ -122,6 +134,9 @@ const addComment  = async (req,res,next)=>{
 
     } catch (err) {
       console.error("Error comment in the  post.", err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
       next(err);
     }
 };
@@ -135,6 +150,9 @@ const deleteComment = async (req, res, next) => {
     }
     catch(err){
       console.error('Error deleting post.', err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
       next(err);  
     }
 }
@@ -144,7 +162,7 @@ const reactComment = async (req, res, next) => {
         const comment = await Comment.findById(req.params.id);
 
         if (!comment) {
-            throw new Error('This comment does not exist');
+            return res.status(404).json({ error: 'This comment does not exist' });
         }
 
       //Check if the user has already reacted to the comment
@@ -163,12 +181,15 @@ const reactComment = async (req, res, next) => {
         res.status(200).json({message:'You disliked the comment.'});
       }
 
-      const savedComment = await comment.save();
+      await comment.save();
 
       res.status(200).json({ message: 'Your comment was reacted.' });
 
     } catch (err) {
         console.error("Error reacting comment.", err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
         next(err);
     }
 };
@@ -178,7 +199,7 @@ const replyComment  = async (req,res,next)=>{
     try{    
         const comment = await Comment.findById(req.params.id);
         if (!comment) {
-            throw new Error('This comment does not exist');
+            return res.status(404).json({ error: 'This comment does not exist' });
         }
 
         const  reply = new Reply (req.body);
@@ -193,21 +214,24 @@ const replyComment  = async (req,res,next)=>{
 
     } catch (err) {
       console.error("Error reply in the  post.", err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
       next(err);
     }
 };
 
 //save post
-const savedPosts = async(req, res, next) =>{
+const savePosts = async(req, res, next) =>{
     try{
         const user = await User.findById(req.body);
         if (!user) {
-            throw new Error('User not found');
+            return res.status(404).json({ error: 'User not found' });
         }
 
         const post = await Post.findById(req.params.id);
         if (!post) {
-            throw new Error('Post not found');
+            return res.status(404).json({ error: 'Post not found' });
         }
 
         //Check if the user has already saved the post
@@ -225,6 +249,9 @@ const savedPosts = async(req, res, next) =>{
         
     } catch(err){
         console.error("Error saving the  post.", err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
         next(err);
     }
 }; 
@@ -234,7 +261,7 @@ const  sharePost = async (req, res, next) => {
     try{
         const post = await Post.findById(req.params.id);
         if (!post) {
-            throw new Error('Post not found');
+            return res.status(404).json({ error: 'Post not found' });
         }
 
         const sharedPost = new Post({
@@ -257,6 +284,9 @@ const  sharePost = async (req, res, next) => {
 
     }catch(err){
         console.error("Error sharing the  post.", err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
         next(err);
     }
 };
@@ -271,6 +301,6 @@ module.exports = {
     reactPost,
     reactComment,
     replyComment,
-    savedPosts,
+    savePosts,
     sharePost,
   };
