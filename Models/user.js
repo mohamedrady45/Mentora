@@ -55,12 +55,12 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    required: true
+    required: false
   },
   gender: {
     type: String,
     enum: ['Male', 'Female'],
-    required: true,
+    required: false,
   },
   bio: {
     type: String,
@@ -76,14 +76,17 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  chats:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Chat'
-  }]
-  });
-
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  }],
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }],
   refreshToken: {
     type: String
   }
+})
 const User = mongoose.model('User', userSchema);
 module.exports = User;

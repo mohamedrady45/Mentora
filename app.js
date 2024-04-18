@@ -73,7 +73,6 @@ mongoose.connect(DB, {}).then(con => {
      onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
      io.emit('getOnlineUsers', onlineUsers)
    })
-
   })
 });
 
