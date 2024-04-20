@@ -27,8 +27,6 @@ class authService {
         const user =await userService.findUser('_id',data.userId);
         if(user.refreshToken === refreshToken ) return data;
         
-       
-        
       } catch (error) {
         return error;
       }

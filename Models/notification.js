@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const notificationSchema = new Schema({
-    user: [
+    users: [
         {
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
     ],
-
     messages: {
         type: String,
         required: true
@@ -18,7 +17,7 @@ const notificationSchema = new Schema({
     },
     Type: {
         type: String,
-        enum: ['Male', 'Female'],
+        enum: ['comment', 'reply','question'],
         required: true,
     }
 },

@@ -4,9 +4,12 @@ const NotificationModel =require('../Models/notification')
 const gitAllNotification = async (req, res, next) => {
     try {
        const userId=req.userId;
-       const user = await UserModel.find({_id:userId}).populate('User');
-       const notification= user.notification;
-
+       const notification = await NotificationModel.find({ users: { $in: [userId] } })
+       .populate({
+           path:'user',
+           select:'name'
+       })
+      
        return res.status(200).json({success:true,data:notification});
 
     } catch (err) {
