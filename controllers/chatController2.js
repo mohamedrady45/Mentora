@@ -9,10 +9,19 @@ const sendMessage = async (req, res, next) => {
         const files = req.files;
 
 
-        const Nfiles = files.map(file => {
+        const Nfiles = files.map(async file => {
+            //Get the path to the image
+            const imagePath = file.path;
+            //Upload to cloudinary
+            const result = await cloudinaryUploadImage(imagePath)
+            console.log(result);
+
+            //Remove image from the server
+            fs.unlinkSync(imagePath)
+
             return {
                 fileType: file.mimetype,
-                filePath: file.path
+                filePath: result,
             }
         });
         //TODO: msg is readed
@@ -62,32 +71,32 @@ const sendMessage = async (req, res, next) => {
 
 const getUserChats = async (req, res, next) => {
     try {
-        const userId=req.userId;
-        const user = await  UserModel.findById(userId).populate({
+        const userId = req.userId;
+        const user = await UserModel.findById(userId).populate({
             path: 'chats',
             populate: {
-              path: 'users'
+                path: 'users'
             }
-          });
-        
-        if(!user || !user.chats){
-            return res.status(401).json({success : false , message : 'Error in find chats'})
+        });
+
+        if (!user || !user.chats) {
+            return res.status(401).json({ success: false, message: 'Error in find chats' })
         }
         //array of {last message ,user name,user  image}
-        const data=user.chats.map((chat)=>{
-            const secUser=chat.users.filter(user=>user._id!==userId);
+        const data = user.chats.map((chat) => {
+            const secUser = chat.users.filter(user => user._id !== userId);
             console.log()
-               return{
-                   _id : chat._id ,
-                  user:{
-                    name:secUser[0].firstName+' '+secUser[0].lastName,
-                     //TODO:image:secUser[0].image?`/images/${secUser[0].image}`:"/images/default_avatar.png",
-                  },
-                  last_message:chat.messages[chat.messages.length -1]
-               };
-             }) 
-        res.status(200).json({ success:true ,data:data});
-        
+            return {
+                _id: chat._id,
+                user: {
+                    name: secUser[0].firstName + ' ' + secUser[0].lastName,
+                    //TODO:image:secUser[0].image?`/images/${secUser[0].image}`:"/images/default_avatar.png",
+                },
+                last_message: chat.messages[chat.messages.length - 1]
+            };
+        })
+        res.status(200).json({ success: true, data: data });
+
     } catch (err) {
         console.log("craete chat error");
         if (!err.statusCode) {

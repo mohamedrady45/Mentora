@@ -113,11 +113,16 @@ const postSchema = new mongoose.Schema({
   },
   attachments: [attachmentSchema],
   comments: [commentSchema], 
-  shares :{
+  shares: [shareSchema],
+  /*shares :{
     type: shareSchema,
     default: {},
-  },
-});
+  },*/
+},
+{
+  timestamps: true
+}
+);
 
 const Post = mongoose.model('Post', postSchema);
 const Comment = mongoose.model('Comment', commentSchema);

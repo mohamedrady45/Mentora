@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
 const validator = require('validator');
+const { savePosts } = require('../controllers/postController');
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -80,7 +81,10 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Chat'
   }],
-  
+  savePosts:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Post'
+  }],
 
   refreshToken: {
     type: String

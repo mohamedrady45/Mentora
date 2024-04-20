@@ -1,14 +1,55 @@
-import {v2 as cloudinary} from 'cloudinary';
-          
-cloudinary.config({ 
-  cloud_name: 'di4ytdfwq', 
-  api_key: '578268519668849', 
-  api_secret: '' 
+const cloudinary = require('cloudinary')
 
-});
-cloudinary.uploader.upload('../uploads', function(error, result) {
-  console.log(result, error);
+const upload = require('../middlewares/uploadFile');
 
+cloudinary.config({
+  cloud_name: process.env.CLOUNDAIRY_CLOUD_NAME,
+  api_key: process.env.CLOUNDAIRY_API_KEY,
+  api_secret: process.env.CLOUNDAIRY_API_SECRET
 });
 
-module.exports = cloudinary;
+
+//cloundairy upload image
+const cloudinaryUploadImage = async (fileToUpload) => {
+  try {
+    const data = await cloudinary.uploader.upload(fileToUpload, {
+      resource_type: "auto",
+    });
+    return data;
+  }
+  catch (error) {
+    return error;
+  }
+}
+
+//cloundairy remove image
+const cloudinaryRemoveImage = async (imagePublicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(imagePublicId);
+    return result;
+  }
+  catch (error) {
+    return error;
+  }
+}
+
+const getImageUrl = async (imagePath) => {
+  try {
+    //Upload to cloudinary
+    const result = await cloudinaryUploadImage(imagePath)
+    console.log(result);
+
+    //Remove image from the server
+    fs.unlinkSync(imagePath)
+    return result.secure_url;
+  }
+  catch (error) {
+    return error;
+  }
+}
+
+module.exports = {
+  cloudinaryUploadImage,
+  cloudinaryRemoveImage,
+  getImageUrl,
+};

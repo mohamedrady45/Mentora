@@ -1,6 +1,5 @@
 const multer = require('multer');
 
-
 // Multer Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -11,7 +10,6 @@ const storage = multer.diskStorage({
     },
 });
 
-
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg'||
         file.mimetype === 'image/png' ||
@@ -20,9 +18,11 @@ const fileFilter = (req, file, cb) => {
         file.mimetype === 'image/docx'
         ) {
         cb(null, true);
-    } else { cb(null, false); return cb(new Error('Only image files are allowed!')); }
+    } else { cb(null, false); return cb(new Error('Unsupported file format!')); }
 };
+
+
 
 const upload = multer({ storage:storage, fileFilter: fileFilter });
 
-module.exports = upload;
+module.exports = upload; 
