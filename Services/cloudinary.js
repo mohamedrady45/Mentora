@@ -33,6 +33,7 @@ const cloudinaryRemoveImage = async (imagePublicId) => {
   }
 }
 
+//get image url
 const getImageUrl = async (imagePath) => {
   try {
     //Upload to cloudinary

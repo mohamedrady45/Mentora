@@ -10,7 +10,6 @@ const fs = require("fs");
 const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../Services/cloudinary");
 
 
-
 //create post
 const addPost = async (req, res, next) => {
     try{
@@ -25,13 +24,9 @@ const addPost = async (req, res, next) => {
                 // Upload the file to cloudinary
                 const imageUrl = await getImageUrl(file.path);
                 return {
-
                     type: file.mimetype.split('/')[0], 
-                    url: imageUrl
-                    
-                }
-                
-                
+                    url: imageUrl                    
+                }  
             })
         });
 
@@ -144,10 +139,13 @@ const addComment  = async (req,res,next)=>{
         const newComment = new  Comment ({
             author: author,
             content:content,
-            attachments: files.map(file => ({
-                type: file.mimetype.split('/')[0], 
-                url: file.path
-            }))
+            attachments: files.map(async file => {
+                const imageUrl = await getImageUrl(file.path);
+                return{
+                    type: file.mimetype.split('/')[0], 
+                    url: file.path
+                }
+            })
         });
         post.comments.push(newComment);
         await post.save(); 
@@ -264,10 +262,13 @@ const replyComment  = async (req,res,next)=>{
         const  reply = new Reply ({
             author: author,
             content: content,
-            attachments: files.map(file => ({
-                type: file.mimetype.split('/')[0],
-                url: file.path,
-            })),
+            attachments: files.map(async file => {
+                const imageUrl = await getImageUrl(file.path);
+                return{
+                    type: file.mimetype.split('/')[0],
+                    url: file.path,
+                }
+            }),
         });
         comment.replies = comment.replies || []; // Initialize replies if it doesn't exist
 
