@@ -4,8 +4,8 @@ const { Community } =  require('../Models/Community');
 const createCommunity = async (req, res) =>{
     const { name, description } = req.body;
   
-    if (!name || name.trim().length < 3 || name.trim().length > 50) {
-      return res.status(400).json({ message: 'Community name is required (3-50 characters)' });
+    if (!name || name.trim().length < 3) {
+      return res.status(400).json({ message: 'Community name is required (minimum of 3 characters)' });
     }
   
     try {
@@ -59,6 +59,35 @@ const createCommunity = async (req, res) =>{
       res.status(500).json({ message: 'Error joining community' });
     }
   }
+
+  const leaveCommunity = async (req, res, next) => {
+    const communityId = req.params.communityId;
+  
+    if (!mongoose.Types.ObjectId.isValid(communityId)) {
+      return res.status(400).json({ message: 'Invalid community ID' });
+    }
+  
+    try {
+      const community = await Community.findById(communityId);
+  
+      if (!community) {
+        return res.status(404).json({ message: 'Community not found' });
+      }
+  
+      community.members.pull(req.user._id);
+  
+      await community.save();
+  
+      req.user.communities.pull(communityId);
+  
+      await req.user.save();
+  
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error leaving the community' });
+    }
+  };
  const addQuestion = async (req, res)=> {
     const communityId = req.params.communityId;
     const { content } = req.body;
@@ -133,7 +162,8 @@ const createCommunity = async (req, res) =>{
   
     module.exports = {
         createCommunity , 
-        joinCommunity , 
+        joinCommunity ,
+        leaveCommunity, 
         addQuestion , 
         answerQuestion
     };

@@ -11,7 +11,6 @@ const communitySchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
-    maxlength: 255,
   },
   creator: {
     type: mongoose.Schema.Types.ObjectId,
@@ -20,29 +19,33 @@ const communitySchema = new mongoose.Schema({
   },
   members: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: 'User', 
+    ref: 'User',
     default: [],
   },
   questions: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: 'Question', 
+    ref: 'Question',
     default: [],
   },
 }, {
-  timestamps: true, 
+  timestamps: true,
 });
 
 communitySchema.pre('save', async function (next) {
-  if (this.isNew && this.members.length) {
-    const duplicate = await this.model('Community').findOne({
-      members: { $in: this.members },
-      _id: { $ne: this._id }, 
-    });
-    if (duplicate) {
-      throw new Error('A user cannot be a member of the same community twice.');
+  try {
+    if (this.isNew && this.members.length) {
+      const duplicate = await this.model('Community').findOne({
+        members: { $in: this.members },
+        _id: { $ne: this._id },
+      });
+      if (duplicate) {
+        throw new Error('A user cannot be a member of the same community twice.');
+      }
     }
+    next();
+  } catch (error) {
+    next(error); 
   }
-  next();
 });
 
 module.exports = mongoose.model('Community', communitySchema);
