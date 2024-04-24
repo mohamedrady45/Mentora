@@ -54,6 +54,7 @@ mongoose.connect(DB, {}).then(con => {
   const server = app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
   });
+  
   const io = require('./socket').init(server);
   const onlineUsers = [];
   //Online users
