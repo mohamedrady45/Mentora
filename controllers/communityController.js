@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { Community } =  require('../Models/Community');
-const { Question } =  require('../Models/question');
+const { Question } =  require('../Models/questions');
 const {  Answer } =  require('../Models/Answer');
 const createCommunity = async (req, res) =>{
     const { name, description } = req.body;

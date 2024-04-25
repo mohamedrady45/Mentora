@@ -31,14 +31,21 @@ const register = async (req, res, next) => {
       if (oldUser) {
           return res.status(400).json({ error: 'Email is already registered' });
       }
+      const isValidPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!_%*?&])[A-Za-z\d@$!%*?&].{8,}$/.test(password);
+        if (!isValidPassword) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
+        }
+
+        const userDOB = new Date(dateOfBirth);
+        const currentDate = new Date();
+        if (userDOB >= currentDate) {
+            return res.status(400).json({ error: 'Invalid date of birth (must be in the past)' });
+        }
+
 
       const otp = await generateOTPAndSendEmail(email, next);
-
-      // Store registration details in session
-      req.session.registrationDetails = {
-          firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests, otp
-      };
-
+          req.session.user = { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests };
+          req.session.otp = otp;
       return res.status(201).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error registering user:', err);
@@ -46,26 +53,26 @@ const register = async (req, res, next) => {
   }
 };
 
-// Function to verify OTP for user registration
 const verifyRegisterOTP = async (req, res, next) => {
   try {
       const {inputOtp } = req.body;
-      const storedDetails = req.session.registrationDetails;
+      const sessionUser = req.session.user;
 
-      if (!storedDetails) {
-          return res.status(400).json({ error: 'Registration details not found or OTP expired' });
+      if (!sessionUser) {
+          return res.status(400).json({ error: 'Registration details not found' });
       }
 
-      if (storedDetails.otp == inputOtp) {
-          const hashedPassword = await hashingService.hashPassword(storedDetails.password);
-          const newUser = new User({
-              ...storedDetails,
-              password: hashedPassword
-          });
-          await newUser.save();
-          delete req.session.registrationDetails; 
-          return res.status(200).json({ success: true, message: 'Registration completed successfully' });
-      } else {
+      if (req.session.otp == inputOtp) {
+        const hashedPassword = await hashingService.hashPassword(sessionUser.password);
+        const newUser = new User({
+         ...sessionUser,
+            password: hashedPassword
+        });      
+        await newUser.save();
+        delete req.session.user; 
+        return res.status(200).json({ success: true, message: 'Registration completed successfully' });
+          }
+       else {
         
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
@@ -75,14 +82,12 @@ const verifyRegisterOTP = async (req, res, next) => {
   }
 };
 
-// Function to handle password reset request
 const resetPassword = async(req, res, next) =>{
   try{
       const { email } = req.body;
 
       const otp = await generateOTPAndSendEmail(email, next);
 
-      // Store email and OTP in session for password reset
       req.session.passwordReset = {
           email, otp
       };
@@ -94,7 +99,6 @@ const resetPassword = async(req, res, next) =>{
   }
 };
 
-// Function to verify OTP for password reset
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
       const { email, inputOtp, newPassword } = req.body;
@@ -111,7 +115,7 @@ const verifyPasswordResetOTP = async (req, res, next) => {
         }
           const hashedPassword = await hashingService.hashPassword(newPassword);
           await User.findOneAndUpdate({ email: email }, { password: hashedPassword });
-          delete req.session.passwordReset; // Remove password reset details from session after password reset
+          delete req.session.passwordReset; 
           return res.status(200).json({ success: true, message: 'Password reset successfully' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });

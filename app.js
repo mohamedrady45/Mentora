@@ -3,41 +3,40 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-
+const cookieParser = require("cookie-parser");
 const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
-//const chatRouter = require('./routers/chat')
-const messageRouter = require('./routers/message')
+const communityRouter = require('./routers/communityRouter')
+
 const app = express();
 
 require('dotenv').config();
-
+app.use(bodyParser.json());
 app.use(cors())
+app.use(cookieParser());
 
 app.use(session({
   secret: process.env.SESSION_SECRET_KEY,
-  resave: false,
+  resave: true,
   saveUninitialized: true
 }));
 
 const PORT = process.env.PORT || 4000;
+
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 
-app.use(bodyParser.json());
 
-
+ 
 
 
 //Routes
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
-
 app.use('/api/user', authRouter);
-//app.use('/api/chat', chatRouter);
-app.use('/api/message', messageRouter);
+app.use('/api/communities', communityRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {
@@ -51,30 +50,9 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(DB, {}).then(con => {
   console.log('DB connection successfully!');
-  const server = app.listen(PORT, () => {
+  app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
   });
-  const io = require('./socket').init(server);
-  const onlineUsers = [];
-  //Online users
-  io.on('connection', socket => {
-    console.log("client connected");
-
-    socket.on('addNewUser', userId => {
-      !onlineUsers.some((user) => user.userId === userId) &&
-        onlineUsers.push({
-          userId: userId,
-          socketId: socket.id
-        })
-      io.emit('getOnlineUsers', onlineUsers)
-    });
-
-   socket.on('disconnect', ()=>{
-     onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
-     io.emit('getOnlineUsers', onlineUsers)
-   })
-
-  })
 });
 
 
