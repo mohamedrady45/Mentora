@@ -28,6 +28,7 @@ const isAuth = async(req, res, next) => {
 
     //access userId to req
     req.userId = decodedToken.userId;
+  
 
     //go to next middleware
     next();

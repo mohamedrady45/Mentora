@@ -11,7 +11,7 @@ class authService {
 
     static async generateToken(tokenData)
     {
-      return jwt.sign(tokenData, process.env.SEKRET_KEY ,{expiresIn:'5s'});
+      return jwt.sign(tokenData, process.env.SEKRET_KEY ,{expiresIn:'1d'});
     }
     
     static async generateRefreshToken(refreshTokenData) {
@@ -26,8 +26,6 @@ class authService {
         let data = jwt.verify(refreshToken,process.env.REFRESH_SEKRET_KEY);
         const user =await userService.findUser('_id',data.userId);
         if(user.refreshToken === refreshToken ) return data;
-        
-       
         
       } catch (error) {
         return error;

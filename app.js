@@ -7,8 +7,8 @@ const session = require('express-session');
 const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
-//const chatRouter = require('./routers/chat')
-const messageRouter = require('./routers/message')
+const chatRouter = require('./routers/chat')
+
 const app = express();
 
 require('dotenv').config();
@@ -36,8 +36,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/user', authRouter);
-//app.use('/api/chat', chatRouter);
-app.use('/api/message', messageRouter);
+app.use('/api/chat', chatRouter);
+
 
 //Error handling 
 app.use((error, req, res, next) => {
@@ -73,7 +73,6 @@ mongoose.connect(DB, {}).then(con => {
      onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
      io.emit('getOnlineUsers', onlineUsers)
    })
-
   })
 });
 
