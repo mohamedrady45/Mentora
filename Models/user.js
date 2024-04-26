@@ -55,12 +55,12 @@ const userSchema = new mongoose.Schema({
       },
       country : {
         type : String , 
-        required : true 
+        required : false 
       } , 
       gender: {
         type: String,
         enum: ['Male', 'Female'], 
-        required: true,
+        required: false,
       },
     bio :{
     type : String ,
