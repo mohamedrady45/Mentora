@@ -2,8 +2,8 @@ const { createTransport } = require('nodemailer');
 
 class OTPService {
   async generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000);
-  }
+    return (100000 + Math.floor(Math.random() * 900000)).toString();
+}
   async sendEmail(email , otp){
     const transporter = createTransport({
         host: "smtp-relay.sendinblue.com",

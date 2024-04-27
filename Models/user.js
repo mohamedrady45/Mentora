@@ -84,7 +84,7 @@ const userSchema = new mongoose.Schema({
     default: false, // Initially , are users are not verified till we verify them
   },
   OTP : {
-    type : Number,
+    type : String,
   },
 });
 const User = mongoose.model('User', userSchema);

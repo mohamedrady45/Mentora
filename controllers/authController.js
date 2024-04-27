@@ -59,8 +59,8 @@ const register = async (req, res, next) => {
 const verifyRegisterOTP = async (req, res, next) => {
   try {
       const {inputOtp } = req.body;
-      const user = await User.findOne({ otp });
-      if (user.otp == inputOtp && user.isVerified==false) {
+      const user = await User.findOne({ OTP : inputOtp });
+      if (user.OTP == inputOtp && user.isVerified==false) {
         user.isVerified = true;
         return res.status(200).json({ success: true, message: 'Registration completed successfully' });
         }
@@ -77,13 +77,9 @@ const verifyRegisterOTP = async (req, res, next) => {
 const resetPassword = async(req, res, next) =>{
   try{
       const { email } = req.body;
-
-      const otp = await generateOTPAndSendEmail(email, next);
-
-      req.session.passwordReset = {
-          email, otp
-      };
-
+      const user = await userService.findUser('email', email);
+      const otp = await generateOTPAndSendEmail(email , next);
+      user.OTP = otp;
       res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error resetting password:', err);
@@ -93,21 +89,16 @@ const resetPassword = async(req, res, next) =>{
 
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-      const { email, inputOtp, newPassword } = req.body;
-      const storedData = req.session.passwordReset;
-
-      if (!storedData) {
-          return res.status(400).json({ error: 'Password reset details not found or OTP expired' });
-      }
-
-      if (storedData.otp == inputOtp) {
+      const { inputOtp, newPassword } = req.body;
+      const user = await User.findOne({ OTP : inputOtp});
+      
+      if (user.OTP == inputOtp) {
         const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
         if (!isPasswordValid) {
           return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
         }
           const hashedPassword = await hashingService.hashPassword(newPassword);
-          await User.findOneAndUpdate({ email: email }, { password: hashedPassword });
-          delete req.session.passwordReset; 
+         user.password = hashedPassword;
           return res.status(200).json({ success: true, message: 'Password reset successfully' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
