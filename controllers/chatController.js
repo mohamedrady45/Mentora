@@ -1,7 +1,7 @@
 const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
-const upload = require("../middlewares/uploadFile");
+
 
 const sendMessage = async (req, res, next) => {
     try {
@@ -39,7 +39,7 @@ const sendMessage = async (req, res, next) => {
             user2.chats = chats2;
             await user2.save();
         }
-        //TODO: msg is read
+       
         const Nmsg = new MassageModel({
             chatId: chat._id,
             senderID: senderID,
@@ -82,7 +82,7 @@ const getUserChats = async (req, res, next) => {
         }
         //array of {last message ,user name,user  image}
         const data = user.chats.map(async (chat) => {
-            const secUser = chat.users.filter(user => user._id !== userId);
+            const secUser = chat.users.filter(user => user._id != userId);
             const lst_msg_id = chat.messages[chat.messages.length - 1];
             let lst_msg = await MassageModel.findOne({ _id: lst_msg_id });
 
@@ -188,7 +188,29 @@ const deleteMessage = async (req, res, next) => {
     }
 
 }
+ //TODO: msg is read
+ const markMesageAsReaded =async (req,res,next)=>{
+    try {
+        const messageId = req.params.messageId;
+        const message = await MassageModel.findById(messageId);
+        if(!message){
+         return res.status(400).json({success : false , msg:"No such Message"});
+        }
+       
+        message.isRead = true;
+        await message.save();
+        return res.status(201).json({ success: true, msg:'message updated' });
 
+    } catch (err) {
+        console.log("error in edit message");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+
+
+ }
 module.exports = {
     sendMessage,
     getUserChats,
