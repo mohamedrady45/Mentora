@@ -41,11 +41,14 @@ const register = async (req, res, next) => {
         if (userDOB >= currentDate) {
             return res.status(400).json({ error: 'Invalid date of birth (must be in the past)' });
         }
-
-
-      const otp = await generateOTPAndSendEmail(email, next);
-          req.session.user = { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests };
-          req.session.otp = otp;
+        const otp = await generateOTPAndSendEmail(email, next);
+        const hashedPassword = await hashingService.hashPassword(password);
+        const newUser = new User({
+          firstName, lastName, email, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
+            password: hashedPassword,
+            OTP : otp
+        });      
+        await newUser.save();
       return res.status(201).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error registering user:', err);
@@ -56,22 +59,11 @@ const register = async (req, res, next) => {
 const verifyRegisterOTP = async (req, res, next) => {
   try {
       const {inputOtp } = req.body;
-      const sessionUser = req.session.user;
-
-      if (!sessionUser) {
-          return res.status(400).json({ error: 'Registration details not found' });
-      }
-
-      if (req.session.otp == inputOtp) {
-        const hashedPassword = await hashingService.hashPassword(sessionUser.password);
-        const newUser = new User({
-         ...sessionUser,
-            password: hashedPassword
-        });      
-        await newUser.save();
-        delete req.session.user; 
+      const user = await User.findOne({ otp });
+      if (user.otp == inputOtp && user.isVerified==false) {
+        user.isVerified = true;
         return res.status(200).json({ success: true, message: 'Registration completed successfully' });
-          }
+        }
        else {
         
           res.status(400).json({ success: false, message: 'Invalid OTP' });
