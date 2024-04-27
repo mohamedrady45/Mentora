@@ -25,7 +25,7 @@ const sendMessage = async (req, res, next) => {
                 users: [senderID, receiveID],
             })
             await chat.save();
-
+ 
             const user1 = await UserModel.findById(senderID);
             const chats1 = user1.chats;
             chats1.push(chat._id);
