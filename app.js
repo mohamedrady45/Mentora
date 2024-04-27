@@ -8,6 +8,8 @@ const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
 const chatRouter = require('./routers/chat')
+const postRouter = require('./routers/postRouter')
+
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/user', authRouter);
+app.use('/api/post', postRouter);
 app.use('/api/chat', chatRouter);
 
 

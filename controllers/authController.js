@@ -121,6 +121,8 @@ const verifyPasswordResetOTP = async (req, res, next) => {
       next(error);
   }
 };
+
+    
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -356,6 +358,7 @@ module.exports = {
   register,
   getAllUsers,
   login,
+  //verifyOTP,
   googlelogin,
   facebookLogin,
   facebookRegister,
@@ -365,4 +368,3 @@ module.exports = {
   verifyPasswordResetOTP ,
   verifyRegisterOTP
 };
-
