@@ -15,9 +15,9 @@ class notificationService {
       await Notification.save();
 
       //send notification to all users with socket io
-      receiverIds.forEach(userId => {
-        io.to(userId).emit('notification', Notification);
-    });
+    //   receiverIds.forEach(userId => {
+    //     io.to(userId).emit('notification', Notification);
+    // });
       return;
     }
     

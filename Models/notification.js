@@ -7,7 +7,7 @@ const notificationSchema = new Schema({
             ref: 'User'
         }
     ],
-    messages: {
+    message: {
         type: String,
         required: true
     },
@@ -15,7 +15,7 @@ const notificationSchema = new Schema({
         type: Boolean,
         default: false
     },
-    Type: {
+    type: {
         type: String,
         enum: ['comment', 'reply','question'],
         required: true,

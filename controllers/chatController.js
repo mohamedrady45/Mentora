@@ -188,7 +188,7 @@ const deleteMessage = async (req, res, next) => {
     }
 
 }
- //TODO: msg is read
+ 
  const markMesageAsReaded =async (req,res,next)=>{
     try {
         const messageId = req.params.messageId;
@@ -216,5 +216,6 @@ module.exports = {
     getUserChats,
     findChat,
     updateMessage,
-    deleteMessage
+    deleteMessage,
+    markMesageAsReaded
 }

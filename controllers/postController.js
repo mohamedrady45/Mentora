@@ -4,13 +4,15 @@ const Comment = require('../Models/post').Comment;
 const Reply = require('../Models/post').Reply;
 const Share = require('../Models/post').Share;
 const User = require('../Models/user');
+const notificationService=require('../Services/notification')
 const upload = require("../middlewares/uploadFile");
 
 //create post
 const addPost = async (req, res, next) => {
     try{
         const files = req.files;
-        const { author, content } = req.body;
+        const author=req.userId;
+        const { content } = req.body;
 
         // Create a new post instance
         const newPost = new Post({
@@ -38,9 +40,11 @@ const addPost = async (req, res, next) => {
 //update post
 const updatePost = async (req, res, next) => {
     try{
+        const {content}=req.body;
+        
         //find the id of the post to be updated
         const post = await Post.findById(req.params.id);
-        await post.updateOne({$set:req.body});
+        await post.updateOne({$set:{content}});
 
         res.status(200).json({message:'The post has been successfully updated'})
     }
@@ -80,17 +84,17 @@ const reactPost = async (req, res, next) => {
         }
 
       //Check if the user has already reacted to the post
-      let userReacted = post.reacts.users.includes(req.body.author);
-      if (! userReacted) {
+      let userReacted = post.reacts.users.includes(req.userId);
+      if (!userReacted) {
         // User has not reacted, allow reacting to the post
         post.reacts.count += 1;
-        post.reacts.users.push(req.body.author);
+        post.reacts.users.push(req.userId);
         userReacted = true;
         res.status(200).json({message:'You liked the post.'})
       } else {
         // User has already reacted, allow disliking the post
         post.reacts.count -= 1;
-        post.reacts.users.pull(req.body.author);
+        post.reacts.users.pull(req.userId);
         userReacted = false;
         res.status(200).json({message:'You disliked the post.'})
       }
@@ -116,7 +120,9 @@ const addComment  = async (req,res,next)=>{
             return res.status(404).json({ error: 'This post does not exist' });
         }
         const files = req.files;
-        const  {author, content} = req.body;
+        const author=req.userId;
+        const  {content} = req.body;
+
 
         const newComment = new  Comment ({
             author: author,
@@ -130,6 +136,9 @@ const addComment  = async (req,res,next)=>{
         post.comments.push(newComment);
         await post.save(); 
         await newComment.save();
+        TODO:
+        //send notification
+        await notificationService.addNotification(`some one add comment in your post`,[post.author],'comment');
         res.status(200).json({ message: 'Your comment was shared.' });
 
     } catch (err) {

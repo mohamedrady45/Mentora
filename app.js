@@ -9,6 +9,7 @@ const cors = require('cors');
 const authRouter = require('./routers/authRouter')
 const chatRouter = require('./routers/chat')
 const postRouter = require('./routers/postRouter')
+const notificationRouter=require('./routers/notification')
 
 
 const app = express();
@@ -40,7 +41,7 @@ app.get('/', (req, res) => {
 app.use('/api/user', authRouter);
 app.use('/api/post', postRouter);
 app.use('/api/chat', chatRouter);
-
+app.use('/api/notification', notificationRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {
