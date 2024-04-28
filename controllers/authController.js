@@ -59,13 +59,19 @@ const register = async (req, res, next) => {
 const verifyRegisterOTP = async (req, res, next) => {
   try {
       const {inputOtp } = req.body;
+      console.log(inputOtp);
+      
       const user = await User.findOne({ OTP : inputOtp });
+<<<<<<< HEAD
+=======
+      console.log(user);
+>>>>>>> fe9759860b4481c731de86e65fb367d26a631f0e
       if (user) {
         user.isVerified = true;
         return res.status(200).json({ success: true, message: 'Registration completed successfully' });
         }
        else {
-        
+         console.log(1000000000000000);
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
   } catch (error) {

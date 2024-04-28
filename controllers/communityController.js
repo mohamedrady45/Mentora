@@ -40,7 +40,7 @@ const createCommunity = async (req, res) =>{
   
     try {
       const community = await Community.findById(communityId);
-  
+      
       if (!community) {
         return res.status(404).json({ message: 'Community not found' });
       }
