@@ -53,10 +53,12 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
+    required: false
   },
   gender: {
     type: String,
     enum: ['Male', 'Female'],
+    required: falseو
   },
   bio: {
     type: String,
@@ -87,5 +89,11 @@ const userSchema = new mongoose.Schema({
     type : String,
   },
 });
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }]
+
+})
 const User = mongoose.model('User', userSchema);
 module.exports = User;

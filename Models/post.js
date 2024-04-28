@@ -1,18 +1,25 @@
 const mongoose = require('mongoose');
 const shareSchema = new mongoose.Schema({
-    user: {
-      type: ObjectId,
-      ref: 'User',
+    count: {
+      type: Number,
+      default: 0,
     },
+    users: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     dateShared: {
       type: Date,
       default: Date.now,
     },
+
   });
 const attachmentSchema = new mongoose.Schema({
     type: {
       type: String,
-      enum: ['photo', 'video' , 'file'],
+      enum: ['image', 'video' , 'file'],
       required: true,
     },
     url: {
@@ -27,7 +34,7 @@ const reactionSchema = new mongoose.Schema({
   },
   users: [
     {
-      type: ObjectId,
+      type: mongoose.Types.ObjectId,
       ref: 'User',
     },
   ],
@@ -35,7 +42,7 @@ const reactionSchema = new mongoose.Schema({
 
 const replySchema = new mongoose.Schema({
   author: {
-    type: ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: 'User',
     required: true,
   },
@@ -47,15 +54,26 @@ const replySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  count: {
+    type: Number,
+    default: 0,
+  },
+  users: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
   reacts: {
     type: reactionSchema,
     default: {},
   },
+  attachments: [attachmentSchema],
 });
 
 const commentSchema = new mongoose.Schema({
   author: {
-    type: ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: 'User',
     required: true,
   },
@@ -72,11 +90,12 @@ const commentSchema = new mongoose.Schema({
     default: {},
   },
   replies: [replySchema],
+  attachments: [attachmentSchema],
 });
 
 const postSchema = new mongoose.Schema({
   author: {
-    type: ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: 'User',
     required: true,
   },
@@ -87,16 +106,21 @@ const postSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now,
-  },
+  }, 
   reacts: {
     type: reactionSchema,
     default: {},
   },
   attachments: [attachmentSchema],
   comments: [commentSchema], 
-  shares : [shareSchema],
+  shares :{
+    type: shareSchema,
+    default: {},
+  },
 });
 
 const Post = mongoose.model('Post', postSchema);
-
-module.exports = Post;
+const Comment = mongoose.model('Comment', commentSchema);
+const Reply = mongoose.model('Reply', replySchema);
+const Share = mongoose.model( 'Share', shareSchema );
+module.exports = {Post, Comment, Reply, Share};

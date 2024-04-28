@@ -4,8 +4,12 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 
-const authRouter = require('./routers/authRouter');
 const communityRouter = require('./routers/communityRouter');
+const authRouter = require('./routers/authRouter')
+const chatRouter = require('./routers/chat')
+const postRouter = require('./routers/postRouter')
+const notificationRouter=require('./routers/notification')
+
 
 const app = express();
 
@@ -32,6 +36,9 @@ app.get('/', (req, res) => {
 });
 app.use('/api/user', authRouter);
 app.use('/api/communities', communityRouter);
+app.use('/api/post', postRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/notification', notificationRouter);
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -48,4 +55,25 @@ mongoose.connect(DB, {}).then(() => {
   });
 }).catch(err => {
   console.error('DB connection error:', err);
+  
+  const io = require('./socket').init(server);
+  const onlineUsers = [];
+  //Online users
+  io.on('connection', socket => {
+    console.log("client connected");
+
+    socket.on('addNewUser', userId => {
+      !onlineUsers.some((user) => user.userId === userId) &&
+        onlineUsers.push({
+          userId: userId,
+          socketId: socket.id
+        })
+      io.emit('getOnlineUsers', onlineUsers)
+    });
+
+   socket.on('disconnect', ()=>{
+     onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
+     io.emit('getOnlineUsers', onlineUsers)
+   })
+  })
 });
