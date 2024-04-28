@@ -60,7 +60,7 @@ const verifyRegisterOTP = async (req, res, next) => {
   try {
       const {inputOtp } = req.body;
       const user = await User.findOne({ OTP : inputOtp });
-      if (user.OTP == inputOtp && user.isVerified==false) {
+      if (user) {
         user.isVerified = true;
         return res.status(200).json({ success: true, message: 'Registration completed successfully' });
         }
