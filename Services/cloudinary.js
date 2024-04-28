@@ -1,6 +1,7 @@
 const cloudinary = require('cloudinary')
 
 const upload = require('../middlewares/uploadFile');
+const fs = require("fs");
 
 cloudinary.config({
   cloud_name: process.env.CLOUNDAIRY_CLOUD_NAME,
