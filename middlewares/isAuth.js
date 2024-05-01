@@ -1,9 +1,15 @@
 const jwt = require('jsonwebtoken');
 
 const isAuth = async(req, res, next) => {
+    const x=req.headers['authorization']
+    
+    if(!x||!x.startsWith('Bearer'))
+    {
+        res.status(401).json({msg:'no auth'});
 
+    }
     //get token from request
-    const token = req.headers['authorization'].split(' ')[1];
+    const token = x.split(' ')[1];
     
 
     //cheak if token = NULL
@@ -16,7 +22,7 @@ const isAuth = async(req, res, next) => {
     //decode token
     let decodedToken;
 
-    decodedToken = await jwt.verify(token, process.env.SEKRET_KEY);
+    decodedToken = await jwt.verify(token, process.env.SECRET_KEY);
     
 
     //check decode

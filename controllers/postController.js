@@ -6,7 +6,23 @@ const Share = require('../Models/post').Share;
 const User = require('../Models/user');
 const notificationService=require('../Services/notification')
 const upload = require("../middlewares/uploadFile");
+const { post } = require('../routers/notification');
 
+
+const getPosts =async (req, res, next) => {
+    try{
+        const userId =req.userId;
+        const posts = await Post.find({author:userId}).populate('author');
+        res.status(200).json({ message: 'All post',data:posts });
+    }
+    catch(err){ 
+        console.error('Error creating post.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
 //create post
 const addPost = async (req, res, next) => {
     try{
@@ -312,4 +328,5 @@ module.exports = {
     replyComment,
     savePosts,
     sharePost,
+    getPosts
   };

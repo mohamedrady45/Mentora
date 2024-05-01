@@ -8,7 +8,7 @@ const communityRouter = require('./routers/communityRouter');
 const authRouter = require('./routers/authRouter')
 const chatRouter = require('./routers/chat')
 const postRouter = require('./routers/postRouter')
-const notificationRouter=require('./routers/notification')
+const notificationRouter = require('./routers/notification')
 
 
 const app = express();
@@ -23,7 +23,7 @@ app.use(session({
   saveUninitialized: true,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' 
+    sameSite: 'strict'
   }
 }));
 
@@ -50,14 +50,11 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(DB, {}).then(() => {
   console.log('DB connection successfully!');
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
   });
-}).catch(err => {
-  console.error('DB connection error:', err);
-  
   const io = require('./socket').init(server);
-  const onlineUsers = [];
+  let onlineUsers = [];
   //Online users
   io.on('connection', socket => {
     console.log("client connected");
@@ -71,9 +68,21 @@ mongoose.connect(DB, {}).then(() => {
       io.emit('getOnlineUsers', onlineUsers)
     });
 
-   socket.on('disconnect', ()=>{
-     onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
-     io.emit('getOnlineUsers', onlineUsers)
-   })
+    socket.on('message', (data) => {
+      console.log('Received message:', data);
+
+      // Broadcast message to all connected clients
+      io.emit('message', data); // Emit the message to all connected clients
+    });
+
+    socket.on('disconnect', () => {
+      onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id);
+      io.emit('getOnlineUsers', onlineUsers);
+      console.log("client disconnected");
+    })
   })
+}).catch(err => {
+  console.error('DB connection error:', err);
+
+
 });
