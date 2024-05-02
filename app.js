@@ -6,11 +6,9 @@ const cors = require('cors');
 
 const communityRouter = require('./routers/communityRouter');
 const authRouter = require('./routers/authRouter')
-const chatRouter = require('./routers/chat')
-const postRouter = require('./routers/postRouter')
-const notificationRouter=require('./routers/notification')
-
-
+//const chatRouter = require('./routers/chat')
+//const messageRouter = require('./routers/message')
+const ApplyAsMentorRouter = require('./routers/ApplyAsMentorRouter')
 const app = express();
 
 require('dotenv').config();
@@ -35,12 +33,10 @@ app.get('/', (req, res) => {
   res.send('Server is running');
 });
 app.use('/api/user', authRouter);
-app.use('/api/communities', communityRouter);
-app.use('/api/post', postRouter);
-app.use('/api/chat', chatRouter);
-app.use('/api/notification', notificationRouter);
-
-// Error handling middleware
+//app.use('/api/chat', chatRouter);
+//app.use('/api/message', messageRouter);
+app.use('/api/Application', ApplyAsMentorRouter);
+//Error handling 
 app.use((error, req, res, next) => {
   console.error(error);
   const status = error.statusCode || 500;

@@ -142,7 +142,7 @@ const login = async (req, res, next) => {
 
     const tokenData = { userId: user._id };
     const token = await authService.generateToken(tokenData);
-    const refreshToken=await authService.generateRefreshToken(tokenData);
+    const refreshToken= await authService.generateRefreshToken(tokenData);
 
 
     res.status(200).json({ Token: token,refreshToken:refreshToken, message: 'Login successful' });
