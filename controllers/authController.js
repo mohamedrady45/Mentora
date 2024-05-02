@@ -62,16 +62,11 @@ const verifyRegisterOTP = async (req, res, next) => {
       console.log(inputOtp);
       
       const user = await User.findOne({ OTP : inputOtp });
-<<<<<<< HEAD
-=======
-      console.log(user);
->>>>>>> fe9759860b4481c731de86e65fb367d26a631f0e
       if (user) {
         user.isVerified = true;
         return res.status(200).json({ success: true, message: 'Registration completed successfully' });
         }
        else {
-         console.log(1000000000000000);
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
   } catch (error) {
@@ -83,9 +78,9 @@ const verifyRegisterOTP = async (req, res, next) => {
 const resetPassword = async(req, res, next) =>{
   try{
       const { email } = req.body;
-      const user = await userService.findUser('email', email);
+     
       const otp = await generateOTPAndSendEmail(email , next);
-      user.OTP = otp;
+      const user = await User.findoneAndUpdate(email, {'OTP' : otp});
       res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error resetting password:', err);
@@ -96,16 +91,9 @@ const resetPassword = async(req, res, next) =>{
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
       const { inputOtp, newPassword } = req.body;
-      const user = await User.findOne({ OTP : inputOtp});
-      
+      const user = await User.find(req.userId);
       if (user.OTP == inputOtp) {
-        const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
-        if (!isPasswordValid) {
-          return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
-        }
-          const hashedPassword = await hashingService.hashPassword(newPassword);
-         user.password = hashedPassword;
-          return res.status(200).json({ success: true, message: 'Password reset successfully' });
+        return res.status(200).json({ success: true, message: 'OTP verfication is done' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
@@ -114,8 +102,17 @@ const verifyPasswordResetOTP = async (req, res, next) => {
       next(error);
   }
 };
-
-    
+const setNewPassword = async (req , res , next)=> {
+    const {newPassword} = req.body;
+    const user = await User.find(req.userId);
+         try {const hashedPassword = await hashingService.hashPassword(newPassword);
+         user.password = hashedPassword;
+          return res.status(200).json({ success: true, message: 'Password reset successfully' }); 
+         }catch (error) {
+          console.error('Error resetting password:', error);
+           next(error);
+         }
+};
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -351,7 +348,6 @@ module.exports = {
   register,
   getAllUsers,
   login,
-  //verifyOTP,
   googlelogin,
   facebookLogin,
   facebookRegister,
@@ -361,3 +357,4 @@ module.exports = {
   verifyPasswordResetOTP ,
   verifyRegisterOTP
 };
+

@@ -53,12 +53,11 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    required: false
   },
   gender: {
     type: String,
     enum: ['Male', 'Female'],
-    required: falseو
+    required: false,
   },
   bio: {
     type: String,
@@ -88,12 +87,14 @@ const userSchema = new mongoose.Schema({
   OTP : {
     type : String,
   },
-});
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
-  }]
-
-})
+  }],
+  communities:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Community',
+  }], 
+});
 const User = mongoose.model('User', userSchema);
 module.exports = User;
