@@ -8,6 +8,7 @@ const cors = require('cors');
 
 const authRouter = require('./routers/authRouter')
 //const chatRouter = require('./routers/chat')
+const ApplyAsMentorRouter = require('./routers/ApplyAsMentorRouter')
 const messageRouter = require('./routers/message')
 const app = express();
 
@@ -38,7 +39,7 @@ app.get('/', (req, res) => {
 app.use('/api/user', authRouter);
 //app.use('/api/chat', chatRouter);
 app.use('/api/message', messageRouter);
-
+app.use('/api/Application',ApplyAsMentorRouter)
 //Error handling 
 app.use((error, req, res, next) => {
   console.log(error);

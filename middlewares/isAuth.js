@@ -21,6 +21,7 @@ const isAuth = async(req, res, next) => {
 
     //check decode
     if (!decodedToken) {
+        console.log(decodedToken);
         const error = new Error('Invalid token');
         error.statusCode = 401;
         throw error;
