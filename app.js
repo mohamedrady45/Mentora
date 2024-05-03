@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 
 const cors = require('cors');
-
+const requestRouter = require('./routers/RequestMentor')
 const authRouter = require('./routers/authRouter')
 //const chatRouter = require('./routers/chat')
 const messageRouter = require('./routers/message')
@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 app.use('/api/user', authRouter);
 //app.use('/api/chat', chatRouter);
 app.use('/api/message', messageRouter);
-
+app.use('/api/user/request', requestRouter);
 //Error handling 
 app.use((error, req, res, next) => {
   console.log(error);
