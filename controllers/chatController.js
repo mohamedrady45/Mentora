@@ -1,6 +1,7 @@
 const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
+const io= require('../socket').gitIO
 
 
 const sendMessage = async (req, res, next) => {
@@ -53,6 +54,11 @@ const sendMessage = async (req, res, next) => {
         TODO:
         // io.to(`${senderID}`).emit('getMessage',Nmsg);
         // io.to(`${resecerID}`) .emit('getReceiveMessage',Nmsg);
+
+        // io.to(`${senderID}`).emit('getMessage', Nmsg);
+
+        // // Emit message to receiver
+        // io.to(`${receiveID}`).emit('getReceiveMessage', Nmsg);
 
         res.status(200).json({ success: true, data: "Message Sent" });
 
