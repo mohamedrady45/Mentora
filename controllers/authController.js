@@ -81,6 +81,7 @@ const resetPassword = async(req, res, next) =>{
      
       const otp = await generateOTPAndSendEmail(email , next);
       const user = await User.findoneAndUpdate(email, {'OTP' : otp});
+      await User.update(user);
       res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error resetting password:', err);
@@ -107,6 +108,7 @@ const setNewPassword = async (req , res , next)=> {
     const user = await User.find(req.userId);
          try {const hashedPassword = await hashingService.hashPassword(newPassword);
          user.password = hashedPassword;
+         await user.save();
           return res.status(200).json({ success: true, message: 'Password reset successfully' }); 
          }catch (error) {
           console.error('Error resetting password:', error);
@@ -212,7 +214,7 @@ const facebookRegister = async (req, res, next) => {
     }
 
     //Create a new User
-    const hashedPassword = await hashingService.hashPassword(email + process.env.SEKRET_KEY);
+    const hashedPassword = await hashingService.hashPassword(email + process.env.SECRET_KEY);
     const user = new User({ firstName: first_name, lastName: last_name, email, password: hashedPassword, dateOfBirth: birthday, gender: gender === 'male' ? 'Male' : 'Female' });
     await user.save();
 
@@ -301,7 +303,7 @@ const googleRegister = async (req, res, next) => {
     }
 
     //Create a new User
-    const hashedPassword = await hashingService.hashPassword(email + process.env.SEKRET_KEY);
+    const hashedPassword = await hashingService.hashPassword(email + process.env.SECRET_KEY);
     const user = new User({ firstName: given_name, lastName: family_name, email, password: hashedPassword, /*TODO:dateOfBirth: birthday, gender: gender === 'male' ? 'Male' : 'Female'*/ });
     await user.save();
 
@@ -355,6 +357,7 @@ module.exports = {
   googleRegister,
   refreshToken ,
   verifyPasswordResetOTP ,
-  verifyRegisterOTP
+  verifyRegisterOTP,
+  setNewPassword
 };
 

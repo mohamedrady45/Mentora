@@ -77,15 +77,13 @@ const createCommunity = async (req, res) =>{
       if (!community) {
         return res.status(404).json({ message: 'Community not found' });
       }
-  
-      community.members.pull(req.user._id);
+      const user = await User.findById(req.userId);
+      community.members.pull(req.userId);
   
       await community.save();
   
-      req.user.communities.pull(communityId);
-  
-      await req.user.save();
-  
+      user.communities.pull(communityId);
+      await user.save();
       next();
     } catch (error) {
       console.error(error);
@@ -111,17 +109,17 @@ const createCommunity = async (req, res) =>{
       if (!community) {
         return res.status(404).json({ message: 'Community not found' });
       }
-  
+      
       const question = new Question({
         body,
-        author: req.user._id, 
+        author: req.userId, 
         community: communityId,
       });
   
       community.questions.push(question._id); 
       await question.save();
       await community.save();
-  
+      io.to(`community_${communityId}`).emit('newQuestion', { message: 'New question added!', question });
       res.status(201).json({ message: 'Question created successfully!', question });
     } catch (error) {
       console.error(error);
@@ -150,14 +148,14 @@ const createCommunity = async (req, res) =>{
   
       const answer = new Answer({
         content,
-        author: req.user._id, 
+        author: req.userId, 
         question: questionId,
       });
   
       question.answers.push(answer._id); 
       await answer.save();
       await question.save();
-  
+      io.to(`question_${questionId}`).emit('newAnswer', { message: 'New answer submitted!', answer });
       res.status(201).json({ message: 'Answer submitted successfully!', answer });
     } catch (error) {
       console.error(error);
