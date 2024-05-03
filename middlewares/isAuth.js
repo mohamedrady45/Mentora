@@ -1,44 +1,27 @@
-const jwt = require('jsonwebtoken');
+const JWT = require ('jsonwebtoken');
 
-const isAuth = async(req, res, next) => {
-    const x=req.headers['authorization']
+const { model } = require('mongoose');
+const isAuth = async (req, res, next) => {
+    const authHeader = req.headers['authorization'];
     
-    if(!x||!x.startsWith('Bearer'))
-    {
-        res.status(401).json({msg:'no auth'});
-
-    }
-    //get token from request
-    const token = x.split(' ')[1];
-    
-
-    //cheak if token = NULL
-    if (!token) {
-        const err = new Error('You can\'t accsess this feature befor login! ');
-        err.statsCode = 401;
-        throw err;
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
     }
 
-    //decode token
-    let decodedToken;
+    const token = authHeader.split(' ')[1];
+ 
+    try {
+        const decodedToken = JWT.verify(token, process.env.SECRET_KEY);
+        if (!decodedToken) {
+            throw new Error('Invalid token');
+        }
 
-    decodedToken = await jwt.verify(token, process.env.SECRET_KEY);
-    
-
-    //check decode
-    if (!decodedToken) {
-        const error = new Error('Invalid token');
-        error.statusCode = 401;
-        throw error;
+        req.userId = decodedToken.userId;
+        next(); 
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({ message: 'Authentication failed' });
     }
+};
 
-    //access userId to req
-    req.userId = decodedToken.userId;
-  
-
-    //go to next middleware
-    next();
-
-}
-
-module.exports = isAuth;
+module.exports =  isAuth;
