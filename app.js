@@ -9,6 +9,7 @@ const authRouter = require('./routers/authRouter')
 //const chatRouter = require('./routers/chat')
 //const messageRouter = require('./routers/message')
 const ApplyAsMentorRouter = require('./routers/ApplyAsMentorRouter')
+const postRouter = require('./routers/postRouter')
 const app = express();
 
 require('dotenv').config();
@@ -36,6 +37,7 @@ app.use('/api/user', authRouter);
 //app.use('/api/chat', chatRouter);
 //app.use('/api/message', messageRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
+app.use('/api/post', postRouter);
 //Error handling 
 app.use((error, req, res, next) => {
   console.error(error);
