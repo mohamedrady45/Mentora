@@ -21,8 +21,14 @@ const ApplicationSchema = new mongoose.Schema({
     required: true,
   },
   CV: {
-    type: String,
-    required: true,
+    public_id:{
+      type: String,
+      required: true,
+    },
+    url:{
+      type:String,
+      require: true,
+    }
   }
   },
 

@@ -95,10 +95,11 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Community',
   }], 
-  savePosts:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Post'
-  }],
+
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }]
 
 });
 const User = mongoose.model('User', userSchema);
