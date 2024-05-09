@@ -1,27 +1,30 @@
-const JWT = require ('jsonwebtoken');
-
-const { model } = require('mongoose');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const isAuth = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    
+  try {
+    const authHeader = req.headers['Authorization'] || req.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer')) {
-        return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
-    }
+    const error = new Error('Invalid Authorization header');
+    error.statusCode = 401;
+    throw error;
+} 
 
-    const token = authHeader.split(' ')[1];
- 
-    try {
-        const decodedToken = JWT.verify(token, process.env.SECRET_KEY);
-        if (!decodedToken) {
-            throw new Error('Invalid token');
-        }
+     const token = authHeader.split(' ')[1];
 
-        req.userId = decodedToken.userId;
-        next(); 
-    } catch (error) {
-        console.error(error);
-        return res.status(401).json({ message: 'Authentication failed' });
+    const decodedToken =  jwt.verify(token, process.env.SECRET_KEY);
+
+    if (!decodedToken) {
+      const error = new Error('Invalid token');
+      error.statusCode = 401;
+      throw error;
     }
+    
+    req.userId = decodedToken.userId;
+    next();
+  } catch (error) {
+    console.error('Error in isAuth middleware:', error);
+    return res.status(error.statusCode || 500).json({ error: error.message });
+  }
 };
 
-module.exports =  isAuth;
+module.exports = isAuth;

@@ -14,7 +14,7 @@ class authService {
       return jwt.sign(tokenData, process.env.SECRET_KEY ,{expiresIn:'1d'});
     }
     
-      static async generateRefreshToken(refreshTokenData) {
+    static async generateRefreshToken(refreshTokenData) {
       const rtoken=  jwt.sign(refreshTokenData, process.env.REFRESH_SEKRET_KEY, { expiresIn: '1y' });
       await userService.findByIdAndUpdate(refreshTokenData.userId,'refreshToken',rtoken);
       return rtoken;
