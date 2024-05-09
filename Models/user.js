@@ -95,6 +95,12 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Community',
   }], 
+
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }]
+
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

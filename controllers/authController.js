@@ -80,12 +80,7 @@ const resetPassword = async(req, res, next) =>{
       const { email } = req.body;
      
       const otp = await generateOTPAndSendEmail(email , next);
-      const user = await userService.findUser(email);
-      if (!user) {
-        return res.status(404).json({ error: 'This email does not exist' });
-      }
-      user.OTP = otp
-      await user.save();
+      const user = await User.findoneAndUpdate(email, {'OTP' : otp});
       res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
       console.error('Error resetting password:', err);
@@ -364,4 +359,3 @@ module.exports = {
   verifyRegisterOTP,
   setNewPassword
 };
-

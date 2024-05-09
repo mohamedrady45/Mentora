@@ -23,7 +23,7 @@ class authService {
     //* Function for check refresh token  */
     static async verifyRefreshToken(refreshToken) {
       try {
-        let data = jwt.verify(refreshToken,process.env.REFRESH_SEKRET_KEY);
+        let data = jwt.verify(refreshToken,process.env.REFRESH_SECRET_KEY);
         const user =await userService.findUser('_id',data.userId);
         if(user.refreshToken === refreshToken ) return data;
         
