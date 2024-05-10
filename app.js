@@ -57,7 +57,7 @@ mongoose.connect(DB, {}).then(() => {
   let onlineUsers = [];
   //Online users
   io.on('connection', socket => {
-    console.log("client connected");
+    console.log("client connected",socket.id);
 
     socket.on('addNewUser', userId => {
       !onlineUsers.some((user) => user.userId === userId) &&

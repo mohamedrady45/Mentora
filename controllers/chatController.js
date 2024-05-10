@@ -9,6 +9,7 @@ const sendMessage = async (req, res, next) => {
         console.log(req.body);
         const senderID = req.userId;
         const receiveID = req.body.receiveId;
+        console.log(serderID,receiveID);
         const files = req.files;
 
 
@@ -75,6 +76,7 @@ const sendMessage = async (req, res, next) => {
 const getUserChats = async (req, res, next) => {
     try {
         const userId = req.userId;
+        console.log(userId)
         const user = await UserModel.findById(userId).populate({
             path: 'chats',
             populate: {
