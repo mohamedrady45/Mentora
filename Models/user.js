@@ -53,7 +53,6 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    required: false
   },
   gender: {
     type: String,
@@ -88,6 +87,14 @@ const userSchema = new mongoose.Schema({
   OTP : {
     type : String,
   },
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }],
+  communities:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Community',
+  }], 
 
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
