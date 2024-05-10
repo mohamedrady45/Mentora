@@ -1,30 +1,37 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const fs = require('fs');
+
 const isAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers['Authorization'] || req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
+    console.log(authHeader)
+
     if (!authHeader || !authHeader.startsWith('Bearer')) {
-    const error = new Error('Invalid Authorization header');
-    error.statusCode = 401;
-    throw error;
-} 
-
-     const token = authHeader.split(' ')[1];
-
-    const decodedToken =  jwt.verify(token, process.env.SECRET_KEY);
-
-    if (!decodedToken) {
-      const error = new Error('Invalid token');
-      error.statusCode = 401;
-      throw error;
+        return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
     }
-    
-    req.userId = decodedToken.userId;
-    next();
-  } catch (error) {
-    console.error('Error in isAuth middleware:', error);
-    return res.status(error.statusCode || 500).json({ error: error.message });
-  }
+
+    const token = authHeader.split(' ')[1];
+    console.log(token)
+    try {
+        // Read the public key
+        const cert = process.env.SECRET_KEY;
+
+        // Verify the token
+        jwt.verify(token, cert, { algorithms: ['HS256'] }, (err, payload) => {
+            if (err) {
+                console.error('Invalid signature:', err.message);
+                // Handle the error
+            } else {
+                // Token is valid, do something with the payload
+                console.log('Token payload:', payload);
+                req.userId = payload.userId;
+            }
+        });
+        
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({ message: 'Authentication failed' });
+    }
 };
 
 module.exports = isAuth;
