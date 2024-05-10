@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
+const requestRouter = require('./routers/RequestMentor')
 
 const communityRouter = require('./routers/communityRouter');
 const authRouter = require('./routers/authRouter')
@@ -35,6 +36,8 @@ app.get('/', (req, res) => {
 });
 app.use('/api/user', authRouter);
 //app.use('/api/chat', chatRouter);
+app.use('/api/message', messageRouter);
+app.use('/api/user/request', requestRouter);
 //app.use('/api/message', messageRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
 app.use('/api/post', postRouter);
