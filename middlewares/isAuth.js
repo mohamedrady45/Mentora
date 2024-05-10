@@ -1,6 +1,5 @@
 const JWT = require ('jsonwebtoken');
 
-const { model } = require('mongoose');
 const isAuth = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     
