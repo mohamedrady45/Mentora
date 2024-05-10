@@ -7,7 +7,6 @@ const mentorRequestSchema = new mongoose.Schema({
     type: { type: String, enum: ['one-time', 'long-term'] },
     // One-time session fields
     date: Date,
-    timeAvailability: String,
     Reason: { type: String, enum: ['debug', 'code-review', 'consultation'] },
     // Long-term fields
     individualOrGroup: { type: String, enum: ['individual', 'group'] },
