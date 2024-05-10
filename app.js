@@ -9,6 +9,7 @@ const authRouter = require('./routers/authRouter')
 const chatRouter = require('./routers/chat')
 const postRouter = require('./routers/postRouter')
 const notificationRouter = require('./routers/notification')
+const userRouter = require('./routers/userRouter')
 
 
 const app = express();
@@ -34,7 +35,7 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
-app.use('/api/user', authRouter);
+app.use('/api/user', authRouter,userRouter);
 app.use('/api/communities', communityRouter);
 app.use('/api/post', postRouter);
 app.use('/api/chat', chatRouter);
