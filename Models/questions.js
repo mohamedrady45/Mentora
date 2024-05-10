@@ -6,6 +6,7 @@ const questionSchema = new mongoose.Schema({
     required: true,
     trim: true,
     minlength: 3,
+    maxlength: 255,
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -20,6 +21,10 @@ const questionSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: null,
   },
   answers: {
     type: [mongoose.Schema.Types.ObjectId],
