@@ -38,6 +38,7 @@ app.use('/api/user', authRouter);
 //app.use('/api/message', messageRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
 app.use('/api/post', postRouter);
+app.use('/api/communities' , communityRouter);
 //Error handling 
 app.use((error, req, res, next) => {
   console.error(error);

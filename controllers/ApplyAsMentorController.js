@@ -29,7 +29,7 @@ const ApplyAsMentor = async(req, res, next) => {
         });
         
         await newApplication.save();
-        res.status(200).json({ message: 'Your application was shared.' });
+        res.status(200).json({ message: 'Your application was submitted .' });
     } catch(err){
         console.error('Error creating post.', err);
         if (!err.statusCode) {
