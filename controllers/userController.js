@@ -110,8 +110,6 @@ const followUser = async (req, res, next) => {
 
     let msg;
 
-
-    console.log(user.following)
     //check if user is already following
     if (!user.following.userIds.includes(followId)) {
       //push user id to following array
