@@ -7,6 +7,8 @@ const upload=require('../middlewares/uploadFile')
 const router = express.Router();
 
 
-router.get('/',isAuth,userController.getUser)
+router.get('/',isAuth,userController.getUser);
+router.put('/updateUserData',isAuth,upload.single('image'),userController.editUserData);
+router.put('/followUser/:followId',isAuth,userController.followUser);
 
 module.exports = router;

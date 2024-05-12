@@ -1,6 +1,6 @@
 const jwt=require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
-const userService = require('./user');
+const userService = require('./user.js');
 
 class authService {
    
@@ -31,8 +31,6 @@ class authService {
         return error;
       }
     };
-    
-    
     
 }
   

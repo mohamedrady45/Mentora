@@ -95,7 +95,33 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Community',
   }], 
-
+  followers:{
+    type:{
+      counter:Number,
+      userIds:[
+        {
+          type:mongoose.Schema.Types.ObjectId,
+          ref:'User'
+        }
+      ]
+    },
+    default: {
+      counter:0,
+      userIds:[]
+    }
+  },
+  following:{
+    type:{
+      counter:Number,
+      userIds:[
+        mongoose.Schema.Types.ObjectId,
+      ]
+    },
+    default: {
+      counter:0,
+      userIds:[]
+    }
+  },
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
