@@ -106,7 +106,8 @@ const followUser = async (req, res, next) => {
       return res.status(404).json({
         success: false,
         message: 'this user dose not exist'
-      })}
+      })
+    }
 
     let msg;
 
@@ -129,8 +130,10 @@ const followUser = async (req, res, next) => {
       follow.followers.userIds.pull(userId);
       msg = `You are unfollow ${follow.firstName} now`;
     }
+    console.log(follow.followers.userIds)
     //save user
-    await user.save()
+    await user.save();
+    await follow.save();
     //send response
     res.status(200).json({
       success: true,
@@ -143,10 +146,53 @@ const followUser = async (req, res, next) => {
     next(err);
   }
 };
+const followerList = async (req, res, next) => {
+  try {
+    //take data 
+    const userId = req.userId;
+    //find user
+    const user = await userService.findUser('_id', userId,'followers.userIds', 'firstName lastName profilePicture');
+    //followers
+    const followers=user.followers.userIds;
 
+    //send response
+    res.status(200).json({
+      success: true,
+      data: {
+        Followers: followers
+      }
+    });
+  } catch (err) {
+    console.error('Error in get your followers list:', err);
+    next(err);
+  }
+}
 
+const followingList = async (req, res, next) => {
+  try {
+    //take data 
+    const userId = req.userId;
+    //find user
+    const user = await userService.findUser('_id', userId,'following.userIds', 'firstName lastName profilePicture');
+    //followers
+    const following=user.following.userIds;
+
+    //send response
+    res.status(200).json({
+      success: true,
+      data: {
+        Following: following
+      }
+    });
+  } catch (err) {
+    console.error('Error in get your following list:', err);
+    next(err);
+  }
+}
 module.exports = {
   getUser,
   editUserData,
-  followUser
+  followUser,
+  followerList,
+  followingList
 }

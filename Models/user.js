@@ -73,10 +73,10 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  chats:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Chat'
-  }], 
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  }],
   refreshToken: {
     type: String
   },
@@ -84,42 +84,44 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Initially , are users are not verified till we verify them
   },
-  OTP : {
-    type : String,
+  OTP: {
+    type: String,
   },
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }],
-  communities:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Community',
-  }], 
-  followers:{
-    type:{
-      counter:Number,
-      userIds:[
+  communities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Community',
+  }],
+  followers: {
+    type: {
+      counter: Number,
+      userIds: [
         {
-          type:mongoose.Schema.Types.ObjectId,
-          ref:'User'
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
         }
       ]
     },
     default: {
-      counter:0,
-      userIds:[]
+      counter: 0,
+      userIds: []
     }
   },
-  following:{
-    type:{
-      counter:Number,
-      userIds:[
-        mongoose.Schema.Types.ObjectId,
+  following: {
+    type: {
+      counter: Number,
+      userIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
       ]
     },
     default: {
-      counter:0,
-      userIds:[]
+      counter: 0,
+      userIds: []
     }
   },
   notification: [{
