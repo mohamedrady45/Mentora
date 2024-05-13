@@ -92,13 +92,13 @@ const resetPassword = async (req, res, next) => {
 
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-    const { inputOtp, newPassword } = req.body;
-    const user = await User.find(req.userId);
-    if (user.OTP == inputOtp) {
-      return res.status(200).json({ success: true, message: 'OTP verfication is done' });
-    } else {
-      res.status(400).json({ success: false, message: 'Invalid OTP' });
-    }
+      const { inputOtp } = req.body;
+      const user = await User.findById(req.userId);
+      if (user.OTP == inputOtp) {
+        return res.status(200).json({ success: true, message: 'OTP verfication is done' });
+      } else {
+          res.status(400).json({ success: false, message: 'Invalid OTP' });
+      }
   } catch (error) {
     console.error('Error verifying password reset OTP:', error);
     next(error);
@@ -365,4 +365,3 @@ module.exports = {
   verifyRegisterOTP,
   setNewPassword
 };
-

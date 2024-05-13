@@ -3,13 +3,17 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
+const requestRouter = require('./routers/RequestMentor')
 
 const communityRouter = require('./routers/communityRouter');
 const authRouter = require('./routers/authRouter')
-const chatRouter = require('./routers/chat')
+//const chatRouter = require('./routers/chat')
+//const messageRouter = require('./routers/message')
+const ApplyAsMentorRouter = require('./routers/ApplyAsMentorRouter')
 const postRouter = require('./routers/postRouter')
 const notificationRouter = require('./routers/notification')
 const userRouter = require('./routers/userRouter')
+const chatRouter = require('./routers/chat')
 
 
 const app = express();
@@ -29,11 +33,14 @@ app.get('/', (req, res) => {
 });
 app.use('/api/user', authRouter,userRouter);
 app.use('/api/communities', communityRouter);
-app.use('/api/post', postRouter);
-app.use('/api/chat', chatRouter);
 app.use('/api/notification', notificationRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/user/request', requestRouter);
+app.use('/api/Application', ApplyAsMentorRouter);
+app.use('/api/post', postRouter);
+app.use('/api/communities' , communityRouter);
 
-// Error handling middleware
+//Error handling 
 app.use((error, req, res, next) => {
   console.error(error);
   const status = error.statusCode || 500;

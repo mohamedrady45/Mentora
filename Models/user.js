@@ -91,10 +91,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }],
-  communities: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Community',
-  }],
+  communities:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Community',
+  }], 
   followers: {
     type: {
       counter: Number,
@@ -119,16 +119,21 @@ const userSchema = new mongoose.Schema({
       }
       ]
     },
+    
     default: {
       counter: 0,
       userIds: []
     }
   },
+  savedPosts:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Post'
+  }],
+
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }]
-
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

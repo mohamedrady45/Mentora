@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 const isAuth = async (req, res, next) => {
-    // Get the authorization header
-    const authHeader = req.get('Authorization');
-    // Check if the token is present in the header
+    const authHeader = req.headers['authorization'];
+    console.log(authHeader)
+
     if (!authHeader || !authHeader.startsWith('Bearer')) {
         return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
     }
