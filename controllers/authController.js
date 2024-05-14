@@ -81,8 +81,8 @@ const resetPassword = async (req, res, next) => {
     const { email } = req.body;
 
     const otp = await generateOTPAndSendEmail(email, next);
-    const user = await User.findoneAndUpdate(email, { 'OTP': otp });
-    await User.update(user);
+    const user = await User.findOneAndUpdate( {email},{ 'OTP': otp });
+    await user.save();
     res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
     console.error('Error resetting password:', err);
@@ -92,9 +92,13 @@ const resetPassword = async (req, res, next) => {
 
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-      const { inputOtp } = req.body;
-      const user = await User.findById(req.userId);
+      console.log("done")
+      const { inputOtp ,email} = req.body;
+      const user = await User.findOne({email});
+      console.log(user.OTP)
+      console.log(inputOtp)
       if (user.OTP == inputOtp) {
+        
         return res.status(200).json({ success: true, message: 'OTP verfication is done' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
@@ -105,8 +109,12 @@ const verifyPasswordResetOTP = async (req, res, next) => {
   }
 };
 const setNewPassword = async (req, res, next) => {
-  const { newPassword } = req.body;
-  const user = await User.find(req.userId);
+  const { newPassword,email } = req.body;
+  console.log(newPassword)
+  console.log(email)
+
+  const user = await User.findOne({email});
+  console.log(user)
   try {
     const hashedPassword = await hashingService.hashPassword(newPassword);
     user.password = hashedPassword;
