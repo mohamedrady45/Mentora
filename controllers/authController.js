@@ -24,101 +24,105 @@ const generateOTPAndSendEmail = async (email, next) => {
 const register = async (req, res, next) => {
   try {
 
-      const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
+    const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
 
-      const oldUser = await userService.findUser('email', email);
+    const oldUser = await userService.findUser('email', email);
 
-      if (oldUser) {
-          return res.status(400).json({ error: 'Email is already registered' });
-      }
+    if (oldUser) {
+      return res.status(400).json({ error: 'Email is already registered' });
+    }
+    const isValidPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!_%*?&])[A-Za-z\d@$!%*?&].{8,}$/.test(password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
+    }
 
-      const otp = await generateOTPAndSendEmail(email, next);
-
-      // Store registration details in session
-      req.session.registrationDetails = {
-          firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests, otp
-      };
-
-      return res.status(201).json({ message: 'OTP sent successfully' });
+    const userDOB = new Date(dateOfBirth);
+    const currentDate = new Date();
+    if (userDOB >= currentDate) {
+      return res.status(400).json({ error: 'Invalid date of birth (must be in the past)' });
+    }
+    const otp = await generateOTPAndSendEmail(email, next);
+    const hashedPassword = await hashingService.hashPassword(password);
+    const newUser = new User({
+      firstName, lastName, email, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
+      password: hashedPassword,
+      OTP: otp
+    });
+    await newUser.save();
+    return res.status(201).json({ message: 'OTP sent successfully' });
   } catch (err) {
-      console.error('Error registering user:', err);
-      next(err);
+    console.error('Error registering user:', err);
+    next(err);
   }
 };
 
-// Function to verify OTP for user registration
 const verifyRegisterOTP = async (req, res, next) => {
   try {
-      const {inputOtp } = req.body;
-      const storedDetails = req.session.registrationDetails;
+    const { inputOtp } = req.body;
+    console.log(inputOtp);
 
-      if (!storedDetails) {
-          return res.status(400).json({ error: 'Registration details not found or OTP expired' });
-      }
-
-      if (storedDetails.otp == inputOtp) {
-          const hashedPassword = await hashingService.hashPassword(storedDetails.password);
-          const newUser = new User({
-              ...storedDetails,
-              password: hashedPassword
-          });
-          await newUser.save();
-          delete req.session.registrationDetails; 
-          return res.status(200).json({ success: true, message: 'Registration completed successfully' });
-      } else {
-        
-          res.status(400).json({ success: false, message: 'Invalid OTP' });
-      }
+    const user = await User.findOne({ OTP: inputOtp });
+    if (user) {
+      user.isVerified = true;
+      await user.save();
+      return res.status(200).json({ success: true, message: 'Registration completed successfully' });
+    }
+    else {
+      res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
   } catch (error) {
-      console.error('Error verifying OTP:', error);
-      next(error);
+    console.error('Error verifying OTP:', error);
+    next(error);
   }
 };
 
-// Function to handle password reset request
-const resetPassword = async(req, res, next) =>{
-  try{
-      const { email } = req.body;
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
 
-      const otp = await generateOTPAndSendEmail(email, next);
-
-      // Store email and OTP in session for password reset
-      req.session.passwordReset = {
-          email, otp
-      };
-
-      res.status(200).json({ message: 'OTP sent successfully' });
+    const otp = await generateOTPAndSendEmail(email, next);
+    const user = await User.findOneAndUpdate( {email},{ 'OTP': otp });
+    await user.save();
+    res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
-      console.error('Error resetting password:', err);
-      next(err);
+    console.error('Error resetting password:', err);
+    next(err);
   }
 };
 
-// Function to verify OTP for password reset
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-      const { email, inputOtp, newPassword } = req.body;
-      const storedData = req.session.passwordReset;
-
-      if (!storedData) {
-          return res.status(400).json({ error: 'Password reset details not found or OTP expired' });
-      }
-
-      if (storedData.otp == inputOtp) {
-        const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
-        if (!isPasswordValid) {
-          return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
-        }
-          const hashedPassword = await hashingService.hashPassword(newPassword);
-          await User.findOneAndUpdate({ email: email }, { password: hashedPassword });
-          delete req.session.passwordReset; // Remove password reset details from session after password reset
-          return res.status(200).json({ success: true, message: 'Password reset successfully' });
+      console.log("done")
+      const { inputOtp ,email} = req.body;
+      const user = await User.findOne({email});
+      console.log(user.OTP)
+      console.log(inputOtp)
+      if (user.OTP == inputOtp) {
+        
+        return res.status(200).json({ success: true, message: 'OTP verfication is done' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
   } catch (error) {
-      console.error('Error verifying password reset OTP:', error);
-      next(error);
+    console.error('Error verifying password reset OTP:', error);
+    next(error);
+  }
+};
+const setNewPassword = async (req, res, next) => {
+  const { newPassword,email } = req.body;
+  console.log(newPassword)
+  console.log(email)
+
+  const user = await User.findOne({email});
+  console.log(user)
+  try {
+    const hashedPassword = await hashingService.hashPassword(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    return res.status(200).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    next(error);
   }
 };
 const getAllUsers = async (req, res) => {
@@ -141,6 +145,9 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ error: 'This email does not exist' });
     }
+    if (!user.isVerified) {
+      return res.status(401).json({ error: 'Please verify your email' });
+    }
 
     const isMatch = await authService.comparePassword(password, user.password);
 
@@ -150,10 +157,10 @@ const login = async (req, res, next) => {
 
     const tokenData = { userId: user._id };
     const token = await authService.generateToken(tokenData);
-    const refreshToken=await authService.generateRefreshToken(tokenData);
+    const refreshToken = await authService.generateRefreshToken(tokenData);
 
 
-    res.status(200).json({ Token: token,refreshToken:refreshToken, message: 'Login successful' });
+    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful' });
   } catch (err) {
     console.error('Error logging in:', err);
     next(err);
@@ -179,10 +186,10 @@ const facebookLogin = async (req, res, next) => {
     const tokenData = { userId: user._id };
 
     const token = await authService.generateToken(tokenData);
-    const refreshToken=await authService.generateRefreshToken(tokenData);
+    const refreshToken = await authService.generateRefreshToken(tokenData);
 
     // Response with token and success message
-    res.status(200).json({ Token: token,refreshToken:refreshToken, message: 'Login successful' });
+    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful' });
   }
   catch (err) {
     console.log("Facebook Login error");
@@ -220,7 +227,7 @@ const facebookRegister = async (req, res, next) => {
     }
 
     //Create a new User
-    const hashedPassword = await hashingService.hashPassword(email + process.env.SEKRET_KEY);
+    const hashedPassword = await hashingService.hashPassword(email + process.env.SECRET_KEY);
     const user = new User({ firstName: first_name, lastName: last_name, email, password: hashedPassword, dateOfBirth: birthday, gender: gender === 'male' ? 'Male' : 'Female' });
     await user.save();
 
@@ -309,7 +316,7 @@ const googleRegister = async (req, res, next) => {
     }
 
     //Create a new User
-    const hashedPassword = await hashingService.hashPassword(email + process.env.SEKRET_KEY);
+    const hashedPassword = await hashingService.hashPassword(email + process.env.SECRET_KEY);
     const user = new User({ firstName: given_name, lastName: family_name, email, password: hashedPassword, /*TODO:dateOfBirth: birthday, gender: gender === 'male' ? 'Male' : 'Female'*/ });
     await user.save();
 
@@ -333,11 +340,11 @@ const refreshToken = async (req, res, next) => {
   try {
     const rtoken = req.body.refreshToken;
     const data = await authService.verifyRefreshToken(rtoken);
-    
+
     if (!data) throw { statusCode: 400, message: "Invalid credentials." };
 
     // Create new tokens
-    const tokenData={userId : data.userId};
+    const tokenData = { userId: data.userId };
     const accessToken = await authService.generateToken(tokenData);
     const refreshToken = await authService.generateRefreshToken(tokenData);
 
@@ -361,8 +368,8 @@ module.exports = {
   facebookRegister,
   resetPassword,
   googleRegister,
-  refreshToken ,
-  verifyPasswordResetOTP ,
-  verifyRegisterOTP
+  refreshToken,
+  verifyPasswordResetOTP,
+  verifyRegisterOTP,
+  setNewPassword
 };
-

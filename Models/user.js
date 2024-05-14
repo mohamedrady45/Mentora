@@ -41,13 +41,11 @@ const userSchema = new mongoose.Schema({
           return false;
         }
 
-        // Validate age (must be at least 18 years old)
         const eighteenYearsAgo = moment().subtract(18, 'years');
         if (moment(value).isAfter(eighteenYearsAgo)) {
           return false;
         }
 
-        // Validate date is not in the future
         return moment(value).isSameOrBefore(moment());
       },
       message: 'Please enter a valid date of birth (YYYY-MM-DD) and ensure you are at least 18 years old.',
@@ -55,12 +53,11 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    required: true
   },
   gender: {
     type: String,
     enum: ['Male', 'Female'],
-    required: true,
+    required: false,
   },
   bio: {
     type: String,
@@ -76,14 +73,67 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  chats:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Chat'
-  }]
-  });
-
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  }],
   refreshToken: {
     type: String
-  }
+  },
+  isVerified: {
+    type: Boolean,
+    default: false, // Initially , are users are not verified till we verify them
+  },
+  OTP: {
+    type: String,
+  },
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }],
+  communities:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Community',
+  }], 
+  followers: {
+    type: {
+      counter: Number,
+      userIds: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
+        }
+      ]
+    },
+    default: {
+      counter: 0,
+      userIds: []
+    }
+  },
+  following: {
+    type: {
+      counter: Number,
+      userIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+      ]
+    },
+    
+    default: {
+      counter: 0,
+      userIds: []
+    }
+  },
+  savedPosts:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Post'
+  }],
+
+  notification: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
+  }]
+});
 const User = mongoose.model('User', userSchema);
 module.exports = User;
