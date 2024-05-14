@@ -1,6 +1,6 @@
 const jwt=require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
-const userService = require('./user');
+const userService = require('./user.js');
 
 class authService {
    
@@ -14,8 +14,8 @@ class authService {
       return jwt.sign(tokenData, process.env.SECRET_KEY ,{expiresIn:'1d'});
     }
     
-    static async generateRefreshToken(refreshTokenData) {
-      const rtoken=  jwt.sign(refreshTokenData, process.env.REFRESH_SEKRET_KEY, { expiresIn: '1y' });
+      static async generateRefreshToken(refreshTokenData) {
+      const rtoken=  jwt.sign(refreshTokenData, process.env.REFRESH_SECRET_KEY, { expiresIn: '1y' });
       await userService.findByIdAndUpdate(refreshTokenData.userId,'refreshToken',rtoken);
       return rtoken;
     }
@@ -31,8 +31,6 @@ class authService {
         return error;
       }
     };
-    
-    
     
 }
   

@@ -6,11 +6,9 @@ const isAuth = require('../middlewares/isAuth');
 const upload=require('../middlewares/uploadFile')
 const router = express.Router();
 
-//http://localhost:4000/api/post
-//Post
-router.get('/getAllPosts', isAuth, postController.getAllPosts);
-router.post('/', isAuth,  upload.array('files'), postController.addPost );
-router.put('/:id', isAuth, postController.updatePost);
+router.get('/',isAuth, postController.getPosts);
+router.post('/',isAuth,  upload.array('files'), postController.addPost );
+router.put('/:id',isAuth, postController.updatePost);
 router.delete('/:id',isAuth, postController.deletePost);
 router.post('/:id/reactPost', isAuth, postController.reactPost);
 router.post('/:id/sharePost', isAuth, postController.sharePost);

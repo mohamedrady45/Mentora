@@ -8,9 +8,9 @@ const isAuth = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer')) {
         return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
     }
-
+    // Get the token from the header
     const token = authHeader.split(' ')[1];
-    console.log(token)
+    // Verify the token
     try {
         // Read the public key
         const cert = process.env.SECRET_KEY;

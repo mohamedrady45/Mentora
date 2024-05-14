@@ -24,95 +24,106 @@ const generateOTPAndSendEmail = async (email, next) => {
 const register = async (req, res, next) => {
   try {
 
-      const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
+    const { firstName, lastName, email, password, dateOfBirth, gender, country, bio, profilePicture, languages, interests } = req.body;
 
-      const oldUser = await userService.findUser('email', email);
+    const oldUser = await userService.findUser('email', email);
 
-      if (oldUser) {
-          return res.status(400).json({ error: 'Email is already registered' });
-      }
-      const isValidPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!_%*?&])[A-Za-z\d@$!%*?&].{8,}$/.test(password);
-        if (!isValidPassword) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
-        }
+    if (oldUser) {
+      return res.status(400).json({ error: 'Email is already registered' });
+    }
+    const isValidPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!_%*?&])[A-Za-z\d@$!%*?&].{8,}$/.test(password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
+    }
 
-        const userDOB = new Date(dateOfBirth);
-        const currentDate = new Date();
-        if (userDOB >= currentDate) {
-            return res.status(400).json({ error: 'Invalid date of birth (must be in the past)' });
-        }
-        const otp = await generateOTPAndSendEmail(email, next);
-        const hashedPassword = await hashingService.hashPassword(password);
-        const newUser = new User({
-          firstName, lastName, email, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
-            password: hashedPassword,
-            OTP : otp
-        });      
-        await newUser.save();
-      return res.status(201).json({ message: 'OTP sent successfully' });
+    const userDOB = new Date(dateOfBirth);
+    const currentDate = new Date();
+    if (userDOB >= currentDate) {
+      return res.status(400).json({ error: 'Invalid date of birth (must be in the past)' });
+    }
+    const otp = await generateOTPAndSendEmail(email, next);
+    const hashedPassword = await hashingService.hashPassword(password);
+    const newUser = new User({
+      firstName, lastName, email, dateOfBirth, gender, country, bio, profilePicture, languages, interests,
+      password: hashedPassword,
+      OTP: otp
+    });
+    await newUser.save();
+    return res.status(201).json({ message: 'OTP sent successfully' });
   } catch (err) {
-      console.error('Error registering user:', err);
-      next(err);
+    console.error('Error registering user:', err);
+    next(err);
   }
 };
 
 const verifyRegisterOTP = async (req, res, next) => {
   try {
-      const {inputOtp } = req.body;
-      console.log(inputOtp);
-      
-      const user = await User.findOne({ OTP : inputOtp });
-      if (user) {
-        user.isVerified = true;
-        return res.status(200).json({ success: true, message: 'Registration completed successfully' });
-        }
-       else {
-          res.status(400).json({ success: false, message: 'Invalid OTP' });
-      }
+    const { inputOtp } = req.body;
+    console.log(inputOtp);
+
+    const user = await User.findOne({ OTP: inputOtp });
+    if (user) {
+      user.isVerified = true;
+      await user.save();
+      return res.status(200).json({ success: true, message: 'Registration completed successfully' });
+    }
+    else {
+      res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
   } catch (error) {
-      console.error('Error verifying OTP:', error);
-      next(error);
+    console.error('Error verifying OTP:', error);
+    next(error);
   }
 };
 
-const resetPassword = async(req, res, next) =>{
-  try{
-      const { email } = req.body;
-     
-      const otp = await generateOTPAndSendEmail(email , next);
-      const user = await User.findoneAndUpdate(email, {'OTP' : otp});
-      res.status(200).json({ message: 'OTP sent successfully' });
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const otp = await generateOTPAndSendEmail(email, next);
+    const user = await User.findOneAndUpdate( {email},{ 'OTP': otp });
+    await user.save();
+    res.status(200).json({ message: 'OTP sent successfully' });
   } catch (err) {
-      console.error('Error resetting password:', err);
-      next(err);
+    console.error('Error resetting password:', err);
+    next(err);
   }
 };
 
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-      const { inputOtp } = req.body;
-      const user = await User.findById(req.userId);
+      console.log("done")
+      const { inputOtp ,email} = req.body;
+      const user = await User.findOne({email});
+      console.log(user.OTP)
+      console.log(inputOtp)
       if (user.OTP == inputOtp) {
+        
         return res.status(200).json({ success: true, message: 'OTP verfication is done' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
   } catch (error) {
-      console.error('Error verifying password reset OTP:', error);
-      next(error);
+    console.error('Error verifying password reset OTP:', error);
+    next(error);
   }
 };
-const setNewPassword = async (req , res , next)=> {
-    const {newPassword} = req.body;
-    const user = await User.find(req.userId);
-         try {const hashedPassword = await hashingService.hashPassword(newPassword);
-         user.password = hashedPassword;
-         await user.save();
-          return res.status(200).json({ success: true, message: 'Password reset successfully' }); 
-         }catch (error) {
-          console.error('Error resetting password:', error);
-           next(error);
-         }
+const setNewPassword = async (req, res, next) => {
+  const { newPassword,email } = req.body;
+  console.log(newPassword)
+  console.log(email)
+
+  const user = await User.findOne({email});
+  console.log(user)
+  try {
+    const hashedPassword = await hashingService.hashPassword(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    return res.status(200).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    next(error);
+  }
 };
 const getAllUsers = async (req, res) => {
   try {
@@ -134,6 +145,9 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ error: 'This email does not exist' });
     }
+    if (!user.isVerified) {
+      return res.status(401).json({ error: 'Please verify your email' });
+    }
 
     const isMatch = await authService.comparePassword(password, user.password);
 
@@ -143,10 +157,10 @@ const login = async (req, res, next) => {
 
     const tokenData = { userId: user._id };
     const token = await authService.generateToken(tokenData);
-    const refreshToken=await authService.generateRefreshToken(tokenData);
+    const refreshToken = await authService.generateRefreshToken(tokenData);
 
 
-    res.status(200).json({ Token: token,refreshToken:refreshToken, message: 'Login successful' });
+    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful' });
   } catch (err) {
     console.error('Error logging in:', err);
     next(err);
@@ -172,10 +186,10 @@ const facebookLogin = async (req, res, next) => {
     const tokenData = { userId: user._id };
 
     const token = await authService.generateToken(tokenData);
-    const refreshToken=await authService.generateRefreshToken(tokenData);
+    const refreshToken = await authService.generateRefreshToken(tokenData);
 
     // Response with token and success message
-    res.status(200).json({ Token: token,refreshToken:refreshToken, message: 'Login successful' });
+    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful' });
   }
   catch (err) {
     console.log("Facebook Login error");
@@ -326,11 +340,11 @@ const refreshToken = async (req, res, next) => {
   try {
     const rtoken = req.body.refreshToken;
     const data = await authService.verifyRefreshToken(rtoken);
-    
+
     if (!data) throw { statusCode: 400, message: "Invalid credentials." };
 
     // Create new tokens
-    const tokenData={userId : data.userId};
+    const tokenData = { userId: data.userId };
     const accessToken = await authService.generateToken(tokenData);
     const refreshToken = await authService.generateRefreshToken(tokenData);
 
@@ -354,8 +368,8 @@ module.exports = {
   facebookRegister,
   resetPassword,
   googleRegister,
-  refreshToken ,
-  verifyPasswordResetOTP ,
+  refreshToken,
+  verifyPasswordResetOTP,
   verifyRegisterOTP,
   setNewPassword
 };

@@ -73,10 +73,10 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  chats:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Chat'
-  }], 
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  }],
   refreshToken: {
     type: String
   },
@@ -84,8 +84,8 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Initially , are users are not verified till we verify them
   },
-  OTP : {
-    type : String,
+  OTP: {
+    type: String,
   },
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -95,6 +95,36 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Community',
   }], 
+  followers: {
+    type: {
+      counter: Number,
+      userIds: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
+        }
+      ]
+    },
+    default: {
+      counter: 0,
+      userIds: []
+    }
+  },
+  following: {
+    type: {
+      counter: Number,
+      userIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+      ]
+    },
+    
+    default: {
+      counter: 0,
+      userIds: []
+    }
+  },
   savedPosts:[{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Post'
@@ -104,7 +134,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }]
-
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

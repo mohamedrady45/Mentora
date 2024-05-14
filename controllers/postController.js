@@ -10,6 +10,21 @@ const fs = require("fs");
 const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../Services/cloudinary");
 
 
+
+const getPosts =async (req, res, next) => {
+    try{
+        const userId =req.userId;
+        const posts = await Post.find({author:userId}).populate('author');
+        res.status(200).json({ message: 'All post',data:posts });
+    }
+    catch(err){ 
+        console.error('Error creating post.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
 //create post
 const addPost = async (req, res, next) => {
     try{
@@ -445,4 +460,5 @@ module.exports = {
     deleteRely,
     savePosts,
     sharePost,
+    getPosts
   };
