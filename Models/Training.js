@@ -7,7 +7,7 @@ const TrainingSchema = new mongoose.Schema({
         required: true,
     },
     mentor:{
-        type: Schema.Types.ObjectId,
+        type: mongoos.Schema.Types.ObjectId,
         ref: 'User'
     },
     duration:{
