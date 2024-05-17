@@ -19,6 +19,11 @@ const mentorRequestSchema = new mongoose.Schema({
     maxSalary: Number,
     // Group specifics
     groupSize: Number, // Only for long-term group mentoring
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected'], // Possible statuses of the request
+        default: 'pending'
+    },
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);

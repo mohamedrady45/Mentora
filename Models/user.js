@@ -129,6 +129,14 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Post'
   }],
+  requests:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'RequestMentor'
+  }],
+  trainings:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"RequestMentor"
+  }],  
 
   notification: [{
     type: mongoose.Schema.Types.ObjectId,

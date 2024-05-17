@@ -14,7 +14,7 @@ const postRouter = require('./routers/postRouter')
 const notificationRouter = require('./routers/notification')
 const userRouter = require('./routers/userRouter')
 const chatRouter = require('./routers/chat')
-
+const ContactRouter = require('./routers/ContactRouter')
 
 const app = express();
 
@@ -39,6 +39,7 @@ app.use('/api/user/request', requestRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
 app.use('/api/post', postRouter);
 app.use('/api/communities' , communityRouter);
+app.use('/api/findMentor', ContactRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {
