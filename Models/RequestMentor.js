@@ -24,6 +24,10 @@ const mentorRequestSchema = new mongoose.Schema({
         enum: ['pending', 'accepted', 'rejected'], // Possible statuses of the request
         default: 'pending'
     },
+    author:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);

@@ -1,5 +1,6 @@
 const Mentor = require('../Models/user');
 const Request = require('../Models/RequestMentor');
+const Training = require('../Models/Training');
 
 //Search using user's name
 const Search = async(req, res, next) => {
@@ -49,7 +50,7 @@ const RequestRecommendedMentor = async(req, res, next) =>{
         mentor.requests.push(req.params.id)
         await mentor.save();
 
-        res.status(200).json({ message: 'You shared the post.' });
+        res.status(200).json({ message: 'You requested the mentor.' });
 
     }catch(err){
         console.error('Error finding the mentor.', err);
@@ -73,18 +74,29 @@ const MentorAcOrRejRequest = async(req, res, next) =>{
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
+
         //mentor rejects the request
         if(action === "reject"){
             mentor.requests = mentor.requests.filter(req => req.toString() !== req.params.id);
             request.status = 'rejected';
+            await mentor.save();
+            await request.save();
+            res.status(200).json({ message: 'You rejected the request.' });
         } else if (action === "accept"){
             //mentor accepts the request
             request.status = 'accepted';
-            mentor.trainings.push(request);
+            const training = new Training({
+                trainingType: request.type,
+                mentor: mentor,
+                mentees: request.author,
+                duration: request.duration,
+                track: request.track,
+                Salary: req.body,
+            })
+            await request.save();
+            await training.save();
+            res.status(200).json({ message: 'You accepted the request.' });
         }        
-        await mentor.save();
-        await request.save();
-        res.status(200).json({ message: 'Thanks for showing your opinion in the request.' });
     } catch(err){
         console.error('Error .', err);
         if (!err.statusCode) {
