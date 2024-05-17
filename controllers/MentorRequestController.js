@@ -3,8 +3,9 @@ const Mentor = require('../Models/user');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type } = req.body;
+        const { author, track, languagePreference, genderPreference, type } = req.body;
         let mentorRequestData = {
+            author:author,
             track,
             languagePreference,
             genderPreference,
@@ -55,8 +56,6 @@ const getRecommendedMentors = async (preferredLanguage, preferredGender, minSala
         throw new Error('Error fetching recommended mentors');
     }
 };
-
-
 
 
 

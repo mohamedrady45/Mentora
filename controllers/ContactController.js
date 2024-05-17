@@ -37,17 +37,14 @@ const Search = async(req, res, next) => {
 // send the request to the mentor
 const RequestRecommendedMentor = async(req, res, next) =>{
     try{
-        const mentor = await Mentor.findById(req.body);
-        if(!mentor){
-            return res.status(404).json({ message: 'No mentor selected' });
-        }
+        const { mentor } = req.body; 
 
         const request = await Request.findById(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
 
-        mentor.requests.push(req.params.id)
+        mentor.requests.push(req.params.id);
         await mentor.save();
 
         res.status(200).json({ message: 'You requested the mentor.' });
@@ -98,7 +95,7 @@ const MentorAcOrRejRequest = async(req, res, next) =>{
             res.status(200).json({ message: 'You accepted the request.' });
         }        
     } catch(err){
-        console.error('Error .', err);
+        console.error('Error replying the request.', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }

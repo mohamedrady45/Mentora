@@ -1,4 +1,4 @@
-const { duration } = require('moment');
+
 const mongoose = require('mongoose');
 const TrainingSchema = new mongoose.Schema({
     trainingType:{
@@ -7,7 +7,7 @@ const TrainingSchema = new mongoose.Schema({
         required: true,
     },
     mentor:{
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     duration:{
