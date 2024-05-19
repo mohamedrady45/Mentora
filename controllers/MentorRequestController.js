@@ -30,13 +30,14 @@ const createMentorRequest = async (req, res, next) => {
         
         const recommendedMentors = await getRecommendedMentors(languagePreference, genderPreference, mentorRequest.minSalary, mentorRequest.maxSalary, mentorRequest.interests , track);
 
-        res.status(200).json({ message: 'Mentor request created successfully', recommendedMentors });
+        res.status(200).json({ message: 'Mentor request created successfully', reqestId:mentorRequest._id });
         next();
     } catch (error) {
         console.error('Error requesting mentor:', error);
         res.status(400).json({ message: 'Error requesting mentor' });
     }
 };
+
 
 const getRecommendedMentors = async (preferredLanguage, preferredGender, minSalary, maxSalary, interests, track , next) => {
     try {
