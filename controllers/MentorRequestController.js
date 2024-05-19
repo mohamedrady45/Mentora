@@ -3,8 +3,8 @@ const Mentor = require('../Models/user');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type, description } = req.body;
-        const userId = req.body;
+        const { track, languagePreference, genderPreference, type, description,minSalary,maxSalary } = req.body;
+        const userId = req.userId;
         let mentorRequestData = {
             userId,
             track,
