@@ -19,7 +19,7 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['English', 'Arabic']
     },
-    genderPreference: String,
+    genderPreference: { type: String },
     type: { type: String, enum: ['one-time', 'long-term'] },
     // One-time session fields
     date: Date,
