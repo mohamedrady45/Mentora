@@ -1,5 +1,6 @@
 const Request = require('../Models/RequestMentor')
 const Session = require('../Models/Session')
+const User = require('../Models/user')
 
 const createSession = async (req, res, next) => {
     try {
@@ -8,10 +9,18 @@ const createSession = async (req, res, next) => {
         const request = await Request.findById(reqId);
         const menteeId = request.userId;
         const mentorId = req.userId;
+        const mentee = await User.findById(menteeId);
+        const mentor = await User.findById(mentorId);
 
         const session = new Session({ title, description, date, mentor: mentorId, price });
         session.mentees.push(menteeId);
         await session.save();
+
+        mentee.sessions.ids.push(session._id);
+        await mentee.save();
+
+        mentor.sessions.ids.push(session._id);
+        await mentor.save();
 
         res.status(201).json({
             message: "Session created successfully", data: {
