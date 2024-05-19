@@ -37,13 +37,15 @@ const Search = async(req, res, next) => {
 // send the request to the mentor
 const RequestRecommendedMentor = async(req, res, next) =>{
     try{
-        const { mentor } = req.body; 
-
+       
+        const mentor = await Mentor.findById(req.body.mentor);
+        if(!mentor){
+            return res.status(404).json({ message: 'There is no mentor selected' });   
+        }
         const request = await Request.findById(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
-
         mentor.requests.push(req.params.id);
         await mentor.save();
 
@@ -61,34 +63,35 @@ const RequestRecommendedMentor = async(req, res, next) =>{
 //Mentor accepts or rejects the request
 const MentorAcOrRejRequest = async(req, res, next) =>{
     try{
-        const mentor = Mentor.findById(req.userId);
+        const mentor = Mentor.findById(req.body.mentor);
         if (!mentor) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const {action} = req.body;
+
+        const {status} = req.body;
 
         const request = await Request.findById(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
-
+        console.log(request);
         //mentor rejects the request
-        if(action === "reject"){
-            mentor.requests = mentor.requests.filter(req => req.toString() !== req.params.id);
+        if(status === "rejected"){
+            mentor.requests = mentor.requests.filter((requestId) => requestId !== req.params.id);
             request.status = 'rejected';
             await mentor.save();
             await request.save();
             res.status(200).json({ message: 'You rejected the request.' });
-        } else if (action === "accept"){
+        } else if (status === "accepted"){
             //mentor accepts the request
-            request.status = 'accepted';
+            request.status = 'accepted'; //create session/ training
             const training = new Training({
                 trainingType: request.type,
                 mentor: mentor,
                 mentees: request.author,
                 duration: request.duration,
                 track: request.track,
-                Salary: req.body,
+                Salary: req.body.Salary,
             })
             await request.save();
             await training.save();
