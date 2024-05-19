@@ -3,35 +3,43 @@ const Mentor = require('../Models/user');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type } = req.body;
+        const { track, languagePreference, genderPreference, type, description } = req.body;
+        const userId = req.body;
         let mentorRequestData = {
+            userId,
             track,
             languagePreference,
             genderPreference,
             type,
+            description
         };
 
         if (type === 'one-time') {
-            const { date, Reason } = req.body;
-            mentorRequestData = { ...mentorRequestData, date, Reason };
+            const { Reason } = req.body;
+            mentorRequestData = { ...mentorRequestData, Reason };
         } else if (type === 'long-term') {
-            const { duration, individualOrGroup, oneToOneOrGroupTraining, groupSize } = req.body;
-            mentorRequestData = { ...mentorRequestData, duration, individualOrGroup, oneToOneOrGroupTraining };
-            if (individualOrGroup === 'group') {
-                mentorRequestData.groupSize = groupSize;
-            }
+            const { duration } = req.body;
+            mentorRequestData = { ...mentorRequestData, duration };
+
         } else {
             return res.status(400).json({ message: 'Invalid mentorship type' });
         }
 
-        const mentorRequest = new MentorRequest(mentorRequestData);
+        const mentorRequest = new MentorRequest({
+            ...mentorRequestData,
+            minSalary,
+            maxSalary
+        });
         await mentorRequest.save();
 
-        
-        const recommendedMentors = await getRecommendedMentors(languagePreference, genderPreference, mentorRequest.minSalary, mentorRequest.maxSalary, mentorRequest.interests , track);
 
-        res.status(200).json({ message: 'Mentor request created successfully', reqestId:mentorRequest._id });
-        next();
+        res.status(201).json({
+            message: 'Mentor request created successfully',
+            data: {
+                RequestId: mentorRequest._id,
+            }
+        });
+
     } catch (error) {
         console.error('Error requesting mentor:', error);
         res.status(400).json({ message: 'Error requesting mentor' });
@@ -39,7 +47,8 @@ const createMentorRequest = async (req, res, next) => {
 };
 
 
-const getRecommendedMentors = async (preferredLanguage, preferredGender, minSalary, maxSalary, interests, track , next) => {
+
+const getRecommendedMentors = async (preferredLanguage, preferredGender, minSalary, maxSalary, interests, track, next) => {
     try {
         const mentors = await Mentor.find({
             languages: preferredLanguage,
@@ -48,7 +57,7 @@ const getRecommendedMentors = async (preferredLanguage, preferredGender, minSala
             maxSalary: { $gte: minSalary },
             interests: { $in: interests },
             track: track
-        }).sort({ rating: -1 }).limit(10); 
+        }).sort({ rating: -1 }).limit(10);
 
         return mentors;
     } catch (error) {
