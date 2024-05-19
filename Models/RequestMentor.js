@@ -11,6 +11,12 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    status:{
+        type: String,
+        required: true,
+        enum:['reject','pendening','accepted'],
+        default:'pendening'
+    },
     track: {
         type: String,
         enum: ['Frontend', 'Backend']
@@ -19,12 +25,16 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['English', 'Arabic']
     },
-    genderPreference: { type: String ,
+    genderPreference: {
+        type: String,
         enum: ['Male', 'Female']
     },
     type: { type: String, enum: ['one-time', 'long-term'] },
 
-    Reason: { type: String, enum: ['debug', 'code-review', 'consultation'] },
+    Reason: {
+        type: String,
+        enum: ['debug', 'code-review', 'consultation']
+    },
 
     duration: {
         from: Date,
