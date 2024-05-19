@@ -19,20 +19,19 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['English', 'Arabic']
     },
-    genderPreference: { type: String },
+    genderPreference: { type: String ,
+        enum: ['Male', 'Female']
+    },
     type: { type: String, enum: ['one-time', 'long-term'] },
-    // One-time session fields
-    date: Date,
+
     Reason: { type: String, enum: ['debug', 'code-review', 'consultation'] },
 
     duration: {
         from: Date,
         to: Date
     },
-    minSalary: Number,
-    maxSalary: Number,
-
-
+    minSalary: { type: Number },
+    maxSalary: { type: Number },
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);
