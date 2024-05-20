@@ -76,7 +76,7 @@ const RequestRecommendedMentor = async(req, res, next) =>{
         if(!mentor){
             return res.status(404).json({ message: 'There is no mentor selected' });   
         }
-        const request = await Request.findById(req.params.id);
+        const request = await MentorRequest.findById(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
@@ -97,22 +97,23 @@ const RequestRecommendedMentor = async(req, res, next) =>{
 //Mentor rejects the request
 const MentorRejectRequest = async(req, res, next) =>{
     try{
-        const mentor = Mentor.findById(req.userId);
+        const mentor = await Mentor.findById(req.userId);
         if (!mentor) {
             return res.status(404).json({ error: 'User not found' });
         }
-
         const {status} = req.body;
-
-        const request = await Request.findById(req.params.id);
+        const request = await MentorRequest.findById(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }
-        console.log(request);
+        if (!Array.isArray(mentor.requests)) {
+            mentor.requests = [];
+        }
+
         //mentor rejects the request
         if(status === "rejected"){
-            mentor.requests = mentor.requests.filter((requestId) => requestId !== req.params.id);
-            request.status = 'rejected';
+            mentor.requests = mentor.requests.filter((requestId) => requestId.toString() != req.params.id);
+            request.status = "rejected";
         } 
         await mentor.save();
         await request.save();

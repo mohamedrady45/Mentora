@@ -32,6 +32,11 @@ const mentorRequestSchema = new mongoose.Schema({
     },
     minSalary: { type: Number },
     maxSalary: { type: Number },
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected'], // Possible statuses of the request
+        default: 'pending'
+    },
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);
