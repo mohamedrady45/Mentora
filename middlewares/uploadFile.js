@@ -16,6 +16,7 @@ const fileFilter = (req, file, cb) => {
         file.mimetype === 'image/jpg' ||
         file.mimetype === 'image/pdf' ||
         file.mimetype === 'image/docx'
+
         ) {
         cb(null, true);
     } else { cb(null, false); return cb(new Error('Unsupported file format!')); }
@@ -23,6 +24,6 @@ const fileFilter = (req, file, cb) => {
 
 
 
-const upload = multer({ storage:storage, fileFilter: fileFilter });
+const upload = multer({ storage:storage});
 
 module.exports = upload; 

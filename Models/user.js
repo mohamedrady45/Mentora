@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
 const validator = require('validator');
+const session = require('express-session');
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -91,10 +92,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }],
-  communities:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Community',
-  }], 
+  communities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Community',
+  }],
   followers: {
     type: {
       counter: Number,
@@ -119,15 +120,15 @@ const userSchema = new mongoose.Schema({
       }
       ]
     },
-    
+
     default: {
       counter: 0,
       userIds: []
     }
   },
-  savedPosts:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Post'
+  savedPosts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
   }],
   requests:[{
     type:mongoose.Schema.Types.ObjectId,
@@ -136,7 +137,10 @@ const userSchema = new mongoose.Schema({
   notification: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
-  }]
+  }],
+  
+
+  
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;
