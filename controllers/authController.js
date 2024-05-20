@@ -95,8 +95,6 @@ const verifyPasswordResetOTP = async (req, res, next) => {
       console.log("done")
       const { inputOtp ,email} = req.body;
       const user = await User.findOne({email});
-      console.log(user.OTP)
-      console.log(inputOtp)
       if (user.OTP == inputOtp) {
         
         return res.status(200).json({ success: true, message: 'OTP verfication is done' });
