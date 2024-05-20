@@ -135,22 +135,9 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }],
-  sessions: {
-    type: {
-      counter: {
-        type: Number,
-      },
-      ids: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Session"
-      }]
-    },
-    default: {
-      counter: 0,
-      ids: []
-    }
+  
 
-  }
+  
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

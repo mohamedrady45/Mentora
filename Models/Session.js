@@ -22,7 +22,7 @@ const sessionSchema = new Schema({
         type: Date,
         required: true
     },
-    confirmed: {
+    isConfirmed: {
         type: Boolean,
         required: true,
         default: false
@@ -31,7 +31,19 @@ const sessionSchema = new Schema({
         type: Number,
         required: true,
         default: 0
+    },
+    matrial:{
+        type:{
+            text:String,
+            Attachments:Array
+        },
+        default:{
+            text: 'No Material',
+            Attachments:[]
+        }
+       
     }
+    
 
 },
     {
