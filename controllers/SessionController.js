@@ -107,7 +107,13 @@ const addMatrial = async (req, res, next) => {
 const getMentorSessions = async (req, res, next) => {
     try {
         const mentorId = req.userId;
-        const sessions = await Session.find({ mentor: mentorId }).populate('mentor','firstName lastName').populate('mentees','firstName lastName');
+        const sessions = await Session.find({
+            mentor: mentorId,
+            training: { $exists: false }
+        })
+            .populate('mentor', 'firstName lastName')
+            .populate('mentees', 'firstName lastName');
+
         res.status(200).json({
             sessions
         });
@@ -124,8 +130,12 @@ const getMentorSessions = async (req, res, next) => {
 const getMenteeSessions = async (req, res, next) => {
     try {
         const menteeId = req.userId;
-        const sessions = await Session.find({ mentees: { $in: [menteeId] } }).populate('mentor', 'firstName email') // populate mentor with name and email fields
-        .populate('mentees', 'firstName email');
+        const sessions = await Session.find({
+            mentees: { $in: [menteeId] },
+            training: { $exists: false }
+        })
+            .populate('mentor', 'firstName email') // populate mentor with name and email fields
+            .populate('mentees', 'firstName email');
         res.status(200).json({
             sessions
         });

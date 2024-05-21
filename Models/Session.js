@@ -22,6 +22,10 @@ const sessionSchema = new Schema({
         type: Date,
         required: true
     },
+    training: {
+        type: Schema.Types.ObjectId,
+        ref: 'Training'
+    },
     isConfirmed: {
         type: Boolean,
         required: true,
@@ -32,18 +36,18 @@ const sessionSchema = new Schema({
         required: true,
         default: 0
     },
-    matrial:{
-        type:{
-            text:String,
-            Attachments:Array
+    matrial: {
+        type: {
+            text: String,
+            Attachments: Array
         },
-        default:{
+        default: {
             text: 'No Material',
-            Attachments:[]
+            Attachments: []
         }
-       
+
     }
-    
+
 
 },
     {

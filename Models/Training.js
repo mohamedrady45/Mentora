@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const TrainingSchema = new mongoose.Schema({
-    name:{
+    name: {
         type: String,
         required: true,
     },
-    description:{
+    description: {
         type: String,
         required: true,
     },
@@ -22,24 +22,24 @@ const TrainingSchema = new mongoose.Schema({
     requirements:{
         type: String,
     },
-    Salary:{
+    Salary: {
         type: Number,
         required: true,
     },
-    duration:{
+    duration: {
         from: Date,
         to: Date
     },
-    numberOfRequiredMentees:{
+    numberOfRequiredMentees: {
         type: Number,
     },
-    mentor:{
+    mentor: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
     },
     status: {
         type: String,
-        enum: ['pending', 'active','finished'], 
+        enum: ['pending', 'active', 'finished'],
         default: 'pending'
     },
     language: {
@@ -54,17 +54,18 @@ const TrainingSchema = new mongoose.Schema({
             ref:'User',
           }]
         },
-        defult:{
-          counter: 0,
-          menteeId: []
+        defult: {
+            counter: 0,
+            menteeId: []
         }
     },
     
 
-    
-    
-    
+
+
+
+
 });
-  
-const Training = mongoose.model('Training',TrainingSchema);
+
+const Training = mongoose.model('Training', TrainingSchema);
 module.exports = Training;
