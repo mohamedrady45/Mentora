@@ -8,10 +8,10 @@ const TrainingSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    track: [{
+    track: {
         type: String,
         required: true,
-    }],
+    },
     requirements:{
         type: String,
     },
@@ -29,6 +29,11 @@ const TrainingSchema = new mongoose.Schema({
     mentor:{
         type: mongoose.Types.ObjectId,
         ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'active','finished'], 
+        default: 'pending'
     },
     mentees:{
         type:{
