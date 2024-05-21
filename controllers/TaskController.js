@@ -35,10 +35,12 @@ const AddTask = async(req, res, next) => {
         if(!mentor){
             return res.status(404).json({ error: 'User not found' });
         }
-        const {content, deadline} = req.body;
+        const {title, description, content, deadline} = req.body;
         const newTask = new Task({
+            title: title,
+            description: description,
             content: content,
-            createdAt: Date.now,
+            date: Date.now,
             deadline: deadline,
         });
         await newTask.save();
