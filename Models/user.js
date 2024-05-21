@@ -138,6 +138,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Notification'
   }],
+  trainings:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Training',
+  }],
   
 
   

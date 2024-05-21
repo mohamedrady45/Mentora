@@ -12,6 +12,13 @@ const TrainingSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    level:{
+        type: String,
+        enum:['begineers', 'advanced'],
+    },
+    TrainingPicture: {
+        type: String,
+    },
     requirements:{
         type: String,
     },
@@ -34,6 +41,10 @@ const TrainingSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'active','finished'], 
         default: 'pending'
+    },
+    language: {
+        type: String,
+        enum: ['English', 'Arabic']
     },
     mentees:{
         type:{

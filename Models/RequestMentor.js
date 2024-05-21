@@ -21,7 +21,7 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['Frontend', 'Backend']
     },
-    languagePreference: {
+    language: {
         type: String,
         enum: ['English', 'Arabic']
     },

@@ -17,7 +17,7 @@ const chatRouter = require('./routers/chat')
 const RequestMentorRouter = require('./routers/RequestMentor')
 const sessionRouter = require('./routers/session')
 const TrainingRouter = require('./routers/TrainingRouter')
-
+const TaskRouter = require('./routers/TaskRouter')
 const app = express();
 
 require('dotenv').config();
@@ -44,6 +44,7 @@ app.use('/api/communities' , communityRouter);
 app.use('/api/request' , RequestMentorRouter);
 app.use('/api/session' , sessionRouter);
 app.use('/api/training', TrainingRouter);
+app.use('/api/task', TaskRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {
