@@ -43,7 +43,8 @@ app.use('/api/post', postRouter);
 app.use('/api/communities' , communityRouter);
 app.use('/api/request' , RequestMentorRouter);
 app.use('/api/session' , sessionRouter);
-app.use('api/training', TrainingRouter);
+app.use('/api/training', TrainingRouter);
+
 //Error handling 
 app.use((error, req, res, next) => {
   console.error(error);
