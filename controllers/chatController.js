@@ -6,7 +6,6 @@ const io= require('../socket').gitIO
 
 const sendMessage = async (req, res, next) => {
     try {
-        console.log(req.body);
         const senderID = req.userId;
         const receiveID = req.body.receiveId;
         console.log(serderID,receiveID);
@@ -80,7 +79,7 @@ const getUserChats = async (req, res, next) => {
         const user = await UserModel.findById(userId).populate({
             path: 'chats',
             populate: {
-                path: 'users',
+                path: 'senderID',
                 select: 'firstName lastName'
             }
         });
