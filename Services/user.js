@@ -14,6 +14,14 @@ class userService {
       return await user.save()
       
     }
+    static async addToSchedule(userId,time,date,type)
+    {try{
+      await Schadule.create({time,date,type,user:userId});
+    }catch(err){
+      console.log(err)
+    }
+
+    }
     
 }
   

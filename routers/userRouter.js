@@ -12,5 +12,7 @@ router.put('/updateUserData',isAuth,upload.single('image'),userController.editUs
 router.put('/followUser/:followId',isAuth,userController.followUser);
 router.get('/followers',isAuth,userController.followerList);
 router.get('/following',isAuth,userController.followingList);
+router.get('/schedule',isAuth,userController.scheduleList);
 
 module.exports = router;
+

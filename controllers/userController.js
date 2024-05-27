@@ -1,12 +1,14 @@
 const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
+const Schadule = require('../Models/Schadule')
+
 const getUser = async (req, res, next) => {
   try {
     //take data 
     const userId = req.userId;
     //find user
-    const user = await userService.findUser({ _id: userId })
+    const user = await User.findById(userId)
     //if user not found
     if (!user) {
       const err = new Error('Can\'t find user');
@@ -151,9 +153,9 @@ const followerList = async (req, res, next) => {
     //take data 
     const userId = req.userId;
     //find user
-    const user = await userService.findUser('_id', userId,'followers.userIds', 'firstName lastName profilePicture');
+    const user = await userService.findUser('_id', userId, 'followers.userIds', 'firstName lastName profilePicture');
     //followers
-    const followers=user.followers.userIds;
+    const followers = user.followers.userIds;
 
     //send response
     res.status(200).json({
@@ -173,9 +175,9 @@ const followingList = async (req, res, next) => {
     //take data 
     const userId = req.userId;
     //find user
-    const user = await userService.findUser('_id', userId,'following.userIds', 'firstName lastName profilePicture');
+    const user = await userService.findUser('_id', userId, 'following.userIds', 'firstName lastName profilePicture');
     //followers
-    const following=user.following.userIds;
+    const following = user.following.userIds;
 
     //send response
     res.status(200).json({
@@ -189,10 +191,31 @@ const followingList = async (req, res, next) => {
     next(err);
   }
 }
+const scheduleList = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const schadule = await Schadule.find({user:userId})
+    .populate('createdBy','fristName lastName')
+    .populate('from','name title');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        schadule: schadule
+      }
+    });
+  }
+  catch (err) {
+    console.error('Error in get your schadule:', err);
+    next(err);
+  }
+}
 module.exports = {
   getUser,
   editUserData,
   followUser,
   followerList,
-  followingList
+  followingList,
+  scheduleList
 }
+
