@@ -1,5 +1,6 @@
 const Training = require('../Models/Training');
 const Mentor = require('../Models/user');
+const Session = require('../Models/Session');
 const MassageModel = require('../Models/message')
 const Announcement =require('../Models/Announcement');
 const { findById } = require('../Models/Task');
@@ -153,17 +154,18 @@ const getTrainingsRecommendation = async(req, res, next) =>{
 };
 
 
-//TODO:TESTME
 const addSession = async (req, res, next) => {
     try {
-        const { title, description, time, trainingId } = req.body;
+        const { title, description, date, trainingId } = req.body;
         const mentorId = req.userId;
-        const mentees = await Training.findById(trainingId).mentees.menteeId;
+        const trainig = await Training.findById(trainingId);
+        const mentees = trainig.mentees;
+        //TODO:add session to schedule to mentor and mentees
         const session = new Session({
             title: title,
             description: description,
-            time: time,
-            trainingId: trainingId,
+            date: date,
+            training: trainingId,
             mentor: mentorId,
             mentees: mentees
         });
@@ -186,7 +188,7 @@ const getSessions = async (req, res, next) => {
         const sessions = await Session.find({ training: trainingId });
 
         res.status(200).json({
-            message: 'The session has been successfully added.',
+            message: 'Get all sessions',
             data: {
                 sessions: sessions
             }
@@ -227,7 +229,7 @@ const getAnnouncements = async (req, res, next) => {
     try {
         const { trainingId } = req.params;
 
-        const announcements = await Training.find({trainig:trainingId});
+        const announcements = await Announcement.find({training:trainingId});
 
         res.status(200).json({
             message: 'get all training announcement',
@@ -249,11 +251,16 @@ const deleteAnnouncement = async (req, res, next) => {
     try {
         const { announcementId } = req.params;
 
-        const announcements = await Training.findByIdAndDelete(announcementId);
+        const announcement = await Announcement.findById(announcementId);
+        
+
+        await announcement.deleteOne();
 
         res.status(200).json({
             message: 'Announcement was deleted',
-
+            data: {
+                announcement
+            }
         })
 
     } catch (err) {
@@ -269,7 +276,7 @@ const editAnnouncement = async (req, res, next) => {
         const { announcementId } = req.params;
         const { title, description } = req.body;
 
-         await Training.findByIdAndUpdate(announcementId,{title,description});
+         await Announcement.findByIdAndUpdate(announcementId,{title,description});
 
         res.status(200).json({
             message: 'Announcement was edited',
@@ -287,7 +294,7 @@ const editAnnouncement = async (req, res, next) => {
 
 const sendMessage = async (req, res, next) => {
     try {
-        const {trainigId}=req.params;
+        const {trainingId}=req.params;
         const userId = req.userId;
         const { message } = req.body;
         const files = req.files;
@@ -306,11 +313,10 @@ const sendMessage = async (req, res, next) => {
             files: Nfiles,
         })
         await Nmsg.save();
-
-        const trainig = await Training.findById(trainigId).
-        trainig.messages.push(Nmsg._Id)
-        await trainig.save();
         
+        const trainig = await Training.findById(trainingId);
+        trainig.messages.push(Nmsg._id)
+        await trainig.save();
 
         res.status(200).json({
             message: 'Message was sent',
@@ -328,21 +334,20 @@ const sendMessage = async (req, res, next) => {
 
 const getMessages = async (req, res, next) => {
     try {
-        const {trainigId}=req.params;
-        const trainig = await Training.findById(trainigId).populate({
+        const {trainingId}=req.params;
+        const trainig = await Training.findById(trainingId).populate({
             path: 'messages',
             populate: {
-                path: 'users',
+                path: 'senderID',
                 select: 'firstName lastName'
             }
         });
-        trainig.chat.push(Nmsg._Id)
-        await trainig.save();
         
-
         res.status(200).json({
-            message: 'get training chat',
-
+            message: 'get training messages',
+            data: {
+                messages: trainig.messages
+            }
         })
 
     } catch (err) {

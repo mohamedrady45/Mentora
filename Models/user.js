@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
 const validator = require('validator');
-
 const userSchema = new mongoose.Schema({
     role: {
         type: String,
@@ -156,28 +155,28 @@ const userSchema = new mongoose.Schema({
     mentorshipInfo: {
         track: [{
             type: String,
-            required: true,
+           // required: true,
         }],
         experience: {
             type: String,
-            required: true,
+            // required: true,
         },
         LinkedinUrl: {
             type: String,
-            required: true,
+            // required: true,
         },
         GithubUrl: {
             type: String,
-            required: true,
+            // required: true,
         },
         CV: {
             public_id: {
                 type: String,
-                required: true,
+                // required: true,
             },
             url: {
                 type: String,
-                required: true,
+                // required: true,
             },
         },
     },
