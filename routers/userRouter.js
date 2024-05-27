@@ -1,10 +1,14 @@
 const express = require('express');
+const methodOverride = require('method-override');
 
 const userController = require('../controllers/userController');
 const isAuth = require("../middlewares/isAuth");
 const upload=require('../middlewares/uploadFile')
+const adminController = require('../controllers/adminController');
+const OnlyAdmins = require('../middlewares/OnlyAdmins');
 
 const router = express.Router();
+router.use(methodOverride('_method'));
 
 
 router.get('/',isAuth,userController.getUser);
@@ -14,5 +18,7 @@ router.get('/followers',isAuth,userController.followerList);
 router.get('/following',isAuth,userController.followingList);
 router.get('/schedule',isAuth,userController.scheduleList);
 
+router.patch('/admin/promote/:id',isAuth , OnlyAdmins, adminController.promoteToAdmin);
+router.get('/admin/getAllApplications' , isAuth,OnlyAdmins , adminController.getAllApplications);
 module.exports = router;
 
