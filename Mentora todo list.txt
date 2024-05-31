@@ -1,6 +1,6 @@
 Mentora todo list:
 
-1-task after join training.
+1-test after join training. => [done]
 2-recomendation in request mentor.
 3-test apply as mentor.
 4-add Mentor access.
@@ -9,8 +9,8 @@ Mentora todo list:
 7-handel some errors (as this user not allowed to do this).
 8-add session integration.
 9-test community.
-
-
+10-edit post logic.
+11-socket io.(training chat - chat - community - notification).
 
 
 

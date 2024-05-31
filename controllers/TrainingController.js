@@ -1,6 +1,7 @@
 const Training = require('../Models/Training');
 const Mentor = require('../Models/user');
 const Session = require('../Models/Session');
+const Test = require('../Models/test');
 const MassageModel = require('../Models/message')
 const Announcement = require('../Models/Announcement');
 const { findById } = require('../Models/Task');
@@ -368,6 +369,12 @@ const enrollInTraining = async (req, res, next) => {
         const trainig = await Training.findById(trainigId);
         if (!trainig) {
             return res.status(404).json({ error: 'Training not found' });
+        }
+        if(trainig.hasTest===true){
+            const test = await Test.findById(trainig.test);
+            if(!test.passed.includes(userId)){
+                return res.status(400).json({ error: 'You are not passed the test' });
+            }
         }
         //if user is already enrolled
         if (trainig.mentees.menteeId.includes(userId)) {
