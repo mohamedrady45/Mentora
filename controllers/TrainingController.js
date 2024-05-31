@@ -2,29 +2,57 @@ const Training = require('../Models/Training');
 const Mentor = require('../Models/user');
 const Session = require('../Models/Session');
 const MassageModel = require('../Models/message')
-const Announcement =require('../Models/Announcement');
+const Announcement = require('../Models/Announcement');
 const { findById } = require('../Models/Task');
 
 //get all trainings
-const getAllTrainings = async (req, res) => {
+const getUserAllTrainings = async (req, res) => {
     try {
-        const trainigs = await Training.find();
+        const userId = req.userId;
+        const trainigs = await Training.find({ 'mentees.menteeId': userId }).select('_id name description track mentees.counter status');
         console.log(trainigs);
-        res.status(200).json(trainigs);
+        res.status(200).json({message: 'Get all trainings', data: {trainigs:{...trainigs, count: trainigs.length}}});
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
+const getMentorTrainings = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const trainigs = await Training.find({ mentor: userId }).select('_id name description track numberOfRequiredMentees status');
+        console.log(trainigs);
+        res.status(200).json({message: 'Get all trainings', data: {trainigs:{...trainigs, count: trainigs.length}}});
+    } catch (err) {
+        console.error('Error getting mentor trainings.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+const getTrainingById = async (req, res, next) => {
+    try {
+        const trainingId = req.params.trainingId;
+        const training = await Training.findById(trainingId).populate('mentor','firstName lastName').populate('mentees.menteeId','lastName firstName');
+        res.status(200).json({message: 'Get training by id', data: {training}});
+    } catch (err) {
+        console.error('Error getting training by id.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
 // create new training
 const createTraining = async (req, res, next) => {
     try {
-        const mentor = await Mentor.findById(req.userId);
-        if (!mentor) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        const {name, description, track, level, requirements, Salary, duration, numberOfRequiredMentees, language} = req.body;
+        const mentorId = req.userId;
+
+        const { name, description, track, level, requirements, Salary, duration, numberOfRequiredMentees, language } = req.body;
 
         const newTraining = new Training({
             name: name,
@@ -36,10 +64,12 @@ const createTraining = async (req, res, next) => {
             duration: duration,
             numberOfRequiredMentees: numberOfRequiredMentees,
             language: language,
+            mentor: mentorId
+
 
         });
         await newTraining.save();
-        res.status(200).json({ message: 'You successfully created the training.' });
+        res.status(200).json({ message: 'You successfully created the training.', data: { training: newTraining._id } });
     } catch (err) {
         console.error('Error creating training.', err);
         if (!err.statusCode) {
@@ -50,8 +80,8 @@ const createTraining = async (req, res, next) => {
 };
 
 //update training
-const updateTraining = async(req, res, next) => {
-    try{
+const updateTraining = async (req, res, next) => {
+    try {
         const training = await Training.findById(req.params.id);
         await training.updateOne({ $set: req.body });
         res.status(200).json({ message: 'You updated the training successfully' })
@@ -65,8 +95,8 @@ const updateTraining = async(req, res, next) => {
 };
 
 //delete trainig
-const deleteTraining = async(req, res, next) => {
-    try{
+const deleteTraining = async (req, res, next) => {
+    try {
         const trainig = await Training.findById(req.params.id);
         await trainig.deleteOne();
         res.status(200).json({ message: 'The training has been successfully deleted.' })
@@ -80,79 +110,49 @@ const deleteTraining = async(req, res, next) => {
 };
 
 //start training
-const startTraining = async(req, res, next) => {
-    try{
-        const mentor = await Mentor.findById(req.userId);
-        if(!mentor){
-            return res.status(404).json({ error: 'User not found' });
-        }
+const startTraining = async (req, res, next) => {
+    try {
         const trainig = await Training.findById(req.params.id);
-        if(!trainig){
+
+        if (!trainig) {
             return res.status(404).json({ error: 'Training not found' });
         }
-        const {status} = req.body;
-        if(status === "active")
-        {
-            trainig.status = "active";
-            await trainig.save();
-        }
+        //update training status to active
+        trainig.status = "active";
+        await trainig.save();
+
         res.status(200).json({ message: 'You successfully starts the training.' });
-    }catch(err){
+    } catch (err) {
         console.error('Error starting the training.', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        next(err);  
+        next(err);
     };
 };
 
 //end training
-const endTraining = async(req, res, next) => {
-    try{
-        const mentor = await Mentor.findById(req.userId);
-        if(!mentor){
-            return res.status(404).json({ error: 'User not found' });
-        }
+const endTraining = async (req, res, next) => {
+    try {
+        
         const trainig = await Training.findById(req.params.id);
-        if(!trainig){
+        if (!trainig) {
             return res.status(404).json({ error: 'Training not found' });
         }
-        const {status} = req.body;
-        if(status === "finished")
-        {
+        const { status } = req.body;
+        if (status === "finished") {
             trainig.status = "finished";
             await trainig.save();
         }
-        res.status(200).json({ message: 'You successfully starts the training.' });
-    }catch(err){
+        res.status(200).json({ message: 'You successfully end this training.' });
+    } catch (err) {
         console.error('Error starting the training.', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        next(err);  
+        next(err);
     };
 };
-
-//get trainings recommendation
-const getTrainingsRecommendation = async(req, res, next) =>{
-    try {
-
-        const trainigs = await Training.find({
-            track: track,
-            language: preferredLanguage,
-        }).select('_id name track Salary')
-          .sort({ rating: -1 }).limit(10); 
-
-        if (trainigs.length === 0) {
-            return res.status(400).json({ message: 'No trainings match your request'});
-        }
-        res.status(400).json({ message: 'Trainings matches your request', trainigs});
-    } catch (error) {
-        console.error('Error fetching recommended mentors:', error);
-        throw new Error('Error fetching recommended mentors');
-    }
-};
-
 
 const addSession = async (req, res, next) => {
     try {
@@ -205,9 +205,9 @@ const getSessions = async (req, res, next) => {
 
 const addAnnouncement = async (req, res, next) => {
     try {
-        const { trainingId  , title,description } = req.body;
+        const { trainingId, title, description } = req.body;
 
-        const announcement =await Announcement.create({title,description,training:trainingId})
+        const announcement = await Announcement.create({ title, description, training: trainingId })
 
         res.status(200).json({
             message: 'add new announcement',
@@ -229,7 +229,7 @@ const getAnnouncements = async (req, res, next) => {
     try {
         const { trainingId } = req.params;
 
-        const announcements = await Announcement.find({training:trainingId});
+        const announcements = await Announcement.find({ training: trainingId });
 
         res.status(200).json({
             message: 'get all training announcement',
@@ -252,7 +252,7 @@ const deleteAnnouncement = async (req, res, next) => {
         const { announcementId } = req.params;
 
         const announcement = await Announcement.findById(announcementId);
-        
+
 
         await announcement.deleteOne();
 
@@ -271,12 +271,13 @@ const deleteAnnouncement = async (req, res, next) => {
         next(err);
     }
 }
+
 const editAnnouncement = async (req, res, next) => {
     try {
         const { announcementId } = req.params;
         const { title, description } = req.body;
 
-         await Announcement.findByIdAndUpdate(announcementId,{title,description});
+        await Announcement.findByIdAndUpdate(announcementId, { title, description });
 
         res.status(200).json({
             message: 'Announcement was edited',
@@ -294,7 +295,7 @@ const editAnnouncement = async (req, res, next) => {
 
 const sendMessage = async (req, res, next) => {
     try {
-        const {trainingId}=req.params;
+        const { trainingId } = req.params;
         const userId = req.userId;
         const { message } = req.body;
         const files = req.files;
@@ -307,13 +308,13 @@ const sendMessage = async (req, res, next) => {
             }
         });
         const Nmsg = new MassageModel({
-            
+
             senderID: userId,
-            message:message,
+            message: message,
             files: Nfiles,
         })
         await Nmsg.save();
-        
+
         const trainig = await Training.findById(trainingId);
         trainig.messages.push(Nmsg._id)
         await trainig.save();
@@ -334,7 +335,7 @@ const sendMessage = async (req, res, next) => {
 
 const getMessages = async (req, res, next) => {
     try {
-        const {trainingId}=req.params;
+        const { trainingId } = req.params;
         const trainig = await Training.findById(trainingId).populate({
             path: 'messages',
             populate: {
@@ -342,7 +343,7 @@ const getMessages = async (req, res, next) => {
                 select: 'firstName lastName'
             }
         });
-        
+
         res.status(200).json({
             message: 'get training messages',
             data: {
@@ -359,45 +360,45 @@ const getMessages = async (req, res, next) => {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 //Enroll mentee in a training
-const enrollInTraining = async(req, res, next) => {
-    try{
-
-        res.status(200).json({message:'Successfully enrolled in training.'})
-    }catch(err){
+const enrollInTraining = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const trainigId = req.params.trainingId;
+        const trainig = await Training.findById(trainigId);
+        if (!trainig) {
+            return res.status(404).json({ error: 'Training not found' });
+        }
+        //if user is already enrolled
+        if (trainig.mentees.menteeId.includes(userId)) {
+            return res.status(400).json({ error: 'You are already enrolled in this training' });
+        }
+        trainig.mentees.menteeId.push(userId);
+        trainig.mentees.counter++;
+        await trainig.save();
+        res.status(200).json({ message: 'Successfully enrolled in training.' })
+    } catch (err) {
         console.error('Error enrolling in training.', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        next(err);  
+        next(err);
     }
 }
 
 
-
-
 module.exports = {
-    getAllTrainings,
+    getUserAllTrainings,
+    getMentorTrainings,
+    getTrainingById,
+    enrollInTraining,
     createTraining,
     updateTraining,
     deleteTraining,
 
     startTraining,
     endTraining,
-    getTrainingsRecommendation,
-    //enrollInTraining
-
+  
     addSession,
     getSessions,
     addAnnouncement,

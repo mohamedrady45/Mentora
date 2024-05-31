@@ -1,5 +1,6 @@
 const MentorRequest = require('../Models/RequestMentor');
 const Mentor = require('../Models/user');
+const Training = require('../Models/Training');
 
 const createMentorRequest = async (req, res, next) => {
     try {
@@ -65,6 +66,28 @@ const getMentorsRecommendation = async(req, res, next) =>{
     } catch (error) {
         console.error('Error fetching recommended mentors:', error);
         throw new Error('Error fetching recommended mentors');
+    }
+};
+//get trainings recommendation
+const getTrainingsRecommendation = async (req, res, next) => {
+    try {
+
+        const trainigs = await Training.find({
+            track: track,
+            language: preferredLanguage,
+        }).select('_id name track Salary')
+            .sort({ rating: -1 }).limit(10);
+
+        if (trainigs.length === 0) {
+            return res.status(400).json({ message: 'No trainings match your request' });
+        }
+        res.status(400).json({ message: 'Trainings matches your request', trainigs });
+    } catch (error) {
+        console.error('Error fetching recommended mentors.', error);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
 
@@ -156,6 +179,7 @@ module.exports = {
     createMentorRequest,
     getMentorsRecommendation,
     RequestRecommendedMentor,
+    getTrainingsRecommendation,
     MentorRejectRequest,
     MentorAcceptedRequest,
 };
