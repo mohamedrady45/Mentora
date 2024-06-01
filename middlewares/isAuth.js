@@ -24,10 +24,10 @@ const isAuth = async (req, res, next) => {
                 // Token is valid, do something with the payload
                 console.log('Token payload:', payload);
                 req.userId = payload.userId;
+                next();
             }
         });
         
-        next();
     } catch (error) {
         console.error(error);
         return res.status(401).json({ message: 'Authentication failed' });

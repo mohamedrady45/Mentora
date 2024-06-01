@@ -15,7 +15,6 @@ const notificationRouter = require('./routers/notification')
 const userRouter = require('./routers/userRouter')
 const chatRouter = require('./routers/chat')
 
-
 const app = express();
 
 require('dotenv').config();
