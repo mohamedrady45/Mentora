@@ -1,24 +1,52 @@
 const mongoose = require('mongoose');
 
 const mentorRequestSchema = new mongoose.Schema({
-    track: String,
-    languagePreference: String,
-    genderPreference: String,
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'user',
+        required: true
+    },
+    description:
+    {
+        type: String,
+        required: true
+    },
+    status:{
+        type: String,
+        required: true,
+        enum:['reject','pendening','accepted'],
+        default:'pendening'
+    },
+    track: {
+        type: String,
+        enum: ['Frontend', 'Backend']
+    },
+    language: {
+        type: String,
+        enum: ['English', 'Arabic']
+    },
+    genderPreference: {
+        type: String,
+        enum: ['Male', 'Female']
+    },
     type: { type: String, enum: ['one-time', 'long-term'] },
-    // One-time session fields
-    date: Date,
-    Reason: { type: String, enum: ['debug', 'code-review', 'consultation'] },
-    // Long-term fields
-    individualOrGroup: { type: String, enum: ['individual', 'group'] },
-    oneToOneOrGroupTraining: { type: String, enum: ['one-to-one', 'training-group'] },
+
+    Reason: {
+        type: String,
+        enum: ['debug', 'code-review', 'consultation']
+    },
+
     duration: {
         from: Date,
         to: Date
     },
-    minSalary: Number,
-    maxSalary: Number,
-    // Group specifics
-    groupSize: Number, // Only for long-term group mentoring
+    minSalary: { type: Number },
+    maxSalary: { type: Number },
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected'], // Possible statuses of the request
+        default: 'pending'
+    },
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);

@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
 const validator = require('validator');
-
 const userSchema = new mongoose.Schema({
     role: {
         type: String,
-        enum: ['User', 'Admin'],
+        enum: ['User', 'Admin','Mentor'],
         default: 'User',
     },
     firstName: {
@@ -84,11 +83,11 @@ const userSchema = new mongoose.Schema({
         ref: 'Chat'
     }],
     refreshToken: {
-        type: String,
+        type: String
     },
     isVerified: {
         type: Boolean,
-        default: false, // Initially, all users are not verified until we verify them
+        default: false, // Initially , are users are not verified till we verify them
     },
     OTP: {
         type: String,
@@ -104,32 +103,50 @@ const userSchema = new mongoose.Schema({
     followers: {
         type: {
             counter: Number,
-            userIds: [{
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-            }],
+            userIds: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'User'
+                }
+            ]
         },
         default: {
             counter: 0,
-            userIds: [],
-        },
+            userIds: []
+        }
     },
     following: {
         type: {
             counter: Number,
             userIds: [{
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-            }],
+                ref: 'User'
+            }
+            ]
         },
+
         default: {
             counter: 0,
-            userIds: [],
-        },
+            userIds: []
+        }
     },
     savedPosts: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post',
+        ref: 'Post'
+    }],
+
+    requests: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RequestMentor',
+    }],
+
+    notification: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Notification'
+    }],
+    trainings: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Training',
     }],
     isMentor: {
         type: Boolean,
@@ -138,32 +155,31 @@ const userSchema = new mongoose.Schema({
     mentorshipInfo: {
         track: [{
             type: String,
-            required: true,
+           // required: true,
         }],
         experience: {
             type: String,
-            required: true,
+            // required: true,
         },
         LinkedinUrl: {
             type: String,
-            required: true,
+            // required: true,
         },
         GithubUrl: {
             type: String,
-            required: true,
+            // required: true,
         },
         CV: {
             public_id: {
                 type: String,
-                required: true,
+                // required: true,
             },
             url: {
                 type: String,
-                required: true,
+                // required: true,
             },
         },
     },
 });
-
 const User = mongoose.model('User', userSchema);
 module.exports = User;

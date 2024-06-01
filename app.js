@@ -14,6 +14,11 @@ const postRouter = require('./routers/postRouter')
 const notificationRouter = require('./routers/notification')
 const userRouter = require('./routers/userRouter')
 const chatRouter = require('./routers/chat')
+const RequestMentorRouter = require('./routers/RequestMentor')
+const sessionRouter = require('./routers/session')
+const TrainingRouter = require('./routers/TrainingRouter')
+const TaskRouter = require('./routers/TaskRouter')
+const TestRouter = require('./routers/testRouter')
 
 const app = express();
 
@@ -38,6 +43,11 @@ app.use('/api/user/request', requestRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
 app.use('/api/post', postRouter);
 app.use('/api/communities' , communityRouter);
+app.use('/api/request' , RequestMentorRouter);
+app.use('/api/session' , sessionRouter);
+app.use('/api/training', TrainingRouter);
+app.use('/api/task', TaskRouter);
+app.use('/api/test', TestRouter);
 
 //Error handling 
 app.use((error, req, res, next) => {

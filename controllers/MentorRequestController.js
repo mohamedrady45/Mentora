@@ -1,62 +1,185 @@
 const MentorRequest = require('../Models/RequestMentor');
 const Mentor = require('../Models/user');
+const Training = require('../Models/Training');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type } = req.body;
+        const { track, languagePreference, genderPreference, type, description,minSalary,maxSalary } = req.body;
+        const userId = req.userId;
         let mentorRequestData = {
+            userId,
             track,
             languagePreference,
             genderPreference,
             type,
+            description
         };
 
         if (type === 'one-time') {
-            const { date, Reason } = req.body;
-            mentorRequestData = { ...mentorRequestData, date, Reason };
+            const { Reason } = req.body;
+            mentorRequestData = { ...mentorRequestData, Reason };
         } else if (type === 'long-term') {
-            const { duration, individualOrGroup, oneToOneOrGroupTraining, groupSize } = req.body;
-            mentorRequestData = { ...mentorRequestData, duration, individualOrGroup, oneToOneOrGroupTraining };
-            if (individualOrGroup === 'group') {
-                mentorRequestData.groupSize = groupSize;
-            }
+            const { duration } = req.body;
+            mentorRequestData = { ...mentorRequestData, duration };
+
         } else {
             return res.status(400).json({ message: 'Invalid mentorship type' });
         }
 
-        const mentorRequest = new MentorRequest(mentorRequestData);
+        const mentorRequest = new MentorRequest({
+            ...mentorRequestData,
+            minSalary,
+            maxSalary
+        });
         await mentorRequest.save();
 
-        
-        const recommendedMentors = await getRecommendedMentors(languagePreference, genderPreference, mentorRequest.minSalary, mentorRequest.maxSalary, mentorRequest.interests , track);
 
-        res.status(200).json({ message: 'Mentor request created successfully', recommendedMentors });
-        next();
+        res.status(201).json({
+            message: 'Mentor request created successfully',
+            data: {
+                RequestId: mentorRequest._id,
+            }
+        });
+
     } catch (error) {
         console.error('Error requesting mentor:', error);
         res.status(400).json({ message: 'Error requesting mentor' });
     }
 };
 
-const getRecommendedMentors = async (preferredLanguage, preferredGender, minSalary, maxSalary, interests, track , next) => {
+//get mentors recommendation
+const getMentorsRecommendation = async(req, res, next) =>{
     try {
         const mentors = await Mentor.find({
             languages: preferredLanguage,
             gender: preferredGender,
             minSalary: { $lte: maxSalary },
             maxSalary: { $gte: minSalary },
-            interests: { $in: interests },
             track: track
-        }).sort({ rating: -1 }).limit(10); 
+        }).select('_id firstName lastName profilePicture')
+          .sort({ rating: -1 }).limit(10); 
 
-        return mentors;
+        if (mentors.length === 0) {
+            return res.status(400).json({ message: 'No mentors match your request'});
+        }
+        res.status(400).json({ message: 'Mentors matches your request', mentors});
     } catch (error) {
         console.error('Error fetching recommended mentors:', error);
         throw new Error('Error fetching recommended mentors');
     }
 };
+//get trainings recommendation
+const getTrainingsRecommendation = async (req, res, next) => {
+    try {
+
+        const trainigs = await Training.find({
+            track: track,
+            language: preferredLanguage,
+        }).select('_id name track Salary')
+            .sort({ rating: -1 }).limit(10);
+
+        if (trainigs.length === 0) {
+            return res.status(400).json({ message: 'No trainings match your request' });
+        }
+        res.status(400).json({ message: 'Trainings matches your request', trainigs });
+    } catch (error) {
+        console.error('Error fetching recommended mentors.', error);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+// send the request to the mentor
+const RequestRecommendedMentor = async(req, res, next) =>{
+    try{
+       
+        const mentor = await Mentor.findById(req.userId);
+        if(!mentor){
+            return res.status(404).json({ message: 'There is no mentor selected' });   
+        }
+        const request = await MentorRequest.findById(req.params.id);
+        if(!request){
+            return res.status(404).json({ message: 'There is no request' });
+        }
+        mentor.requests.push(req.params.id);
+        await mentor.save();
+
+        res.status(200).json({ message: 'You requested the mentor.' });
+
+    }catch(err){
+        console.error('Error finding the mentor.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+//Mentor rejects the request
+const MentorRejectRequest = async(req, res, next) =>{
+    try{
+        const mentor = await Mentor.findById(req.userId);
+        if (!mentor) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const {status} = req.body;
+        const request = await MentorRequest.findById(req.params.id);
+        if(!request){
+            return res.status(404).json({ message: 'There is no request' });
+        }
+        //mentor rejects the request
+        if(status === "rejected"){
+            mentor.requests = mentor.requests.filter((requestId) => requestId.toString() != req.params.id);
+            request.status = "rejected";
+        } 
+        await mentor.save();
+        await request.save();
+        res.status(200).json({ message: 'You rejected the request.' });       
+    } catch(err){
+        console.error('Error rejecting the request.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+//Mentor accepts the request
+const MentorAcceptedRequest = async(req, res, next) =>{
+    try{
+        const mentor = await Mentor.findById(req.userId);
+        if (!mentor) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const {status} = req.body;
+        const request = await MentorRequest.findById(req.params.id);
+        if(!request){
+            return res.status(404).json({ message: 'There is no request' });
+        }
+        //mentor accepts the request
+        if(status === "accepted"){
+            request.status = "accepted";
+        } 
+        await mentor.save();
+        await request.save();
+        res.status(200).json({ message: 'You accepted the request.' });       
+    } catch(err){
+        console.error('Error rejecting the request.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
 
 
 module.exports = {
-    createMentorRequest
+    createMentorRequest,
+    getMentorsRecommendation,
+    RequestRecommendedMentor,
+    getTrainingsRecommendation,
+    MentorRejectRequest,
+    MentorAcceptedRequest,
 };

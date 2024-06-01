@@ -6,10 +6,9 @@ const io= require('../socket').gitIO
 
 const sendMessage = async (req, res, next) => {
     try {
-        console.log(req.body);
         const senderID = req.userId;
         const receiveID = req.body.receiveId;
-        console.log(serderID,receiveID);
+        console.log(senderID,receiveID);
         const files = req.files;
 
 

@@ -3,7 +3,6 @@ const fs = require('fs');
 
 const isAuth = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    console.log(authHeader)
 
     if (!authHeader || !authHeader.startsWith('Bearer')) {
         return res.status(401).json({ message: 'You can\'t access this feature without logging in!' });
@@ -21,8 +20,6 @@ const isAuth = async (req, res, next) => {
                 console.error('Invalid signature:', err.message);
                 // Handle the error
             } else {
-                // Token is valid, do something with the payload
-                console.log('Token payload:', payload);
                 req.userId = payload.userId;
                 next();
             }
