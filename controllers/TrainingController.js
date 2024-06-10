@@ -1,7 +1,7 @@
 const Training = require('../Models/Training');
 const Mentor = require('../Models/user');
 const Session = require('../Models/Session');
-const Test = require('../Models/test');
+const Test = require('../Models/Test');
 const MassageModel = require('../Models/message')
 const Announcement = require('../Models/Announcement');
 const { findById } = require('../Models/Task');
