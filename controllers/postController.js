@@ -7,7 +7,7 @@ const User = require('../Models/user');
 const upload = require("../middlewares/uploadFile");
 const path = require("path");
 const fs = require("fs");
-const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../Services/cloudinary");
+const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../services/cloudinary");
 
 
 

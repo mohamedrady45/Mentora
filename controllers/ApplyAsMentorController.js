@@ -1,6 +1,6 @@
 const Application = require("../Models/ApplyAsMentor");
 const User = require('../Models/user');
-const cloudinary = require('../Services/cloudinary');
+const cloudinary = require('../services/cloudinary');
 
 //Apply As Mentor
 const ApplyAsMentor = async(req, res, next) => {
