@@ -1,10 +1,10 @@
 const User = require('../Models/user');
-const OTPService = require('../servicesFolder/OTP');
-const authService = require('../servicesFolder/auth');
-const userService = require('../servicesFolder/user');
+const OTPService = require('../services/OTP');
+const authService = require('../services/auth');
+const userService = require('../services/user');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
-const hashingService = require('../servicesFolder/hashing');
+const hashingService = require('../services/hashing');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client("899300165493-hdf7qc1omn1qe8fa031t5un6mm8v3g5k.apps.googleusercontent.com");
 
