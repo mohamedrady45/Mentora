@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
+const http = require('http');
 const requestRouter = require('./routers/RequestMentor')
 
 const communityRouter = require('./routers/communityRouter');
@@ -21,6 +22,8 @@ const TaskRouter = require('./routers/TaskRouter')
 const TestRouter = require('./routers/testRouter')
 
 const app = express();
+
+// const server = http.createServer(app);
 
 require('dotenv').config();
 app.use(bodyParser.json());
@@ -62,34 +65,8 @@ mongoose.connect(DB, {}).then(() => {
   const server = app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
   });
-  const io = require('./socket').init(server);
-  let onlineUsers = [];
-  //Online users
-  io.on('connection', socket => {
-    console.log("client connected",socket.id);
-
-    socket.on('addNewUser', userId => {
-      !onlineUsers.some((user) => user.userId === userId) &&
-        onlineUsers.push({
-          userId: userId,
-          socketId: socket.id
-        })
-      io.emit('getOnlineUsers', onlineUsers)
-    });
-
-    socket.on('message', (data) => {
-      console.log('Received message:', data);
-
-      // Broadcast message to all connected clients
-      io.emit('message', data); // Emit the message to all connected clients
-    });
-
-    socket.on('disconnect', () => {
-      onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id);
-      io.emit('getOnlineUsers', onlineUsers);
-      console.log("client disconnected");
-    })
-  })
+  const io = require('./Socket/socket').init(server);
+  require('./Socket/onlineUser')(io);
 }).catch(err => {
   console.error('DB connection error:', err);
 

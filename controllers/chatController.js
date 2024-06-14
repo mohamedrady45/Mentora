@@ -1,7 +1,7 @@
 const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
-const io= require('../socket').gitIO
+const io= require('../Socket/socket').gitIO
 
 
 const sendMessage = async (req, res, next) => {
