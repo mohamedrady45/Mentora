@@ -92,12 +92,10 @@ const resetPassword = async (req, res, next) => {
 
 const verifyPasswordResetOTP = async (req, res, next) => {
   try {
-      console.log("done")
-      const { inputOtp ,email} = req.body;
-      const user = await User.findOne({email});
-      if (user.OTP == inputOtp) {
-        
-        return res.status(200).json({ success: true, message: 'OTP verfication is done' });
+      const {inputOtp} = req.body;
+      const user = await User.findOne({ OTP: inputOtp });
+      if (user) {
+       return res.status(200).json({ success: true, message: 'OTP verfication is done' });
       } else {
           res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
@@ -107,20 +105,37 @@ const verifyPasswordResetOTP = async (req, res, next) => {
   }
 };
 const setNewPassword = async (req, res, next) => {
-  const { newPassword,email } = req.body;
-  console.log(newPassword)
-  console.log(email)
+  const { newPassword, email } = req.body;
 
-  const user = await User.findOne({email});
-  console.log(user)
+  console.log('New password:', newPassword);
+  console.log('Email:', email);
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ success: false, message: 'Email and new password are required' });
+  }
+
   try {
+    const user = await User.findOne({ email });
+    
+    console.log('User:', user);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+    }
+
     const hashedPassword = await hashingService.hashPassword(newPassword);
     user.password = hashedPassword;
+
     await user.save();
+
     return res.status(200).json({ success: true, message: 'Password reset successfully' });
   } catch (error) {
     console.error('Error resetting password:', error);
-    next(error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 const getAllUsers = async (req, res) => {
