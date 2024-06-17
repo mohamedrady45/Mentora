@@ -4,6 +4,8 @@ const communityController = require('../controllers/communityController');
 const isAuth = require('../middlewares/isAuth');
 router.post('/createNewCommunity', isAuth , communityController.createCommunity);
 
+router.post('/getAllCommunities', isAuth , communityController.getUserCommunities);
+
 router.post('/:communityId/join', isAuth , communityController.joinCommunity);
 
 router.post('/:communityId/leave', isAuth  , communityController.leaveCommunity);

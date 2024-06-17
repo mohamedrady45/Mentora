@@ -63,7 +63,22 @@ const createCommunity = async (req, res) =>{
       res.status(500).json({ message: 'Error joining community' });
     }
   }
-
+  const getUserCommunities = async (req, res, next) => {
+    try {
+      const user = await User.findById(req.userId).populate('communities');
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({ communities: user.communities });
+      next(); 
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching user communities' });
+      next(error); 
+    }
+  };
   const leaveCommunity = async (req, res, next) => {
     const communityId = req.params.communityId;
   
@@ -167,5 +182,6 @@ const createCommunity = async (req, res) =>{
         joinCommunity ,
         leaveCommunity, 
         addQuestion , 
-        answerQuestion
+        answerQuestion ,
+        getUserCommunities
     };
