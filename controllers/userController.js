@@ -44,7 +44,60 @@ const getUser = async (req, res, next) => {
     next(err);
   }
 };
+const searchUser = async(req , res , next)=>{
+  const query = req.query.q;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
+  try {
+    let searchCriteria;
+    
+    if (query) {
+      const nameParts = query.split(' ').filter(Boolean); 
+
+      if (nameParts.length === 1) {
+        searchCriteria = {
+          $or: [
+            { firstName: new RegExp(nameParts[0], 'i') },
+            { lastName: new RegExp(nameParts[0], 'i') }
+          ]
+        };
+      } else if (nameParts.length === 2) {
+        searchCriteria = {
+          $and: [
+            { firstName: new RegExp(nameParts[0], 'i') },
+            { lastName: new RegExp(nameParts[1], 'i') }
+          ]
+        };
+      }
+    }
+
+    const users = await User.find(searchCriteria)
+      .skip(skip)
+      .limit(limit)
+      .select('firstName lastName role country bio profilePicture');
+
+    const count = await User.countDocuments(searchCriteria);
+
+    const results = users.map(user => ({
+      fullName: `${user.firstName} ${user.lastName}`,
+      role: user.role,
+      country: user.country,
+      bio: user.bio,
+      profilePicture: user.profilePicture
+    }));
+
+    res.json({
+      users: results,
+      total: count,
+      page,
+      pages: Math.ceil(count / limit)
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 const editUserData = async (req, res, next) => {
   try {
     //take data 
@@ -216,6 +269,7 @@ module.exports = {
   followUser,
   followerList,
   followingList,
-  scheduleList
+  scheduleList , 
+  searchUser
 }
 
