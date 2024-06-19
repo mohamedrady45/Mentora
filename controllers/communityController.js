@@ -65,7 +65,13 @@ const createCommunity = async (req, res) =>{
   }
   const getUserCommunities = async (req, res, next) => {
     try {
-      const user = await User.findById(req.userId).populate('communities');
+      const user = await User.findById(req.userId).populate({
+        path: 'communities',
+        populate: {
+          path: 'creator',
+          select: 'firstName'
+        }
+      });
   
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
