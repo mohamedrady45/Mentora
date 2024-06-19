@@ -4,7 +4,7 @@ const Training = require('../Models/Training');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type,minSalary,maxSalary } = req.body;
+        const { track, languagePreference, genderPreference, type, description,minSalary,maxSalary } = req.body;
         const userId = req.userId;
         let mentorRequestData = {
             userId,
@@ -12,6 +12,7 @@ const createMentorRequest = async (req, res, next) => {
             languagePreference,
             genderPreference,
             type,
+            description
         };
 
         if (type === 'one-time') {
@@ -88,6 +89,7 @@ const getTrainingsRecommendation = async (req, res, next) => {
     }
 };
 
+// send the request to the mentor
 const RequestRecommendedMentor = async(req, res, next) =>{
     try{
        
