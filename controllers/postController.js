@@ -9,46 +9,34 @@ const path = require("path");
 const fs = require("fs");
 const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../services/cloudinary");
 
-
-
-const getPosts =async (req, res, next) => {
-    try{
-        const userId =req.userId;
-        const posts = await Post.find({author:userId}).populate('author');
-        res.status(200).json({ message: 'All post',data:posts });
-    }
-    catch(err){ 
-        console.error('Error creating post.', err);
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
-        next(err);
-    }
-}
-//create post
 const addPost = async (req, res, next) => {
-    try{
+    try {
         const files = req.files;
         const { content } = req.body;
         const author = await User.findById(req.userId);
 
-        const newPost = new Post({
-            author: author, 
-            content: content,
-            attachments: files.map(async file => { 
-                const imageUrl = await getImageUrl(file.path);
+        let attachments = [];
+        if (files && files.length > 0) {
+            attachments = await Promise.all(files.map(async file => {
+                const imageUrl = await getImageUrl(file.path); 
                 return {
-                    type: file.mimetype.split('/')[0], 
-                    url: imageUrl                    
-                }  
-            })
+                    type: file.mimetype.split('/')[0],
+                    url: imageUrl
+                };
+            }));
+        }
+
+        const newPost = new Post({
+            author: author,
+            content: content,
+            attachments: attachments,
+            date: new Date()  
         });
 
         await newPost.save();
         res.status(200).json({ message: 'Your post was shared.' });
-    }
-    catch(err){ 
-        console.error('Error creating post.', err);
+    } catch (err) {
+        console.error('Error creating post:', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -56,20 +44,33 @@ const addPost = async (req, res, next) => {
     }
 };
 
+
 //update post
 const updatePost = async (req, res, next) => {
-    try{
-        //find the id of the post to be updated
-        const post = await Post.findById(req.params.id);
-        await post.updateOne({$set:req.body});
-        res.status(200).json({message:'The post has been successfully updated'})
-    }
-    catch(err){
-        console.error('Error updating post.', err);
+    try {
+        const postId = req.params.id;
+        const userId = req.userId;
+
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        if (post.author.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to edit this post' });
+        }
+
+        post.content = req.body.content; 
+        await post.save();
+
+        res.status(200).json({ message: 'The post has been successfully updated', data: post });
+    } catch (err) {
+        console.error('Error updating post:', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        next(err);  
+        next(err);
     }
 };
 
@@ -454,5 +455,4 @@ module.exports = {
     deleteRely,
     savePosts,
     sharePost,
-    getPosts
   };
