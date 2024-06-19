@@ -6,8 +6,7 @@ const isAuth = require('../middlewares/isAuth');
 const upload=require('../middlewares/uploadFile')
 const router = express.Router();
 
-router.get('/',isAuth, postController.getPosts);
-router.post('/',isAuth,  upload.array('files'), postController.addPost );
+router.post('/addPost',isAuth,  upload.array('files'), postController.addPost );
 router.put('/:id',isAuth, postController.updatePost);
 router.delete('/:id',isAuth, postController.deletePost);
 router.post('/:id/reactPost', isAuth, postController.reactPost);
