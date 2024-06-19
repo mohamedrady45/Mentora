@@ -110,6 +110,23 @@ const createCommunity = async (req, res) =>{
       res.status(500).json({ message: 'Error leaving the community' });
     }
   };
+
+  const getCommunity = async (req, res) => {
+    const communityId = req.params.communityId;
+
+    try {
+        const community = await Community.findById(communityId);
+
+        if (!community) {
+            return res.status(404).json({ message: 'Community not found' });
+        }
+
+        res.status(200).json({ message: 'Community found', community });
+    } catch (error) {
+        console.error('Error fetching community:', error);
+        res.status(500).json({ message: 'Error fetching community' });
+    }
+};
  const addQuestion = async (req, res)=> {
     const communityId = req.params.communityId;
     const { content } = req.body;
@@ -146,7 +163,90 @@ const createCommunity = async (req, res) =>{
       res.status(500).json({ message: 'Error creating question' });
     }
   }
+  const getCommunityQuestions = async (req, res) => {
+    const communityId = req.params.communityId;
+    if (!mongoose.Types.ObjectId.isValid(communityId)) {
+      return res.status(400).json({ message: 'Invalid community ID' });
+    }
   
+    try {
+      const community = await Community.findById(communityId).populate('questions');
+  
+      if (!community) {
+        return res.status(404).json({ message: 'Community not found' });
+      }
+  
+      const questions = community.questions;
+  
+      res.status(200).json({ questions });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching community questions' });
+    }
+  };
+  const searchCommunity = async (req, res) => {
+    const searchQuery = req.query.q; 
+
+    try {
+        let communities;
+
+        if (searchQuery) {
+            const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
+            communities = await Community.find({
+                $or: [
+                    { name: { $regex: regex } }, 
+                    { track: { $regex: regex } }, 
+                ]
+            });
+
+            if (communities.length === 0) {
+                return res.status(404).json({ message: 'No matching communities found' });
+            }
+        } else {
+            communities = await Community.find();
+        }
+
+        res.status(200).json({ communities });
+    } catch (error) {
+        console.error('Error fetching communities:', error);
+        res.status(500).json({ message: 'Error fetching communities' });
+    }
+};
+
+
+
+  const getOneCommunityQuestion = async (req, res) => {
+    const communityId = req.params.communityId;
+    const questionId = req.params.questionId;
+  
+    if (!mongoose.Types.ObjectId.isValid(communityId) || !mongoose.Types.ObjectId.isValid(questionId)) {
+      return res.status(400).json({ message: 'Invalid community ID or question ID' });
+    }
+  
+    try {
+      const community = await Community.findById(communityId).populate('questions');
+  
+      if (!community) {
+        return res.status(404).json({ message: 'Community not found' });
+      }
+  
+      const question = await Question.findById(questionId);
+  
+      if (!question) {
+        return res.status(404).json({ message: 'Question not found' });
+      }
+  
+      if (question.community != communityId) {
+        return res.status(403).json({ message: 'Question does not belong to this community' });
+      }
+  
+      res.status(200).json({ question });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching community question' });
+    }
+  };
+
   const answerQuestion = async  (req, res)=> {
     const questionId = req.params.questionId;
     const { content } = req.body;
@@ -188,5 +288,9 @@ const createCommunity = async (req, res) =>{
         leaveCommunity, 
         addQuestion , 
         answerQuestion ,
-        getUserCommunities
+        getUserCommunities,
+        getCommunityQuestions,
+        getOneCommunityQuestion , 
+        getCommunity,
+        searchCommunity
     };
