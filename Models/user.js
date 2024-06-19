@@ -154,8 +154,7 @@ const userSchema = new mongoose.Schema({
     },
     mentorshipInfo: {
         track: {
-            type: String,
-           // required: true,
+            type: [String], 
         },
         experience: {
             type: String,

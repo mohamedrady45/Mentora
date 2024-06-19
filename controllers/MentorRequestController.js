@@ -1,6 +1,7 @@
 const MentorRequest = require('../Models/RequestMentor');
 const Mentor = require('../Models/user');
 const Training = require('../Models/Training');
+const User = require('../Models/user');
 
 const createMentorRequest = async (req, res, next) => {
     try {
@@ -50,15 +51,40 @@ const createMentorRequest = async (req, res, next) => {
 
 const getMentorsRecommendation = async (req, res, next) => {
     try {
-        const { preferredLanguage, preferredGender, maxSalary, minSalary, track } = req.body; 
+        const { preferredLanguage, preferredGender, maxSalary, minSalary, track } = req.body;
 
-        const mentors = await Mentor.find({
-            languages: preferredLanguage,
-            gender: preferredGender,
-            minSalary: { $lte: maxSalary },
-            maxSalary: { $gte: minSalary },
-            track: track
-        }).select('_id firstName lastName profilePicture')
+        // Create a filter object
+        const filter = {
+            isMentor: true,  // Ensure only mentors are considered
+        };
+
+        // Add gender filter if provided
+        if (preferredGender) {
+            filter.gender = preferredGender;
+        }
+
+        // Add salary range filter if provided
+        if (minSalary !== undefined && maxSalary !== undefined) {
+            filter['mentorshipInfo.minSalary'] = { $lte: maxSalary };
+            filter['mentorshipInfo.maxSalary'] = { $gte: minSalary };
+        }
+
+        // Add track filter if provided
+        if (track) {
+            filter['mentorshipInfo.track'] = track;
+        }
+
+        // Add language filter if provided
+        if (preferredLanguage) {
+            filter.$or = [
+                { languages: { $in: [preferredLanguage] } },
+                { languages: { $exists: false } },
+                { languages: { $size: 0 } }
+            ];
+        }
+
+        const mentors = await User.find(filter)
+            .select('_id firstName lastName profilePicture')
             .sort({ rating: -1 })
             .limit(10);
 
@@ -66,12 +92,14 @@ const getMentorsRecommendation = async (req, res, next) => {
             return res.status(400).json({ message: 'No mentors match your request' });
         }
 
-        res.status(200).json({ message: 'Mentors match your request', mentors }); 
+        res.status(200).json({ message: 'Mentors match your request', mentors });
     } catch (error) {
         console.error('Error fetching recommended mentors:', error);
-        res.status(500).json({ message: 'Error fetching recommended mentors' }); 
+        res.status(500).json({ message: 'Error fetching recommended mentors' });
     }
 };
+
+
 
 const getTrainingsRecommendation = async (req, res, next) => {
     try {
