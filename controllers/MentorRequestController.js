@@ -4,7 +4,7 @@ const Training = require('../Models/Training');
 
 const createMentorRequest = async (req, res, next) => {
     try {
-        const { track, languagePreference, genderPreference, type, description,minSalary,maxSalary } = req.body;
+        const { track, languagePreference, genderPreference, type, description, minSalary, maxSalary, sessionDate, startTime, endTime } = req.body;
         const userId = req.userId;
         let mentorRequestData = {
             userId,
@@ -12,7 +12,10 @@ const createMentorRequest = async (req, res, next) => {
             languagePreference,
             genderPreference,
             type,
-            description
+            description,
+            sessionDate,
+            startTime,
+            endTime
         };
 
         if (type === 'one-time') {
@@ -21,7 +24,6 @@ const createMentorRequest = async (req, res, next) => {
         } else if (type === 'long-term') {
             const { duration } = req.body;
             mentorRequestData = { ...mentorRequestData, duration };
-
         } else {
             return res.status(400).json({ message: 'Invalid mentorship type' });
         }
@@ -32,7 +34,6 @@ const createMentorRequest = async (req, res, next) => {
             maxSalary
         });
         await mentorRequest.save();
-
 
         res.status(201).json({
             message: 'Mentor request created successfully',
@@ -47,8 +48,10 @@ const createMentorRequest = async (req, res, next) => {
     }
 };
 
-const getMentorsRecommendation = async(req, res, next) =>{
+const getMentorsRecommendation = async (req, res, next) => {
     try {
+        const { preferredLanguage, preferredGender, maxSalary, minSalary, track } = req.body; 
+
         const mentors = await Mentor.find({
             languages: preferredLanguage,
             gender: preferredGender,
@@ -56,17 +59,20 @@ const getMentorsRecommendation = async(req, res, next) =>{
             maxSalary: { $gte: minSalary },
             track: track
         }).select('_id firstName lastName profilePicture')
-          .sort({ rating: -1 }).limit(10); 
+            .sort({ rating: -1 })
+            .limit(10);
 
         if (mentors.length === 0) {
-            return res.status(400).json({ message: 'No mentors match your request'});
+            return res.status(400).json({ message: 'No mentors match your request' });
         }
-        res.status(400).json({ message: 'Mentors matches your request', mentors});
+
+        res.status(200).json({ message: 'Mentors match your request', mentors }); 
     } catch (error) {
         console.error('Error fetching recommended mentors:', error);
-        throw new Error('Error fetching recommended mentors');
+        res.status(500).json({ message: 'Error fetching recommended mentors' }); 
     }
 };
+
 const getTrainingsRecommendation = async (req, res, next) => {
     try {
 

@@ -1,5 +1,6 @@
 const userService = require('../services/user');
 const ApplyAsMentor = require('../Models/ApplyAsMentor')
+const User = require('../Models/user');
 
 const promoteToAdmin = async (req, res, next) => {
     try {
@@ -55,6 +56,9 @@ const acceptRequest = async (req, res, next) => {
 
         const userId = request.userId;
 
+        request.status = 'accepted';
+        await request.save();
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             {
@@ -65,15 +69,15 @@ const acceptRequest = async (req, res, next) => {
                         experience: request.experience,
                         LinkedinUrl: request.LinkedinUrl,
                         GithubUrl: request.GithubUrl,
-                        CV: request.CV,
                     }
                 }
             },
             { new: true }
         );
 
-        await ApplyAsMentor.findByIdAndDelete(requestId);
         await updatedUser.save();
+        await ApplyAsMentor.findByIdAndDelete(requestId);
+
         res.status(200).send({ message: 'Request accepted, user updated, and request deleted' });
     } catch (error) {
         res.status(500).send({ message: error.message });

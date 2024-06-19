@@ -3,34 +3,34 @@ const User = require('../Models/user');
 const cloudinary = require('../services/cloudinary');
 
 //Apply As Mentor
-const ApplyAsMentor = async(req, res, next) => {
-    try{
+const ApplyAsMentor = async (req, res, next) => {
+    try {
+        const userId = req.userId;
 
-        const user = User.findById(req.userId);
+        const user = await User.findById(userId); 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const { track, experience, YearOfExperience, LinkedinUrl, GithubUrl} = req.body;
-        const CV = req.file;
-        const result = await cloudinary.uploader.upload(CV.path, {
-            folder: "CV",
-        })
+        if (user.isMentor === true) {
+            return res.status(409).json({ error: 'You are already a mentor' }); 
+        }
+
+        const { track, experience, YearOfExperience, LinkedinUrl, GithubUrl } = req.body;
+
         const newApplication = new Application({
+            userId: userId, 
             track: track,
             experience: experience,
             YearOfExperience: YearOfExperience,
             LinkedinUrl: LinkedinUrl,
             GithubUrl: GithubUrl,
-            CV: {
-                public_id: result.public_id,
-                url: result.secure_url,
-            }
         });
-        
+
         await newApplication.save();
-        res.status(200).json({ message: 'Your application was submitted .' });
-    } catch(err){
+
+        res.status(200).json({ message: 'Your application was submitted.' });
+    } catch (err) {
         console.error('Error creating post.', err);
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -38,6 +38,7 @@ const ApplyAsMentor = async(req, res, next) => {
         next(err);
     }
 };
+
 
 //get all applications
 const getAllApplications = async (req, res) => {

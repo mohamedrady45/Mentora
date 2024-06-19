@@ -6,8 +6,7 @@ const MassageModel = require('../Models/message')
 const Announcement = require('../Models/Announcement');
 const { findById } = require('../Models/Task');
 
-//get all trainings
-const getUserAllTrainings = async (req, res) => {
+ const getUserAllTrainings = async (req, res) => {
     try {
         const userId = req.userId;
         const trainigs = await Training.find({ 'mentees.menteeId': userId }).select('_id name description track mentees.counter status');

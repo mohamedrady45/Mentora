@@ -6,22 +6,21 @@ const mentorRequestSchema = new mongoose.Schema({
         ref: 'user',
         required: true
     },
-    description:
-    {
+    description: {
         type: String,
         required: true
     },
-    status:{
+    status: {
         type: String,
         required: true,
-        enum:['reject','pendening','accepted'],
-        default:'pendening'
+        enum: ['pending', 'accepted', 'rejected'],
+        default: 'pending'
     },
     track: {
         type: String,
         enum: ['Frontend', 'Backend']
     },
-    language: {
+    languagePreference: {
         type: String,
         enum: ['English', 'Arabic']
     },
@@ -29,24 +28,32 @@ const mentorRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['Male', 'Female']
     },
-    type: { type: String, enum: ['one-time', 'long-term'] },
-
+    type: {
+        type: String,
+        enum: ['one-time', 'long-term']
+    },
     Reason: {
         type: String,
         enum: ['debug', 'code-review', 'consultation']
     },
-
-    duration: {
-        from: Date,
-        to: Date
+    minSalary: {
+        type: Number
     },
-    minSalary: { type: Number },
-    maxSalary: { type: Number },
-    status: {
+    maxSalary: {
+        type: Number
+    },
+    sessionDate: {
+        type: Date,
+        required: true
+    },
+    startTime: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected'], // Possible statuses of the request
-        default: 'pending'
+        required: true
     },
+    endTime: {
+        type: String,
+        required: true
+    }
 });
 
 const MentorRequest = mongoose.model('MentorRequest', mentorRequestSchema);

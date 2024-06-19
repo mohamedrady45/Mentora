@@ -20,5 +20,8 @@ router.get('/schedule',isAuth,userController.scheduleList);
 router.get('/search', isAuth,userController.searchUser);
 router.patch('/admin/promote/:id',isAuth , OnlyAdmins, adminController.promoteToAdmin);
 router.get('/admin/getAllApplications' , isAuth,OnlyAdmins , adminController.getAllApplications);
+router.post('/admin/acceptRequest/:id' , isAuth,OnlyAdmins , adminController.acceptRequest);
+router.post('/admin/rejectRequest/:id' , isAuth,OnlyAdmins , adminController.rejectRequest);
+
 module.exports = router;
 

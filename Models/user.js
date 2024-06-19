@@ -153,21 +153,18 @@ const userSchema = new mongoose.Schema({
         default: false,
     },
     mentorshipInfo: {
-        track: [{
+        track: {
             type: String,
            // required: true,
-        }],
+        },
         experience: {
             type: String,
-            // required: true,
         },
         LinkedinUrl: {
             type: String,
-            // required: true,
         },
         GithubUrl: {
             type: String,
-            // required: true,
         },
         CV: {
             public_id: {
