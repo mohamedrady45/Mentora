@@ -11,6 +11,8 @@ Mentora todo list:
 9-test community.
 10-edit post logic.
 11-socket io.(training chat - chat - community - notification).
+12-add validation in all request body.
+13-upload all files in cloudinary.
 
 
 
