@@ -5,7 +5,7 @@ const postController = require('../controllers/postController');
 const isAuth = require('../middlewares/isAuth');
 const upload=require('../middlewares/uploadFile')
 const router = express.Router();
-
+// https://mentora-5s1z.onrender.com/api/post/addpost
 router.post('/addPost',isAuth,  upload.array('files'), postController.addPost );
 router.put('/:id',isAuth, postController.updatePost);
 router.delete('/:id',isAuth, postController.deletePost);

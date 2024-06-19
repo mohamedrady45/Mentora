@@ -197,23 +197,21 @@ const createCommunity = async (req, res) =>{
   const searchCommunity = async (req, res) => {
     const searchQuery = req.query.q; 
 
+    if (!searchQuery) {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
+
     try {
-        let communities;
+        const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
+        const communities = await Community.find({
+            $or: [
+                { name: { $regex: regex } }, 
+                { track: { $regex: regex } }, 
+            ]
+        });
 
-        if (searchQuery) {
-            const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
-            communities = await Community.find({
-                $or: [
-                    { name: { $regex: regex } }, 
-                    { track: { $regex: regex } }, 
-                ]
-            });
-
-            if (communities.length === 0) {
-                return res.status(404).json({ message: 'No matching communities found' });
-            }
-        } else {
-            communities = await Community.find();
+        if (communities.length === 0) {
+            return res.status(404).json({ message: 'No matching communities found' });
         }
 
         res.status(200).json({ communities });
@@ -222,6 +220,7 @@ const createCommunity = async (req, res) =>{
         res.status(500).json({ message: 'Error fetching communities' });
     }
 };
+
 
 
 
