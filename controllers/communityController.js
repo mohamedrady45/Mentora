@@ -185,7 +185,7 @@ const createCommunity = async (req, res) =>{
     }
   };
   const searchCommunity = async (req, res) => {
-    const searchQuery = req.query.q; 
+    const {searchQuery} = req.body; 
 
     try {
         let communities;
