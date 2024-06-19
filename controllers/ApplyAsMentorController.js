@@ -17,7 +17,10 @@ const ApplyAsMentor = async (req, res, next) => {
         }
 
         const { track, experience, YearOfExperience, LinkedinUrl, GithubUrl } = req.body;
-
+        const CV = req.file;
+        const result = await cloudinary.uploader.upload(CV.path, {
+            folder: "CV",
+        });
         const newApplication = new Application({
             userId: userId, 
             track: track,
@@ -25,6 +28,10 @@ const ApplyAsMentor = async (req, res, next) => {
             YearOfExperience: YearOfExperience,
             LinkedinUrl: LinkedinUrl,
             GithubUrl: GithubUrl,
+            CV: {
+                public_id: result.public_id,
+                url: result.secure_url,
+            }
         });
 
         await newApplication.save();

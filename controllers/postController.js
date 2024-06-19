@@ -7,29 +7,30 @@ const User = require('../Models/user');
 const upload = require("../middlewares/uploadFile");
 const path = require("path");
 const fs = require("fs");
-const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../services/cloudinary");
+const cloudinary = require("../services/cloudinary");
 
 const addPost = async (req, res, next) => {
     try {
-        const files = req.files;
-        const { content } = req.body;
         const author = await User.findById(req.userId);
 
+        const { content } = req.body;
+        const files = req.files;
+        
         let attachments = [];
+        let result;
         if (files && files.length > 0) {
-            attachments = await Promise.all(files.map(async file => {
-                const imageUrl = await getImageUrl(file.path); 
-                return {
-                    type: file.mimetype.split('/')[0],
-                    url: imageUrl
-                };
-            }));
+            result = await cloudinary.uploader.upload(files.path, {
+                folder: "Post",
+            });
         }
 
         const newPost = new Post({
             author: author,
             content: content,
-            attachments: attachments,
+            attachments: {
+                public_id: result.public_id,
+                url: result.secure_url,
+            },
             date: new Date()  
         });
 

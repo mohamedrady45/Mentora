@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -22,7 +23,6 @@ const TestRouter = require('./routers/testRouter')
 
 const { app, server } = require('./Socket/socket')
 
-require('dotenv').config();
 app.use(bodyParser.json());
 app.use(cors());
 
