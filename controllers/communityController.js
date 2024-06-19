@@ -69,7 +69,7 @@ const createCommunity = async (req, res) =>{
         path: 'communities',
         populate: {
           path: 'creator',
-          select: 'firstName'
+          select: 'firstName lastName profilePicture'
         }
       });
   
