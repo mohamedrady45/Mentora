@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const communityController = require('../controllers/communityController'); 
 const isAuth = require('../middlewares/isAuth');
+
 router.post('/createNewCommunity', isAuth , communityController.createCommunity);
 
-router.get('/getAllCommunities', isAuth , communityController.getUserCommunities);
+router.get('/getAllCommunities', isAuth, communityController.getAllCommunities)
+
+router.get('/getUserCommunities', isAuth , communityController.getUserCommunities);
 
 router.get('/searchCommunity', isAuth , communityController.searchCommunity);
 
