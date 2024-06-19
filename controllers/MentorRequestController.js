@@ -53,34 +53,27 @@ const getMentorsRecommendation = async (req, res, next) => {
     try {
         const { preferredLanguage, preferredGender, maxSalary, minSalary, track } = req.body;
 
-        // Create a filter object
+        const parsedMaxSalary = parseInt(maxSalary);
+        const parsedMinSalary = parseInt(minSalary);
+
         const filter = {
-            isMentor: true,  // Ensure only mentors are considered
+            isMentor: true,  
         };
 
-        // Add gender filter if provided
         if (preferredGender) {
             filter.gender = preferredGender;
         }
 
-        // Add salary range filter if provided
-        if (minSalary !== undefined && maxSalary !== undefined) {
-            filter['mentorshipInfo.minSalary'] = { $lte: maxSalary };
-            filter['mentorshipInfo.maxSalary'] = { $gte: minSalary };
+        if (!isNaN(parsedMinSalary) && !isNaN(parsedMaxSalary)) {
+            filter['mentorshipInfo.salary'] = { $gte: parsedMinSalary, $lte: parsedMaxSalary };
         }
 
-        // Add track filter if provided
         if (track) {
-            filter['mentorshipInfo.track'] = track;
+            filter['mentorshipInfo.track'] = { $in: [track] };
         }
 
-        // Add language filter if provided
         if (preferredLanguage) {
-            filter.$or = [
-                { languages: { $in: [preferredLanguage] } },
-                { languages: { $exists: false } },
-                { languages: { $size: 0 } }
-            ];
+            filter.languages = { $in: [preferredLanguage] }; 
         }
 
         const mentors = await User.find(filter)
@@ -98,6 +91,7 @@ const getMentorsRecommendation = async (req, res, next) => {
         res.status(500).json({ message: 'Error fetching recommended mentors' });
     }
 };
+
 
 
 

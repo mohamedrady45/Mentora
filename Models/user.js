@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
 const validator = require('validator');
+
 const userSchema = new mongoose.Schema({
     role: {
         type: String,
-        enum: ['User', 'Admin','Mentor'],
+        enum: ['User', 'Admin', 'Mentor'],
         default: 'User',
     },
     firstName: {
@@ -87,7 +88,7 @@ const userSchema = new mongoose.Schema({
     },
     isVerified: {
         type: Boolean,
-        default: false, // Initially , are users are not verified till we verify them
+        default: false,
     },
     OTP: {
         type: String,
@@ -103,12 +104,10 @@ const userSchema = new mongoose.Schema({
     followers: {
         type: {
             counter: Number,
-            userIds: [
-                {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'User'
-                }
-            ]
+            userIds: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }]
         },
         default: {
             counter: 0,
@@ -121,10 +120,8 @@ const userSchema = new mongoose.Schema({
             userIds: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User'
-            }
-            ]
+            }]
         },
-
         default: {
             counter: 0,
             userIds: []
@@ -134,12 +131,10 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
     }],
-
     requests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'RequestMentor',
     }],
-
     notification: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Notification'
@@ -154,7 +149,7 @@ const userSchema = new mongoose.Schema({
     },
     mentorshipInfo: {
         track: {
-            type: [String], 
+            type: [String],
         },
         experience: {
             type: String,
@@ -168,14 +163,16 @@ const userSchema = new mongoose.Schema({
         CV: {
             public_id: {
                 type: String,
-                // required: true,
             },
             url: {
                 type: String,
-                // required: true,
             },
+        },
+        salary: {
+            type: Number,
         },
     },
 });
+
 const User = mongoose.model('User', userSchema);
 module.exports = User;
