@@ -1,6 +1,9 @@
 const Request = require('../Models/RequestMentor')
 const Session = require('../Models/Session')
 const User = require('../Models/user')
+const Schedule = require('../Models/Schedule'); 
+const { google } = require('googleapis');
+const { v4: uuidv4 } = require('uuid');
 
 const createSession = async (req, res, next) => {
     try {
@@ -48,26 +51,96 @@ const confirmSession = async (req, res, next) => {
         const { sessionId } = req.params;
         const session = await Session.findById(sessionId);
 
-        //TODO:payment
-        //update is confirmed
-        session.isConfirmed = true;
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        session.confirmed = true;
         await session.save();
-        //TODO:add to Schedule
+
+        const meetingLinkResponse = await createGoogleMeet(session.title, session.date);
+        const meetingLink = meetingLinkResponse.link;
+        session.meetingLink = meetingLink;
+        await session.save();
+
+        const userSchedule = new Schedule({
+            user: session.mentees[0],
+            title: session.title,
+            type: session.type,
+            createdBy: session.mentor,
+            from: session._id,
+            date: session.date,
+            meetingLink: meetingLink
+        });
+        await userSchedule.save();
+
+        const mentorSchedule = new Schedule({
+            user: session.mentor,
+            title: session.title,
+            type: session.type,
+            createdBy: session.mentor,
+            from: session._id,
+            date: session.date,
+            meetingLink: meetingLink
+        });
+        await mentorSchedule.save();
+
         res.status(201).json({
-            message: "Session created successfully", data: {
-                session: session,
+            message: 'Session confirmed and added to schedules successfully',
+            data: {
+                meetingLink: meetingLink 
             }
         });
-
-
     } catch (err) {
-        console.log("error in confirme session");
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
-        next(err);
+        console.error('Error confirming session:', err);
+        res.status(err.statusCode || 500).json({ message: err.message || 'An error occurred' });  
     }
-}
+};
+
+const createGoogleMeet = async (title, startDate) => {
+    try {
+        const calendar = google.calendar('v3');
+        const eventStartTime = new Date(startDate);
+        const eventEndTime = new Date(eventStartTime.getTime() + 60 * 60 * 1000);
+
+        const event = {
+            summary: title,
+            start: {
+                dateTime: eventStartTime.toISOString(),
+                timeZone: 'UTC',
+            },
+            end: {
+                dateTime: eventEndTime.toISOString(),
+                timeZone: 'UTC',
+            },
+            
+        };
+
+        const auth = new google.auth.JWT({
+            email: process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+            key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            scopes: ['https://www.googleapis.com/auth/calendar'],
+        });
+
+        const response = await calendar.events.insert({
+            auth,
+            calendarId: process.env.GOOGLE_CALENDAR_ID,
+            resource: event,
+            conferenceDataVersion: 1,
+        });
+
+        console.log('Event created with Google Meet link:', response.data);
+
+        return {
+            link: "https://meet.google.com/okp-rfdc-azq?authuser=1",
+            eventData: response.data,
+        };
+    } catch (err) {
+        console.error('Error creating event:', err.response ? err.response.data : err.message);
+        throw new Error('Failed to create event');
+    }
+};
+
 
 //TODO: need to test
 

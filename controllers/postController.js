@@ -29,14 +29,13 @@ const getPosts =async (req, res, next) => {
 const addPost = async (req, res, next) => {
     try{
         const files = req.files;
-        const { author, content } = req.body;
+        const { content } = req.body;
+        const author = await User.findById(req.userId);
 
-        // Create a new post instance
         const newPost = new Post({
             author: author, 
             content: content,
             attachments: files.map(async file => { 
-                // Upload the file to cloudinary
                 const imageUrl = await getImageUrl(file.path);
                 return {
                     type: file.mimetype.split('/')[0], 
@@ -111,9 +110,9 @@ const reactPost = async (req, res, next) => {
         if (!post) {
             return res.status(404).json({ error: 'This post does not exist' });
         }
-
+        const author = await User.findById(req.userId);
       //Check if the user has already reacted to the post
-      let userReacted = post.reacts.users.includes(req.body.author);
+      let userReacted = post.reacts.users.includes(author);
       if (! userReacted) {
         // User has not reacted, allow reacting to the post
         post.reacts.count += 1;
@@ -123,7 +122,7 @@ const reactPost = async (req, res, next) => {
       } else {
         // User has already reacted, allow disliking the post
         post.reacts.count -= 1;
-        post.reacts.users.pull(req.body.author);
+        post.reacts.users.pull(author);
         userReacted = false;
         res.status(200).json({message:'You disliked the post.'})
       }
@@ -148,8 +147,9 @@ const addComment  = async (req,res,next)=>{
         if (!post) {
             return res.status(404).json({ error: 'This post does not exist' });
         }
+        const author = await User.findById(req.userId);
         const files = req.files;
-        const  {author, content} = req.body;
+        const  {content} = req.body;
 
         const newComment = new  Comment ({
             author: author,
@@ -193,15 +193,12 @@ const updateComment = async (req, res, next) => {
     }
 };
 
-//delete comment
 const deleteComment = async (req, res, next) => {
     try{
-        // Find the post to which the comment belongs
         const post = await Post.findById(req.params.postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
-        //find the id of the comment to be deleted
         const comment = await Comment.findById(req.params.commentId);
         if (!comment) {
             return res.status(404).json({ message: "Comment not found" });
@@ -221,7 +218,6 @@ const deleteComment = async (req, res, next) => {
     }
 };
 
-//react for a comment
 const reactComment = async (req, res, next) => {
     try {
         const comment = await Comment.findById(req.params.id);
@@ -229,19 +225,16 @@ const reactComment = async (req, res, next) => {
         if (!comment) {
             return res.status(404).json({ error: 'This comment does not exist' });
         }
-
-      //Check if the user has already reacted to the comment
-      let userReacted = comment.reacts.users.includes(req.body.author);
+      const author = await User.findById(req.userId);
+      let userReacted = comment.reacts.users.includes(author);
       if (! userReacted) {
-        // User has not reacted, allow reacting to the comment
         comment.reacts.count += 1;
-        comment.reacts.users.push(req.body.author);
+        comment.reacts.users.push(author);
         userReacted = true;
         res.status(200).json({message:'You liked the comment.'});
       } else {
-        // User has already reacted, allow disliking the comment
         comment.reacts.count -= 1;
-        comment.reacts.users = comment.reacts.users.pull(req.body.author);
+        comment.reacts.users = comment.reacts.users.pull(author);
         userReacted = false;
         res.status(200).json({message:'You disliked the comment.'});
       }
@@ -316,19 +309,19 @@ const reactReply = async (req, res, next) => {
         if (!reply) {
             return res.status(404).json({ error: 'This reply does not exist' });
         }
-
+        const author = await User.findById(req.userId);
       //Check if the user has already reacted to the comment
-      let userReacted = reply.reacts.users.includes(req.body.author);
+      let userReacted = reply.reacts.users.includes(author);
       if (! userReacted) {
         // User has not reacted, allow reacting to the comment
         reply.reacts.count += 1;
-        reply.reacts.users.push(req.body.author);
+        reply.reacts.users.push(author);
         userReacted = true;
         res.status(200).json({message:'You liked the comment.'});
       } else {
         // User has already reacted, allow disliking the comment
         reply.reacts.count -= 1;
-        reply.reacts.users = reply.reacts.users.pull(req.body.author);
+        reply.reacts.users = reply.reacts.users.pull(author);
         userReacted = false;
         res.status(200).json({message:'You disliked the comment.'});
       }
@@ -377,7 +370,8 @@ const deleteRely = async (req, res, next) => {
 //save post
 const savePosts = async(req, res, next) =>{
     try{
-        const user = await User.findById(req.body.author);
+        const author = await User.findById(req.userId);
+        const user = await User.findById(author);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -416,9 +410,9 @@ const  sharePost = async (req, res, next) => {
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
-
+        const author = await User.findById(req.userId);
         const sharedPost = new Post({
-            author: req.body.author, 
+            author: author, 
             content: post.content,   
           });
       
@@ -428,7 +422,7 @@ const  sharePost = async (req, res, next) => {
 
           post.shares.users = post.shares.users || []; // Initialize users array if it doesn't exist
           post.shares.count += 1;
-          post.shares.users.push(req.body.author);
+          post.shares.users.push(author);
          
           await sharedPost.save();
           await post.save();

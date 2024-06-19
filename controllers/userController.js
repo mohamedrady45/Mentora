@@ -1,15 +1,12 @@
 const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
-const Schadule = require('../Models/Schadule')
+const Schadule = require('../Models/Schedule')
 
 const getUser = async (req, res, next) => {
   try {
-    //take data 
     const userId = req.userId;
-    //find user
     const user = await User.findById(userId)
-    //if user not found
     if (!user) {
       const err = new Error('Can\'t find user');
       err.statusCode = 404;
