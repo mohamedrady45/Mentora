@@ -14,13 +14,15 @@ router.post('/:id/sharePost', isAuth, postController.sharePost);
 router.post('/:id/savePosts', isAuth, postController.savePosts);
 
 //Comment
-router.post('/:id/addComment', isAuth, upload.array('files'), postController.addComment);
-router.put('/updateComment/:id', isAuth, postController.updateComment);
-router.delete('/:id/deleteComment', isAuth, postController.deleteComment);
-router.post('/:id/reactComment', isAuth, postController.reactComment);
+router.get('/:postId/getPostComments' , isAuth, postController.getPostComments)
+router.post('/:id/addComment', isAuth, postController.addComment);
+router.put('/:postId/:commentId/updateComment', isAuth, postController.updateComment);
+router.delete('/:postId/:commentId/deleteComment', isAuth, postController.deleteComment);
+router.post('/:postId/commentId/reactComment', isAuth, postController.reactComment);
 //Reply
-router.post('/:postId/:commentId/replyComment', isAuth, upload.array('files'), postController.replyComment);
-router.post('/:commentId/:replyId/reactReply', isAuth, postController.reactReply);
-router.delete('/:commentId/:replyId/deleteReply', isAuth, postController.deleteRely);
+router.post('/:postId/:commentId/replyComment', isAuth, postController.replyComment);
+router.post('/:postId/:commentId/:replyId/reactReply', isAuth, postController.reactReply);
+router.delete('/:postId/:commentId/:replyId/deleteReply', isAuth, postController.deleteReply);
+router.get('/:postId/comments/:commentId/replies' , isAuth , postController.getCommentReplies)
 
 module.exports = router;
