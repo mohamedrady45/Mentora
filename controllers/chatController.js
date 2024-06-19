@@ -1,7 +1,8 @@
 const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
-const io= require('../socket').gitIO
+const { getReceiverSocketId, io } =require('../Socket/socket');
+
 
 
 const sendMessage = async (req, res, next) => {
@@ -51,6 +52,13 @@ const sendMessage = async (req, res, next) => {
 
         chat.messages.push(Nmsg);
         await chat.save();
+
+        // SOCKET IO FUNCTIONALITY WILL GO HERE
+		const receiverSocketId = getReceiverSocketId(receiveID);
+		if (receiverSocketId) {
+			// io.to(<socket_id>).emit() used to send events to specific client
+			io.to(receiverSocketId).emit("newMessage", newMessage);
+		}
         TODO:
         // io.to(`${senderID}`).emit('getMessage',Nmsg);
         // io.to(`${resecerID}`) .emit('getReceiveMessage',Nmsg);

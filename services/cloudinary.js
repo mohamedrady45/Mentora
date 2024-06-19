@@ -1,5 +1,5 @@
 const cloudinary = require('cloudinary')
-
+require('dotenv').config();
 const upload = require('../middlewares/uploadFile');
 const fs = require("fs");
 

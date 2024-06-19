@@ -20,7 +20,7 @@ const TrainingRouter = require('./routers/TrainingRouter')
 const TaskRouter = require('./routers/TaskRouter')
 const TestRouter = require('./routers/testRouter')
 
-const app = express();
+const { app, server } = require('./Socket/socket')
 
 require('dotenv').config();
 app.use(bodyParser.json());
@@ -35,16 +35,16 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
-app.use('/api/user', authRouter,userRouter);
+app.use('/api/user', authRouter, userRouter);
 app.use('/api/communities', communityRouter);
 app.use('/api/notification', notificationRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/user/request', requestRouter);
 app.use('/api/Application', ApplyAsMentorRouter);
 app.use('/api/post', postRouter);
-app.use('/api/communities' , communityRouter);
-app.use('/api/request' , RequestMentorRouter);
-app.use('/api/session' , sessionRouter);
+app.use('/api/communities', communityRouter);
+app.use('/api/request', RequestMentorRouter);
+app.use('/api/session', sessionRouter);
 app.use('/api/training', TrainingRouter);
 app.use('/api/task', TaskRouter);
 app.use('/api/test', TestRouter);
@@ -59,37 +59,39 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(DB, {}).then(() => {
   console.log('DB connection successfully!');
-  const server = app.listen(PORT, () => {
+  //run server.
+  server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
   });
-  const io = require('./socket').init(server);
-  let onlineUsers = [];
-  //Online users
-  io.on('connection', socket => {
-    console.log("client connected",socket.id);
+  // //web socket
+  // const io = require('./socket').init(server);
+  // let onlineUsers = [];
+  // //Online users
+  // io.on('connection', socket => {
+  //   console.log("client connected",socket.id);
 
-    socket.on('addNewUser', userId => {
-      !onlineUsers.some((user) => user.userId === userId) &&
-        onlineUsers.push({
-          userId: userId,
-          socketId: socket.id
-        })
-      io.emit('getOnlineUsers', onlineUsers)
-    });
+  //   socket.on('addNewUser', userId => {
+  //     !onlineUsers.some((user) => user.userId === userId) &&
+  //       onlineUsers.push({
+  //         userId: userId,
+  //         socketId: socket.id
+  //       })
+  //     io.emit('getOnlineUsers', onlineUsers)
+  //   });
 
-    socket.on('message', (data) => {
-      console.log('Received message:', data);
+  //   socket.on('message', (data) => {
+  //     console.log('Received message:', data);
 
-      // Broadcast message to all connected clients
-      io.emit('message', data); // Emit the message to all connected clients
-    });
+  //     // Broadcast message to all connected clients
+  //     io.emit('message', data); // Emit the message to all connected clients
+  //   });
 
-    socket.on('disconnect', () => {
-      onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id);
-      io.emit('getOnlineUsers', onlineUsers);
-      console.log("client disconnected");
-    })
-  })
+  //   socket.on('disconnect', () => {
+  //     onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id);
+  //     io.emit('getOnlineUsers', onlineUsers);
+  //     console.log("client disconnected");
+  //   })
+  // })
 }).catch(err => {
   console.error('DB connection error:', err);
 
