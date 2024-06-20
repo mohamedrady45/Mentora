@@ -4,7 +4,7 @@ Mentora todo list:
 2-recomendation in request mentor.
 3-test apply as mentor.
 4-add Mentor access.
-5-add notification.
+5-add notification.(running...) => post(comment - replay - react - share) - community (add question - answer you question ) -session(add session - upload material - confirm session)-training(join to training - new announcement - new material -new session - add new task).
 6-add schedule .
 7-handel some errors (as this user not allowed to do this).
 8-add session integration.
@@ -13,6 +13,9 @@ Mentora todo list:
 11-socket io.(training chat - chat - community - notification).
 12-add validation in all request body.
 13-upload all files in cloudinary.
-
+14-user data 
+15-default picture profile.
+16-training task 
+17-training material 
 
 

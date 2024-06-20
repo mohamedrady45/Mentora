@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const MentorSchema =require('./message')
 
+
 const TrainingSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -69,8 +70,11 @@ const TrainingSchema = new mongoose.Schema({
     messages:[{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Message'
+    }],
+    material:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Material'
     }]
-    
 });
 
 const Training = mongoose.model('Training', TrainingSchema);

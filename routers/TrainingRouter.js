@@ -9,26 +9,34 @@ const router = express.Router();
 
 router.get('/',isAuth, TrainingController.getUserAllTrainings);
 router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
-router.get('/mentor',isAuth,isMentor,TrainingController.getMentorTrainings);//only mentor
+router.get('/mentor',isAuth,TrainingController.getMentorTrainings);//only mentor
 
 router.put('/enroll/:trainingId',isAuth, TrainingController.enrollInTraining);
-router.post('/create-training', isAuth,isMentor, TrainingController.createTraining);//only mentor
-router.put('/:id',isAuth,isMentor, TrainingController.updateTraining);//only mentor
-router.delete('/:id',isAuth,isMentor, TrainingController.deleteTraining);//only mentor
+router.post('/create-training', isAuth, TrainingController.createTraining);//only mentor
+router.put('/:id',isAuth, TrainingController.updateTraining);//only mentor
+router.delete('/:id',isAuth, TrainingController.deleteTraining);//only mentor
 
-router.put('/:id/startTraining', isAuth,isMentor, TrainingController.startTraining);//only mentor
-router.put('/:id/endTraining', isAuth,isMentor, TrainingController.endTraining);//only mentor
+router.put('/:id/startTraining', isAuth, TrainingController.startTraining);//only mentor
+router.put('/:id/endTraining', isAuth, TrainingController.endTraining);//only mentor
 
-router.post('/addSession', isAuth,isMentor,TrainingController.addSession);//only mentor
+router.post('/addSession', isAuth,TrainingController.addSession);//only mentor
 router.get('/getSessions/:trainingId',isAuth, TrainingController.getSessions);
 
-router.post('/addAnnouncement', isAuth,isMentor, TrainingController.addAnnouncement);//only mentor
+router.post('/addAnnouncement', isAuth, TrainingController.addAnnouncement);//only mentor
 router.get('/getAnnouncements/:trainingId',isAuth, TrainingController.getAnnouncements);
-router.delete('/deleteAnnouncement/:announcementId',isMentor,isAuth, TrainingController.deleteAnnouncement);//only mentor
-router.put('/editAnnouncement/:announcementId',isAuth,isMentor, TrainingController.editAnnouncement);//only mentor
+router.delete('/deleteAnnouncement/:announcementId',isAuth, TrainingController.deleteAnnouncement);//only mentor
+router.put('/editAnnouncement/:announcementId',isAuth, TrainingController.editAnnouncement);//only mentor
 
 router.post('/sendMessage/:trainingId', isAuth,upload.array('files'), TrainingController.sendMessage);
 router.get('/getMessages/:trainingId',isAuth, TrainingController.getMessages);
+
+//material
+router.post('/:trainigId/uploadMaterial',isAuth,upload.array('files'),TrainingController.uploadMaterial)//only mentor
+router.put('/editMaterial/:materialId',isAuth,upload.array('files'),TrainingController.editMaterial);//only mentor
+router.delete('/deleteMaterial/:materialId', isAuth,TrainingController.deleteMaterial);//only mentor
+router.get('/allTrainingMateria/:trainingId', TrainingController.getAllMaterials);
+
+
 
 
 module.exports = router;

@@ -118,6 +118,7 @@ const leaveCommunity = async (req, res, next) => {
     user.communities.pull(communityId);
     await user.save();
     res.status(200).json({ message: 'You leave this community' });
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error leaving the community' });
