@@ -7,12 +7,12 @@ const upload=require('../middlewares/uploadFile')
 const router = express.Router();
 // https://mentora-5s1z.onrender.com/api/post/addpost
 router.post('/addPost',isAuth,  upload.array('files'), postController.addPost );
-router.put('/:id',isAuth, postController.updatePost);
-router.delete('/:id',isAuth, postController.deletePost);
-router.post('/:id/reactPost', isAuth, postController.reactPost);
-router.post('/:id/sharePost', isAuth, postController.sharePost);
-router.post('/:id/savePosts', isAuth, postController.savePosts);
-
+router.put('/:postId/updatePost',isAuth, postController.updatePost);
+router.delete('/:postId/deletePost',isAuth, postController.deletePost);
+router.post('/:postId/reactPost', isAuth, postController.reactPost);
+router.post('/:postI/sharePost', isAuth, postController.sharePost);
+router.post('/:postId/savePosts', isAuth, postController.savePosts);
+router.get('/:postId', postController.getPostById);
 //Comment
 router.get('/:postId/getPostComments' , isAuth, postController.getPostComments)
 router.post('/:id/addComment', isAuth, postController.addComment);
