@@ -12,7 +12,8 @@ router.delete('/:postId/deletePost',isAuth, postController.deletePost);
 router.post('/:postId/reactPost', isAuth, postController.reactPost);
 router.post('/:postId/sharePost', isAuth, postController.sharePost);
 router.post('/:postId/savePosts', isAuth, postController.savePosts);
-router.get('/:postId', postController.getPostById);
+router.get('/:postId',isAuth ,  postController.getPostById);
+router.get('/' , isAuth , postController.getAllPosts);
 //Comment
 router.get('/:postId/getPostComments' , isAuth, postController.getPostComments)
 router.post('/:postId/addComment', isAuth,upload.array('files'), postController.addComment);

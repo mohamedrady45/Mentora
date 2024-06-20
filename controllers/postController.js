@@ -14,6 +14,10 @@ const addPost = async (req, res, next) => {
         const { content } = req.body;
         const author = await User.findById(req.userId);
 
+        if (!author) {
+            return res.status(404).json({ error: 'Author not found' });
+        }
+
         let attachments = [];
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => {
@@ -30,7 +34,7 @@ const addPost = async (req, res, next) => {
         }
 
         const newPost = new Post({
-            author: author,
+            author: author._id,
             content: content,
             attachments: attachments,
             date: new Date()  
@@ -46,6 +50,7 @@ const addPost = async (req, res, next) => {
         next(err);
     }
 };
+
 
 const getPostById = async (req, res, next) => {
     try {
@@ -92,7 +97,7 @@ const updatePost = async (req, res, next) => {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        if (post.author!= userId) {
+        if (post.author.toString() !== userId.toString()) {
             return res.status(403).json({ message: 'You are not authorized to edit this post' });
         }
 
@@ -109,6 +114,7 @@ const updatePost = async (req, res, next) => {
     }
 };
 
+
 //delete post
 const deletePost = async (req, res, next) => {
     try {
@@ -121,7 +127,7 @@ const deletePost = async (req, res, next) => {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        if (post.author!= userId) {
+        if (post.author.toString() !== userId.toString()) {
             return res.status(403).json({ message: 'You are not authorized to delete this post' });
         }
 
@@ -138,17 +144,52 @@ const deletePost = async (req, res, next) => {
 };
 
 
+
 //get all posts
 const getAllPosts = async (req, res) => {
     try {
-      const posts = await Post.find();
-      console.log(posts);
-      res.status(200).json(posts);
+        const posts = await Post.find()
+            .populate('author', 'firstName lastName profilePicture')
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'firstName lastName profilePicture'
+                }
+            });
+
+        const postsWithAuthorInfo = posts.map(post => {
+            return {
+                _id: post._id,
+                author: post.author ? {
+                    firstName: post.author.firstName,
+                    lastName: post.author.lastName,
+                    profilePicture: post.author.profilePicture
+                } : null,
+                content: post.content,
+                date: post.date,
+                reacts: post.reacts,
+                comments: post.comments.map(comment => ({
+                    ...comment.toObject(),
+                    author: {
+                        firstName: comment.author.firstName,
+                        lastName: comment.author.lastName,
+                        profilePicture: comment.author.profilePicture,
+                    }
+                })),
+                attachments: post.attachments,
+                shares: post.shares
+            };
+        });
+
+        console.log(postsWithAuthorInfo);
+        res.status(200).json(postsWithAuthorInfo);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error fetching posts:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 //react post
 const reactPost = async (req, res, next) => {
@@ -581,8 +622,6 @@ const savePosts = async (req, res, next) => {
         next(err);
     }
 };
-
-module.exports = savePosts;
 
 
 //share post
