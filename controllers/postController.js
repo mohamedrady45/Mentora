@@ -158,29 +158,21 @@ const getAllPosts = async (req, res) => {
                 }
             });
 
-        const postsWithAuthorInfo = posts.map(post => {
-            return {
-                _id: post._id,
-                author: post.author ? {
-                    firstName: post.author.firstName,
-                    lastName: post.author.lastName,
-                    profilePicture: post.author.profilePicture
-                } : null,
-                content: post.content,
-                date: post.date,
-                reacts: post.reacts,
-                comments: post.comments.map(comment => ({
-                    ...comment.toObject(),
-                    author: {
-                        firstName: comment.author.firstName,
-                        lastName: comment.author.lastName,
-                        profilePicture: comment.author.profilePicture,
-                    }
-                })),
-                attachments: post.attachments,
-                shares: post.shares
-            };
-        });
+        const postsWithAuthorInfo = posts.map(post => ({
+            _id: post._id,
+            author: post.author ? {
+                firstName: post.author.firstName,
+                lastName: post.author.lastName,
+                profilePicture: post.author.profilePicture
+            } : null,
+            content: post.content,
+            date: post.date,
+            attachments: post.attachments,
+            reacts: post.reacts.count,
+            commentsCount: post.comments.length,
+            reactsCount: post.reacts.count,
+            sharesCount: post.shares.count,
+        }));
 
         console.log(postsWithAuthorInfo);
         res.status(200).json(postsWithAuthorInfo);
@@ -189,6 +181,7 @@ const getAllPosts = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 
 //react post
