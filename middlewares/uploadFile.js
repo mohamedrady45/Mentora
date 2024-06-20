@@ -3,7 +3,7 @@ const multer = require('multer');
 // Multer Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        cb(null, 'uploads');
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + '-' + file.originalname);
@@ -11,19 +11,19 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg'||
-        file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg' ||
-        file.mimetype === 'image/pdf' ||
-        file.mimetype === 'image/docx'
-
-        ) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
-    } else { cb(null, false); return cb(new Error('Unsupported file format!')); }
+    } else {
+        cb(null, false);
+        return cb(new Error('Unsupported file format!'));
+    }
 };
 
 
-
-const upload = multer({ storage:storage});
+const upload = multer({
+     storage:storage,
+     fileFilter: fileFilter
+    });
 
 module.exports = upload; 
