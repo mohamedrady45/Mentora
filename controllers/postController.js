@@ -83,7 +83,7 @@ const getPostById = async (req, res, next) => {
 //update post
 const updatePost = async (req, res, next) => {
     try {
-        const postId = req.params.id;
+        const postId = req.params.postId;
         const userId = req.userId;
 
         const post = await Post.findById(postId);
@@ -112,7 +112,7 @@ const updatePost = async (req, res, next) => {
 //delete post
 const deletePost = async (req, res, next) => {
     try {
-        const postId = req.params.id;
+        const postId = req.params.postId;
         const userId = req.userId; 
 
         const post = await Post.findById(postId);
@@ -153,7 +153,7 @@ const getAllPosts = async (req, res) => {
 //react post
 const reactPost = async (req, res, next) => {
     try {
-        const postId = req.params.id;
+        const postId = req.params.postId;
         const userId = req.userId; 
 
         const post = await Post.findById(postId);
@@ -222,7 +222,7 @@ const getPostComments = async (req, res, next) => {
 //add comment
 const addComment = async (req, res, next) => {
     try {
-        const postId = req.params.id;
+        const postId = req.params.postId;
         const userId = req.userId; 
 
         const post = await Post.findById(postId);
@@ -553,7 +553,7 @@ const deleteReply = async (req, res, next) => {
 const savePosts = async (req, res, next) => {
     try {
         const userId = req.userId; 
-        const postId = req.params.id; 
+        const postId = req.params.postId; 
 
         const user = await User.findById(userId);
         if (!user) {
@@ -588,7 +588,7 @@ module.exports = savePosts;
 //share post
 const  sharePost = async (req, res, next) => {
     try{
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
