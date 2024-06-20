@@ -19,7 +19,7 @@ router.get('/:communityId/questions/:questionId', isAuth , communityController.g
 
 router.post('/:communityId/join', isAuth , communityController.joinCommunity);
 
-router.delete('/:communityId/leave', isAuth  , communityController.leaveCommunity);
+router.put('/:communityId/leave', isAuth  , communityController.leaveCommunity);
 
 router.post('/:communityId/addQuestion', isAuth , communityController.addQuestion);
 
