@@ -15,9 +15,6 @@ const addPost = async (req, res, next) => {
         const { content } = req.body;
         const files = req.files;
         let attachments = [];
-        if(files.length == 0){
-            return res.status(404).json({ error: 'files not found' }); 
-        }
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => {
                 return cloudinary.uploader.upload(file.path, {
@@ -153,19 +150,26 @@ const addComment  = async (req,res,next)=>{
             return res.status(404).json({ error: 'This post does not exist' });
         }
         const author = await User.findById(req.userId);
-        const files = req.files;
         const  {content} = req.body;
-
+        const files = req.files;
+        let attachments = [];
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Post",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
+            }));
+        }
         const newComment = new  Comment ({
             author: author,
             content:content,
-            attachments: files.map(async file => {
-                const imageUrl = await getImageUrl(file.path);
-                return{
-                    type: file.mimetype.split('/')[0], 
-                    url: file.path
-                }
-            })
+            attachments: attachments,
         });
         post.comments.push(newComment);
         await post.save(); 
@@ -269,19 +273,30 @@ const replyComment  = async (req,res,next)=>{
         if (!comment) {
             return res.status(404).json({ error: 'This comment does not exist' });
         }
-        const  files = req.files;
+        
         const {author, content} = req.body;
-
+        const  files = req.files;
+        let attachments = [];
+        if(files.length == 0){
+            return res.status(404).json({ error: 'files not found' }); 
+        }
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Post",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
+            }));
+        }
         const  reply = new Reply ({
             author: author,
             content: content,
-            attachments: files.map(async file => {
-                const imageUrl = await getImageUrl(file.path);
-                return{
-                    type: file.mimetype.split('/')[0],
-                    url: file.path,
-                }
-            }),
+            attachments: attachments,
         });
         comment.replies = comment.replies || []; // Initialize replies if it doesn't exist
 

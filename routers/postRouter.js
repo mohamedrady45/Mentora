@@ -20,7 +20,7 @@ router.put('/:postId/:commentId/updateComment', isAuth, postController.updateCom
 router.delete('/:postId/:commentId/deleteComment', isAuth, postController.deleteComment);
 router.post('/:postId/commentId/reactComment', isAuth, postController.reactComment);
 //Reply
-router.post('/:postId/:commentId/replyComment', isAuth, postController.replyComment);
+router.post('/:postId/:commentId/replyComment', isAuth,upload.array('files'), postController.replyComment);
 router.post('/:postId/:commentId/:replyId/reactReply', isAuth, postController.reactReply);
 router.delete('/:postId/:commentId/:replyId/deleteReply', isAuth, postController.deleteRely);
 //router.get('/:postId/comments/:commentId/replies' , isAuth , postController.getCommentReplies)
