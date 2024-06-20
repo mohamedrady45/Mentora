@@ -4,6 +4,15 @@ const Community  =  require('../Models/Community');
 const User = require('../Models/user');
 const  Question =  require('../Models/questions');
 const  Answer =  require('../Models/Answer');
+const getAllCommunities = async (req, res) => {
+  try {
+      const communities = await Community.find();
+      res.status(200).json({ communities });
+  } catch (error) {
+      console.error('Error fetching communities:', error);
+      res.status(500).json({ message: 'Error fetching communities' });
+  }
+};
 const createCommunity = async (req, res) =>{
     const { name, description  , track } = req.body;
   
@@ -291,5 +300,6 @@ const createCommunity = async (req, res) =>{
         getCommunityQuestions,
         getOneCommunityQuestion , 
         getCommunity,
-        searchCommunity
+        searchCommunity,
+        getAllCommunities
     };
