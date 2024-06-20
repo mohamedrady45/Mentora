@@ -138,7 +138,7 @@ const createCommunity = async (req, res) =>{
 };
  const addQuestion = async (req, res)=> {
     const communityId = req.params.communityId;
-    const { content } = req.body;
+    const content = req.body.content;
   
     if (!mongoose.Types.ObjectId.isValid(communityId)) {
       return res.status(400).json({ message: 'Invalid community ID' });
@@ -157,7 +157,7 @@ const createCommunity = async (req, res) =>{
       }
       
       const question = new Question({
-        body,
+        content,
         author: req.userId, 
         community: communityId,
       });
@@ -194,24 +194,23 @@ const createCommunity = async (req, res) =>{
     }
   };
   const searchCommunity = async (req, res) => {
-    const searchQuery = req.body; 
+    const {searchQuery} = req.body; 
+
+    if (!searchQuery) {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
 
     try {
-        let communities;
-        if (searchQuery) {
-            const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
-            communities = await Community.find({
-                $or: [
-                    { name: { $regex: regex } }, 
-                    { track: { $regex: regex } }, 
-                ]
-            });
+        const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
+        const communities = await Community.find({
+            $or: [
+                { name: { $regex: regex } }, 
+                { track: { $regex: regex } }, 
+            ]
+        });
 
-            if (communities.length === 0) {
-                return res.status(404).json({ message: 'No matching communities found' });
-            }
-        } else {
-            communities = await Community.find();
+        if (communities.length === 0) {
+            return res.status(404).json({ message: 'No matching communities found' });
         }
 
         res.status(200).json({ communities });
@@ -220,8 +219,6 @@ const createCommunity = async (req, res) =>{
         res.status(500).json({ message: 'Error fetching communities' });
     }
 };
-
-
 
   const getOneCommunityQuestion = async (req, res) => {
     const communityId = req.params.communityId;
