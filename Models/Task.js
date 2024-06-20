@@ -1,38 +1,57 @@
 const mongoose = require('mongoose');
 
-const taskSchema = new mongoose.Schema({
-  title: {
+
+const attachmentSchema = new mongoose.Schema({
+  type: {
     type: String,
-    required: true
+    enum: ['image', 'video', 'file'],
+    required: true,
   },
+  url: {
+    type: String,
+    required: true,
+  },
+  reviwe:{
+    type:String,
+    required: true,
+    default:'you don\'t has reviwe yet'
+  }
+});
+const submissionSchema = new mongoose.Schema({
+  mentee: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  file: {
+    type: attachmentSchema,
+    required: true,
+  },
+});
+
+const taskSchema = new mongoose.Schema({
+  
   description: {
     type: String,
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', 
-    required: true ,
+    ref: 'User',
+    
   },
-  content: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  date: {
-    type: Date,
-    required: true,
-    default:Date.now
+  training: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Training',
   },
   deadline: {
     type: Date,
   },
-  session: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Session', 
-    required: true,
-  },
-  
-  
-});
+  attachment: { type: attachmentSchema },
+  submission:[submissionSchema]
+},
+  {
+    timestamps: true
+  }
+);
 
 module.exports = mongoose.model('Task', taskSchema);
