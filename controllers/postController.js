@@ -277,9 +277,7 @@ const replyComment  = async (req,res,next)=>{
         const {author, content} = req.body;
         const  files = req.files;
         let attachments = [];
-        if(files.length == 0){
-            return res.status(404).json({ error: 'files not found' }); 
-        }
+        
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => {
                 return cloudinary.uploader.upload(file.path, {
