@@ -10,7 +10,7 @@ router.post('/addPost',isAuth,  upload.array('files'), postController.addPost );
 router.put('/:postId/updatePost',isAuth, postController.updatePost);
 router.delete('/:postId/deletePost',isAuth, postController.deletePost);
 router.post('/:postId/reactPost', isAuth, postController.reactPost);
-router.post('/:postI/sharePost', isAuth, postController.sharePost);
+router.post('/:postId/sharePost', isAuth, postController.sharePost);
 router.post('/:postId/savePosts', isAuth, postController.savePosts);
 router.get('/:postId', postController.getPostById);
 //Comment
