@@ -13,6 +13,7 @@ router.post('/:postId/reactPost', isAuth, postController.reactPost);
 router.post('/:postId/sharePost', isAuth, postController.sharePost);
 router.post('/:postId/savePosts', isAuth, postController.savePosts);
 router.get('/:postId', postController.getPostById);
+router.get('/getAllPosts' , isAuth , postController.getAllPosts);
 //Comment
 router.get('/:postId/getPostComments' , isAuth, postController.getPostComments)
 router.post('/:postId/addComment', isAuth,upload.array('files'), postController.addComment);
