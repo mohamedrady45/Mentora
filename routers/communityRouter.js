@@ -298,7 +298,18 @@ router.post('/:communityId/addQuestion', isAuth, communityController.addQuestion
  *         description: Unauthorized - Missing or invalid token
  */
 router.post('/:communityId/questions/:questionId/answerQuestion', isAuth, communityController.answerQuestion);
-
+/**
+ * @swagger
+ * /api/community/{communityId}/questions/{questionId}/answers:
+ *   get:
+ *     summary: Get all answers
+ *     tags: [Community]
+ *     responses:
+ *       200:
+ *         description: Posts retrieved successfully
+ *       404:
+ *         description: Posts not found
+ */
 router.get('/:communityId/questions/:questionId/answers',isAuth ,  communityController.getQuestionAnswers);
 
 module.exports = router;
