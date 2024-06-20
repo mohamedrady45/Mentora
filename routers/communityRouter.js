@@ -299,4 +299,6 @@ router.post('/:communityId/addQuestion', isAuth, communityController.addQuestion
  */
 router.post('/:communityId/questions/:questionId/answerQuestion', isAuth, communityController.answerQuestion);
 
+router.get('/:communityId/questions/:questionId/answers',isAuth ,  communityController.getQuestionAnswers);
+
 module.exports = router;
