@@ -156,7 +156,7 @@ const createCommunity = async (req, res) =>{
       community.questions.push(question._id); 
       await question.save();
       await community.save();
-      io.to(`community_${communityId}`).emit('newQuestion', { message: 'New question added!', question });
+     // io.to(`community_${communityId}`).emit('newQuestion', { message: 'New question added!', question });
       res.status(201).json({ message: 'Question created successfully!', question });
     } catch (error) {
       console.error(error);
