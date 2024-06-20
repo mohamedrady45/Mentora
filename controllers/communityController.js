@@ -4,6 +4,16 @@ const Community  =  require('../Models/Community');
 const User = require('../Models/user');
 const  Question =  require('../Models/questions');
 const  Answer =  require('../Models/Answer');
+const getAllCommunities = async (req, res) => {
+  try {
+      const communities = await Community.find();
+      res.status(200).json({ communities });
+  } catch (error) {
+      console.error('Error fetching communities:', error);
+      res.status(500).json({ message: 'Error fetching communities' });
+  }
+};
+
 const createCommunity = async (req, res) =>{
     const { name, description  , track } = req.body;
   
@@ -184,26 +194,58 @@ const createCommunity = async (req, res) =>{
       res.status(500).json({ message: 'Error fetching community questions' });
     }
   };
+  const getQuestionAnswers = async (req, res) => {
+    const communityId = req.params.communityId;
+    const questionId = req.params.questionId;
+
+    if (!mongoose.Types.ObjectId.isValid(communityId) || !mongoose.Types.ObjectId.isValid(questionId)) {
+        return res.status(400).json({ message: 'Invalid community ID or question ID' });
+    }
+
+    try {
+        const community = await Community.findById(communityId);
+
+        if (!community) {
+            return res.status(404).json({ message: 'Community not found' });
+        }
+
+        const question = await Question.findById(questionId).populate('answers');
+
+        if (!question) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+
+        if (question.community.toString() !== communityId) {
+            return res.status(403).json({ message: 'Question does not belong to this community' });
+        }
+
+        const answers = question.answers;
+
+        res.status(200).json({ answers });
+    } catch (error) {
+        console.error('Error fetching question answers:', error);
+        res.status(500).json({ message: 'Error fetching question answers' });
+    }
+};
+
   const searchCommunity = async (req, res) => {
     const searchQuery = req.query.q; 
 
+    if (!searchQuery) {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
+
     try {
-        let communities;
+        const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
+        const communities = await Community.find({
+            $or: [
+                { name: { $regex: regex } }, 
+                { track: { $regex: regex } }, 
+            ]
+        });
 
-        if (searchQuery) {
-            const regex = new RegExp(searchQuery.split(' ').join('|'), 'i');
-            communities = await Community.find({
-                $or: [
-                    { name: { $regex: regex } }, 
-                    { track: { $regex: regex } }, 
-                ]
-            });
-
-            if (communities.length === 0) {
-                return res.status(404).json({ message: 'No matching communities found' });
-            }
-        } else {
-            communities = await Community.find();
+        if (communities.length === 0) {
+            return res.status(404).json({ message: 'No matching communities found' });
         }
 
         res.status(200).json({ communities });
@@ -212,6 +254,7 @@ const createCommunity = async (req, res) =>{
         res.status(500).json({ message: 'Error fetching communities' });
     }
 };
+
 
 
 
@@ -271,11 +314,10 @@ const createCommunity = async (req, res) =>{
         author: req.userId, 
         question: questionId,
       });
-  
       question.answers.push(answer._id); 
       await answer.save();
       await question.save();
-      io.to(`question_${questionId}`).emit('newAnswer', { message: 'New answer submitted!', answer });
+    ////  io.to(`question_${questionId}`).emit('newAnswer', { message: 'New answer submitted!', answer });
       res.status(201).json({ message: 'Answer submitted successfully!', answer });
     } catch (error) {
       console.error(error);
@@ -292,5 +334,7 @@ const createCommunity = async (req, res) =>{
         getCommunityQuestions,
         getOneCommunityQuestion , 
         getCommunity,
-        searchCommunity
+        searchCommunity,
+        getAllCommunities ,
+        getQuestionAnswers
     };
