@@ -280,11 +280,10 @@ const createCommunity = async (req, res) =>{
         author: req.userId, 
         question: questionId,
       });
-  
       question.answers.push(answer._id); 
       await answer.save();
       await question.save();
-      io.to(`question_${questionId}`).emit('newAnswer', { message: 'New answer submitted!', answer });
+    ////  io.to(`question_${questionId}`).emit('newAnswer', { message: 'New answer submitted!', answer });
       res.status(201).json({ message: 'Answer submitted successfully!', answer });
     } catch (error) {
       console.error(error);
