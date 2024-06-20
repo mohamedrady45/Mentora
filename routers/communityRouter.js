@@ -11,18 +11,20 @@ router.get('/getUserCommunities', isAuth , communityController.getUserCommunitie
 
 router.get('/searchCommunity', isAuth , communityController.searchCommunity);
 
-router.get('/:communityId', communityController.getCommunity);
+router.get('/:communityId', isAuth , communityController.getCommunity);
 
 router.get('/:communityId/getCommunityQuestions', isAuth , communityController.getCommunityQuestions);
 
-router.get('/:communityId/questions/:questionId', communityController.getOneCommunityQuestion);
+router.get('/:communityId/questions/:questionId', isAuth , communityController.getOneCommunityQuestion);
 
 router.post('/:communityId/join', isAuth , communityController.joinCommunity);
 
-router.post('/:communityId/leave', isAuth  , communityController.leaveCommunity);
+router.delete('/:communityId/leave', isAuth  , communityController.leaveCommunity);
 
 router.post('/:communityId/addQuestion', isAuth , communityController.addQuestion);
 
 router.post('/:communityId/questions/:questionId/answerQuestion', isAuth ,communityController.answerQuestion);
+
+router.get('/:communityId/questions/:questionId/answers',isAuth ,  communityController.getQuestionAnswers);
 
 module.exports = router;

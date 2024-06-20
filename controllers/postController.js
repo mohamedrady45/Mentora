@@ -7,8 +7,7 @@ const User = require('../Models/user');
 const upload = require("../middlewares/uploadFile");
 const path = require("path");
 const fs = require("fs");
-const { cloudinaryUploadImage, cloudinaryRemoveImage, getImageUrl } = require("../services/cloudinary");
-
+const cloudinary = require("../services/cloudinary");
 const addPost = async (req, res, next) => {
     try {
         const files = req.files;
@@ -17,12 +16,16 @@ const addPost = async (req, res, next) => {
 
         let attachments = [];
         if (files && files.length > 0) {
-            attachments = await Promise.all(files.map(async file => {
-                const imageUrl = await getImageUrl(file.path); 
-                return {
-                    type: file.mimetype.split('/')[0],
-                    url: imageUrl
-                };
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Post",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
             }));
         }
 
@@ -41,6 +44,38 @@ const addPost = async (req, res, next) => {
             err.statusCode = 500;
         }
         next(err);
+    }
+};
+
+const getPostById = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+
+        const post = await Post.findById(postId)
+            .populate({
+                path: 'author',
+                select: 'firstName lastName profilePicture',
+            })
+            .populate('comments'); 
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        const response = {
+            authorName: `${post.author.firstName} ${post.author.lastName}`,
+            authorProfilePicture: post.author.profilePicture,
+            date: post.date,
+            content: post.content,
+            reactsCount: post.reacts.count,
+            commentsCount: post.comments.length,
+        };
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        res.status(500).json({ message: 'Error fetching post' });
+        next(error);
     }
 };
 
@@ -151,23 +186,38 @@ const reactPost = async (req, res, next) => {
 };
 
 const getPostComments = async (req, res, next) => {
-     try {
-    const postId = req.params.postId;
-    const post = await Post.findById(postId).populate('comments');
+    try {
+        const postId = req.params.postId;
+        const post = await Post.findById(postId)
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'firstName lastName profilePicture',
+                }
+            });
 
-    if (!post) {
-        return res.status(404).json({ message: 'Post not found' });
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        const comments = post.comments.map(comment => ({
+            authorName: `${comment.author.firstName} ${comment.author.lastName}`,
+            authorProfilePicture: comment.author.profilePicture,
+            date: comment.date,
+            content: comment.content,
+            reactsCount: comment.reacts.count,
+            repliesCount: comment.replies.length,
+        }));
+
+        res.status(200).json({ comments });
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ message: 'Error fetching comments' });
+        next(error);
     }
-
-    const comments = post.comments;
-
-    res.status(200).json({ comments });
-} catch (error) {
-    console.error('Error fetching comments:', error);
-    res.status(500).json({ message: 'Error fetching comments' });
-    next(err);
-}
 };
+
 
 //add comment
 const addComment = async (req, res, next) => {
@@ -182,22 +232,29 @@ const addComment = async (req, res, next) => {
 
         const author = await User.findById(userId);
         const { content } = req.body;
+        const files = req.files;
+        let attachments = [];
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Post",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
+            }));
+        }
 
         const newComment = new Comment({
             author: author,
             content: content,
-            timestamp: Date.now() 
+            date: Date.now(),
+            attachments: attachments
         });
 
-        if (req.files && req.files.length > 0) {
-            newComment.attachments = await Promise.all(req.files.map(async file => {
-                const imageUrl = await getImageUrl(file.path);
-                return {
-                    type: file.mimetype.split('/')[0],
-                    url: file.path
-                };
-            }));
-        }
 
         post.comments.push(newComment);
         await post.save();
@@ -240,20 +297,23 @@ const updateComment = async (req, res, next) => {
     }
 };
 
-const getCommentReplies =  async (req, res, next) => {
+const getCommentReplies = async (req, res, next) => {
     try {
-        const postId = req.params.postId;
         const commentId = req.params.commentId;
+        const postId = req.params.postId;
 
-        const post = await Post.findById(postId).populate({
-            path: 'comments',
-            populate: {
-                path: 'replies'
-            }
-        });
+        const post = await Post.findOne({ _id: postId, 'comments._id': commentId })
+            .populate({
+                path: 'comments',
+                match: { _id: commentId },
+                populate: {
+                    path: 'replies.author',
+                    select: 'firstName lastName profilePicture',
+                }
+            });
 
         if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
+            return res.status(404).json({ message: 'Post or comment not found' });
         }
 
         const comment = post.comments.id(commentId);
@@ -262,12 +322,19 @@ const getCommentReplies =  async (req, res, next) => {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const replies = comment.replies;
+        const replies = comment.replies.map(reply => ({
+            authorName: `${reply.author.firstName} ${reply.author.lastName}`,
+            authorProfilePicture: reply.author.profilePicture,
+            date: reply.date,
+            content: reply.content,
+            reactsCount: reply.reacts.count,
+        }));
 
         res.status(200).json({ replies });
     } catch (error) {
         console.error('Error fetching replies:', error);
         res.status(500).json({ message: 'Error fetching replies' });
+        next(error);
     }
 };
 
@@ -354,19 +421,28 @@ const replyComment = async (req, res, next) => {
         if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
-
-        const newReply = new Reply({
-            author: author,
-            content: content,
-        });
-
-        if (req.files && req.files.length > 0) {
-            newReply.attachments = req.files.map(file => ({
-                type: file.mimetype.split('/')[0],
-                url: file.path,
+        const  files = req.files;
+        let attachments = [];
+        
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Post",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
             }));
         }
-
+        const newReply = new Reply ({
+            author: author,
+            content: content,
+            attachments: attachments,
+        });
+    
         comment.replies.push(newReply);
         comment.count += 1;
 
@@ -474,40 +550,40 @@ const deleteReply = async (req, res, next) => {
 
 
 //save post
-const savePosts = async(req, res, next) =>{
-    try{
-        const author = await User.findById(req.userId);
-        const user = await User.findById(author);
+const savePosts = async (req, res, next) => {
+    try {
+        const userId = req.userId; 
+        const postId = req.params.id; 
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        //Check if the user has already saved the post
-        const isSaved = User.savePosts.includes(req.params.id);
+        const isSaved = user.savedPosts.includes(postId);
         if (!isSaved) {
-            user.savePosts.push(req.params.id);
+            user.savedPosts.push(postId);
             await user.save();
             res.status(200).json({ message: 'You saved the post.' });
-        } else{
-            // Remove the post ID from savedPosts to unsave it
-            user.savePosts = user.savePosts.filter((postId) => postId !== req.params.id);
+        } else {
+            user.savedPosts = user.savedPosts.filter((savedPostId) => savedPostId.toString() !== postId.toString());
             await user.save();
             res.status(200).json({ message: 'You unsaved the post.' });
         }
-        
-    } catch(err){
-        console.error("Error saving the  post.", err);
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
+    } catch (err) {
+        console.error("Error saving the post:", err);
+        res.status(500).json({ error: 'Internal server error' });
         next(err);
     }
-}; 
+};
+
+module.exports = savePosts;
+
 
 //share post
 const  sharePost = async (req, res, next) => {
@@ -561,5 +637,6 @@ module.exports = {
     savePosts,
     sharePost,
     getPostComments,
-    getCommentReplies
+    getCommentReplies,
+    getPostById
   };
