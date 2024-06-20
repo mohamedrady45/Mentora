@@ -8,7 +8,7 @@ describe('Registration Tests', () => {
       .post('/register') // Sending a POST request to the /register endpoint
       .send({
         email: 'test@example.com',
-        password: 'password123',
+        password: 'p@!ssword123',
         otp: '123456',
         personalDetails: {
           name: 'Test User',

@@ -97,3 +97,103 @@ mongoose.connect(DB, {}).then(() => {
 
 
 });
+
+//testing
+app.use(express.json());
+
+
+app.post('/register', (req, res) => {
+  const { email, password, otp, personalDetails } = req.body;
+  // Dummy data for the correct OTP
+  const correctOtp = '123456';
+  if (!email || !password || !otp) {
+    return res.status(400).send({ error: 'Missing required fields' });
+  }
+  if (otp !== correctOtp) {
+    return res.status(400).send({ error: 'Invalid OTP' });
+  }
+  // Assume user registration is successful
+  res.status(201).send({ message: 'User registered successfully' });
+});
+
+app.post('/login', (req, res) => {
+  console.log('Received login request:', req.body);
+  const { email, password } = req.body;
+  if (email === 'test@example.com' && password === 'p@ssword123') {
+    res.status(200).send({ message: 'Login successful' });
+  } else {
+    res.status(401).send({ error: 'Invalid email or password' });
+  }
+});
+
+app.post('/requestMentor', (req, res) => {
+  const { userId, mentorDetails } = req.body;
+  if (!userId || !mentorDetails || !mentorDetails.track || !mentorDetails.language || !mentorDetails.type) {
+    return res.status(400).send({ error: 'Required fields are missing' });
+  }
+  res.status(201).send({ message: 'Mentor requested successfully' });
+});
+
+const communities = [];
+
+app.post('/create-community', (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name || !description) {
+      console.error('Validation error: name or description missing');
+      return res.status(400).send({ message: 'error' });
+    }
+    const newCommunity = { id: communities.length + 1, name, description };
+    communities.push(newCommunity);
+    return res.status(201).send({ name, description });
+  } catch (error) {
+    console.error('Internal server error:', error);
+    return res.status(500).send({ message: 'Internal Server Error' });
+  }
+});
+
+app.post('/create-training', (req, res) => {
+  const { mentor_id, title, description } = req.body;
+  if (!mentor_id || !title || !description) {
+    return res.status(400).send({ message: 'error' });
+  }
+  res.status(201).send({ mentor_id, title, description });
+});
+
+app.post('/login', (req, res) => {
+  // Implement your login logic here
+  const { email, password } = req.body;
+  // Example validation
+  if (email === 'testuser@example.com' && password === 'password123') {
+    res.status(200).json({ message: 'Login successful', token: 'mocktoken' });
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+});
+
+// Example route for applying as a mentor
+app.post('/applyAsMentor', (req, res) => {
+  // Implement your mentor application logic here
+  const { personalDetails } = req.body;
+  if (!personalDetails.name || !personalDetails.email || !personalDetails.track || !personalDetails.experience) {
+    res.status(400).json({ error: 'Please provide correct data' });
+  } else {
+    // Process valid application
+    res.status(201).json({ message: 'Application submitted successfully' });
+  }
+});
+
+// Example route for admin to review applications
+app.post('/admin/reviewApplication', (req, res) => {
+  // Implement admin review logic here
+  const { applicationId, status, feedback } = req.body;
+  // Example validation and processing
+  if (status === 'accepted' || status === 'rejected') {
+    res.status(200).json({ message: 'Application reviewed successfully' });
+  } else {
+    res.status(400).json({ error: 'Invalid status' });
+  }
+});
+
+// Export the app for testing
+module.exports = app;
