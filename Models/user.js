@@ -168,6 +168,14 @@ const userSchema = new mongoose.Schema({
         salary: {
             type: Number,
         },
+        reviews: {
+            type: [String], 
+            default: [],
+        },
+        rating: {
+            type: Number,
+            default: 0,
+        },
     },
     requests:[{
         type: mongoose.Schema.Types.ObjectId,
