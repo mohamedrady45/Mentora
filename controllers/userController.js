@@ -147,6 +147,7 @@ const editUserData = async (req, res, next) => {
 
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
+    console.log(file);
 
     const user = await userService.findUser('_id', userId);
 
