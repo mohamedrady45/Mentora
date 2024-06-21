@@ -8,8 +8,8 @@ const router = express.Router();
 //http://localhost:4000/api/training
 
 router.get('/',isAuth, TrainingController.getUserAllTrainings);
-router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
 router.get('/mentor',isAuth,TrainingController.getMentorTrainings);//only mentor
+router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
 
 router.put('/enroll/:trainingId',isAuth, TrainingController.enrollInTraining);
 router.post('/create-training', isAuth,upload.single('image'),TrainingController.createTraining);//only mentor
