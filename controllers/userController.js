@@ -2,6 +2,7 @@ const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
 const Schadule = require('../Models/Schedule')
+const cloudinary = require('../services/cloudinary')
 
 const getUser = async (req, res, next) => {
   try {
@@ -111,12 +112,20 @@ const editUserData = async (req, res, next) => {
       throw new Error('User not found');
     }
     //update user data
-    if (file) {
-      user.profilePicture = file.path;
-    }
 
-    user.bio = bio;
-    user.country = country;
+
+
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "profilePicture",
+      });
+
+      const attachment =  result.secure_url
+        
+      user.profilePicture = attachment;
+    }
+    if (bio) user.bio = bio;
+    if (country) user.country = country;
 
 
     if (languages) {
@@ -135,11 +144,12 @@ const editUserData = async (req, res, next) => {
 
     //save user
     await user.save()
+    const userData = { firstName: user.firstName, lastName: user.lastName, dateOfBirth: user.dateOfBirth, country: user.country, gender: user.country, bio: user.bio, profilePicture: user.profilePicture, languages: user.languages, interests: user.interests, notification: user.notification, followers: user.followers, following: user.Following }
     //send response
     res.status(200).json({
       success: true,
       data: {
-        user: user
+        user: userData
       }
     });
   } catch (err) {
