@@ -319,7 +319,7 @@ const scheduleList = async (req, res, next) => {
   }
 }
 module.exports = {
-  getUser,
+ 
   editUserData,
   followUser,
   followerList,
