@@ -69,8 +69,10 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     profilePicture: {
-        type: String,
-    },
+          type: { type: String },
+          url: { type: String },
+          public_id: { type: String },
+        },
     languages: {
         type: [String],
         default: [],
