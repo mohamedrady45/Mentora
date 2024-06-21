@@ -254,7 +254,8 @@ const getPostComments = async (req, res, next) => {
                 content: comment.content,
                 reactsCount: comment.reacts.count,
                 repliesCount: comment.replies.length,
-                userReacted: userReacted 
+                userReacted: userReacted ,
+                replies: comment.replies, 
             };
         });
 
