@@ -148,6 +148,8 @@ const deletePost = async (req, res, next) => {
 //get all posts
 const getAllPosts = async (req, res) => {
     try {
+        const userId = req.userId; 
+
         const posts = await Post.find()
             .populate('author', 'firstName lastName profilePicture')
             .populate({
@@ -158,21 +160,25 @@ const getAllPosts = async (req, res) => {
                 }
             });
 
-        const postsWithAuthorInfo = posts.map(post => ({
-            _id: post._id,
-            author: post.author ? {
-                firstName: post.author.firstName,
-                lastName: post.author.lastName,
-                profilePicture: post.author.profilePicture
-            } : null,
-            content: post.content,
-            date: post.date,
-            attachments: post.attachments,
-            reacts: post.reacts.count,
-            commentsCount: post.comments.length,
-            reactsCount: post.reacts.count,
-            sharesCount: post.shares.count,
-        }));
+        const postsWithAuthorInfo = posts.map(post => {
+            const userReacted = post.reacts.users.includes(userId);
+            return {
+                _id: post._id,
+                author: post.author ? {
+                    firstName: post.author.firstName,
+                    lastName: post.author.lastName,
+                    profilePicture: post.author.profilePicture
+                } : null,
+                content: post.content,
+                date: post.date,
+                attachments: post.attachments,
+                reacts: post.reacts.count,
+                commentsCount: post.comments.length,
+                reactsCount: post.reacts.count,
+                sharesCount: post.shares.count,
+                userReacted: userReacted 
+            };
+        });
 
         console.log(postsWithAuthorInfo);
         res.status(200).json(postsWithAuthorInfo);
@@ -181,6 +187,7 @@ const getAllPosts = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 
 
@@ -221,7 +228,9 @@ const reactPost = async (req, res, next) => {
 
 const getPostComments = async (req, res, next) => {
     try {
+        const userId = req.userId; 
         const postId = req.params.postId;
+
         const post = await Post.findById(postId)
             .populate({
                 path: 'comments',
@@ -235,14 +244,19 @@ const getPostComments = async (req, res, next) => {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        const comments = post.comments.map(comment => ({
-            authorName: `${comment.author.firstName} ${comment.author.lastName}`,
-            authorProfilePicture: comment.author.profilePicture,
-            date: comment.date,
-            content: comment.content,
-            reactsCount: comment.reacts.count,
-            repliesCount: comment.replies.length,
-        }));
+        const comments = post.comments.map(comment => {
+            const userReacted = comment.reacts.users.includes(userId);
+            return {
+                _id: comment._id, 
+                authorName: `${comment.author.firstName} ${comment.author.lastName}`,
+                authorProfilePicture: comment.author.profilePicture,
+                date: comment.date,
+                content: comment.content,
+                reactsCount: comment.reacts.count,
+                repliesCount: comment.replies.length,
+                userReacted: userReacted 
+            };
+        });
 
         res.status(200).json({ comments });
     } catch (error) {
@@ -251,6 +265,8 @@ const getPostComments = async (req, res, next) => {
         next(error);
     }
 };
+
+
 
 
 //add comment
@@ -311,30 +327,37 @@ const updateComment = async (req, res, next) => {
     const { content } = req.body;
 
     try {
+        const userId = req.userId; 
+
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        const commentIndex = post.comments.findIndex(comment => comment._id.toString() === commentId);
-        if (commentIndex === -1) {
-            return res.status(404).json({ error: 'Comment not found in the post' });
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
         }
 
-        post.comments[commentIndex].content = content;
+        if (comment.author.toString() !== userId.toString()) {
+            return res.status(403).json({ error: 'You are not authorized to update this comment' });
+        }
+
+        comment.content = content;
         await post.save();
 
-        res.status(200).json({ message: 'Comment updated successfully in the post' });
+        res.status(200).json({ message: 'Comment updated successfully' });
     } catch (err) {
-        console.error('Error updating comment in post:', err);
-        res.status(500).json({ error: 'Failed to update comment in post' });
+        console.error('Error updating comment:', err);
+        res.status(500).json({ error: 'Failed to update comment' });
     }
 };
 
+
 const getCommentReplies = async (req, res, next) => {
     try {
-        const commentId = req.params.commentId;
-        const postId = req.params.postId;
+        const userId = req.userId; 
+        const { postId, commentId } = req.params;
 
         const post = await Post.findOne({ _id: postId, 'comments._id': commentId })
             .populate({
@@ -351,18 +374,22 @@ const getCommentReplies = async (req, res, next) => {
         }
 
         const comment = post.comments.id(commentId);
-
         if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const replies = comment.replies.map(reply => ({
-            authorName: `${reply.author.firstName} ${reply.author.lastName}`,
-            authorProfilePicture: reply.author.profilePicture,
-            date: reply.date,
-            content: reply.content,
-            reactsCount: reply.reacts.count,
-        }));
+        const replies = comment.replies.map(reply => {
+            const userReacted = reply.reacts.users.includes(userId);
+            return {
+                _id: reply._id, 
+                authorName: `${reply.author.firstName} ${reply.author.lastName}`,
+                authorProfilePicture: reply.author.profilePicture,
+                date: reply.date,
+                content: reply.content,
+                reactsCount: reply.reacts.count,
+                userReacted: userReacted,
+            };
+        });
 
         res.status(200).json({ replies });
     } catch (error) {
@@ -372,30 +399,40 @@ const getCommentReplies = async (req, res, next) => {
     }
 };
 
+
+
 const deleteComment = async (req, res, next) => {
-    try{
-        const post = await Post.findById(req.params.postId);
+    try {
+        const userId = req.userId; 
+        const postId = req.params.postId;
+        const commentId = req.params.commentId;
+        const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
-        const comment = await Comment.findById(req.params.commentId);
+
+        const comment = post.comments.id(commentId);
         if (!comment) {
             return res.status(404).json({ message: "Comment not found" });
         }
-        
-        post.comments.pull(comment);
-        await comment.deleteOne();
+
+        if (comment.author.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to delete this comment" });
+        }
+
+        comment.remove();
         await post.save();
-        res.status(200).json({message:'Your comment has been successfully deleted.'})
-    }
-    catch(err){
-      console.error('Error deleting post.', err);
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);  
+
+        res.status(200).json({ message: 'Your comment has been successfully deleted.' });
+    } catch (err) {
+        console.error('Error deleting comment.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
+
 
 const reactComment = async (req, res, next) => {
     try {
@@ -442,22 +479,28 @@ const reactComment = async (req, res, next) => {
 //reply for a comment
 const replyComment = async (req, res, next) => {
     try {
-        const postId = req.params.postId;
-        const commentId = req.params.commentId;
-        const { author, content } = req.body;
+        const { postId, commentId } = req.params;
+        const { content } = req.body;
+        const userId = req.userId; 
+        const author = await User.findById(userId);
+
+        if (!author) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        const comment = await Comment.findById(commentId);
+        const comment = post.comments.id(commentId);
         if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
-        const  files = req.files;
+
+        const files = req.files;
         let attachments = [];
-        
+
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => {
                 return cloudinary.uploader.upload(file.path, {
@@ -471,17 +514,16 @@ const replyComment = async (req, res, next) => {
                 public_id: result.public_id
             }));
         }
-        const newReply = new Reply ({
-            author: author,
+
+        const newReply = {
+            author: author._id,
             content: content,
             attachments: attachments,
-        });
-    
+        };
+
         comment.replies.push(newReply);
         comment.count += 1;
 
-        await newReply.save();
-        await comment.save();
         await post.save();
 
         res.status(200).json({ message: 'Your reply was shared.' });
