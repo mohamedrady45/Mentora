@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema for Share
 const shareSchema = new mongoose.Schema({
   count: {
     type: Number,
@@ -17,6 +18,7 @@ const shareSchema = new mongoose.Schema({
   },
 });
 
+// Schema for Attachment
 const attachmentSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -29,6 +31,7 @@ const attachmentSchema = new mongoose.Schema({
   },
 });
 
+// Schema for Reaction
 const reactionSchema = new mongoose.Schema({
   count: {
     type: Number,
@@ -42,6 +45,7 @@ const reactionSchema = new mongoose.Schema({
   ],
 });
 
+// Schema for Reply
 const replySchema = new mongoose.Schema({
   author: {
     type: mongoose.Types.ObjectId,
@@ -63,6 +67,7 @@ const replySchema = new mongoose.Schema({
   attachments: [attachmentSchema],
 });
 
+// Schema for Comment
 const commentSchema = new mongoose.Schema({
   author: {
     type: mongoose.Types.ObjectId,
@@ -85,6 +90,7 @@ const commentSchema = new mongoose.Schema({
   attachments: [attachmentSchema],
 });
 
+// Schema for Post
 const postSchema = new mongoose.Schema({
   author: {
     type: mongoose.Types.ObjectId,
@@ -113,9 +119,11 @@ const postSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Creating Models
 const Post = mongoose.model('Post', postSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 const Reply = mongoose.model('Reply', replySchema);
 const Share = mongoose.model('Share', shareSchema);
 
+// Exporting Models
 module.exports = { Post, Comment, Reply, Share };

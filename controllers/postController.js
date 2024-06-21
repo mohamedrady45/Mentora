@@ -240,10 +240,12 @@ const getPostComments = async (req, res, next) => {
             authorProfilePicture: comment.author.profilePicture,
             date: comment.date,
             content: comment.content,
+            id: comment.id,
             reactsCount: comment.reacts.count,
             repliesCount: comment.replies.length,
+            replies: comment.replies,
         }));
-
+        console.log("post.comments",post.comments);
         res.status(200).json({ comments });
     } catch (error) {
         console.error('Error fetching comments:', error);
@@ -440,9 +442,11 @@ const reactComment = async (req, res, next) => {
 //reply for a comment
 const replyComment = async (req, res, next) => {
     try {
+        console.log(req.body);
         const postId = req.params.postId;
         const commentId = req.params.commentId;
-        const { author, content } = req.body;
+        const author = req.userId;
+        const {content}  = req.body;
 
         const post = await Post.findById(postId);
         if (!post) {

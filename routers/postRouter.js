@@ -432,8 +432,6 @@ router.post('/:postId/:commentId/reactComment', isAuth, postController.reactComm
  *           schema:
  *             type: object
  *             properties:
- *               author:
- *                 type: string
  *               content:
  *                 type: string
  *     responses:
