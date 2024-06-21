@@ -10,8 +10,8 @@ const OnlyAdmins = require('../middlewares/OnlyAdmins');
 const router = express.Router();
 router.use(methodOverride('_method'));
 
-
-router.get('/:userId',isAuth,userController.getUser);
+router.get('/',isAuth,userController.getMyProfile);
+router.get('/:userId',isAuth,userController.getAnotherUserProfile);
 router.put('/updateUserData',isAuth,upload.single('image'),userController.editUserData);
 router.put('/followUser/:followId',isAuth,userController.followUser);
 router.get('/followers',isAuth,userController.followerList);

@@ -3,8 +3,10 @@ const postService = require('../services/post')
 const User = require('../Models/user')
 const Schadule = require('../Models/Schedule')
 const cloudinary = require('../services/cloudinary')
+const Post = require('../Models/post').Post;
 
-const getUser = async (req, res, next) => {
+
+const getAnotherUserProfile = async (req, res, next) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId)
@@ -42,6 +44,47 @@ const getUser = async (req, res, next) => {
     next(err);
   }
 };
+
+const getMyProfile = async (req, res, next) => {
+  try {
+    const userId = req.userId; 
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // FIXME: Fetch user's posts, comments, reacts, shares, etc.
+     const posts = await Post.find({ author: userId }).populate('author', 'firstName lastName profilePicture');
+    
+    const userData = {
+      _id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      dateOfBirth: user.dateOfBirth,
+      country: user.country,
+      gender: user.gender,
+      profilePicture: user.profilePicture,
+      languages: user.languages,
+      interests: user.interests,
+      posts: posts,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: userData
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    next(err);
+  }
+};
+
+
 const searchUser = async (req, res, next) => {
   const query = req.query.q;
   const page = parseInt(req.query.page) || 1;
@@ -276,12 +319,13 @@ const scheduleList = async (req, res, next) => {
   }
 }
 module.exports = {
-  getUser,
+  getAnotherUserProfile,
   editUserData,
   followUser,
   followerList,
   followingList,
   scheduleList,
-  searchUser
+  searchUser,
+  getMyProfile
 }
 
