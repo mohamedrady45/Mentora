@@ -57,6 +57,16 @@ const createTraining = async (req, res, next) => {
         const mentorId = req.userId;
 
         const { name, description, track, level, requirements, Salary, duration, numberOfRequiredMentees, language } = req.body;
+        const file =req.file;
+        let attachment=null
+
+        if (file) {
+            const result = await cloudinary.uploader.upload(file.path, {
+                folder: "Training",
+            });
+
+            attachment =  result.secure_url;
+        }
 
         const newTraining = new Training({
             name: name,
@@ -68,8 +78,8 @@ const createTraining = async (req, res, next) => {
             duration: duration,
             numberOfRequiredMentees: numberOfRequiredMentees,
             language: language,
-            mentor: mentorId
-
+            mentor: mentorId,
+            TrainingPicture:attachment
 
         });
         await newTraining.save();

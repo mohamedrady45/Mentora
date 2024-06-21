@@ -12,7 +12,7 @@ router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
 router.get('/mentor',isAuth,TrainingController.getMentorTrainings);//only mentor
 
 router.put('/enroll/:trainingId',isAuth, TrainingController.enrollInTraining);
-router.post('/create-training', isAuth, TrainingController.createTraining);//only mentor
+router.post('/create-training', isAuth,upload.single('image'),TrainingController.createTraining);//only mentor
 router.put('/:id',isAuth, TrainingController.updateTraining);//only mentor
 router.delete('/:id',isAuth, TrainingController.deleteTraining);//only mentor
 

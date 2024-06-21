@@ -30,7 +30,7 @@ const TrainingSchema = new mongoose.Schema({
         required: true,
     },
     duration: {
-        type:Date,
+        type:String,
         required: true,
     },
     numberOfRequiredMentees: {
