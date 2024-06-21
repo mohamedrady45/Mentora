@@ -258,7 +258,6 @@ const addComment = async (req, res, next) => {
     try {
         const postId = req.params.postId;
         const userId = req.userId; 
-
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ error: 'This post does not exist' });
@@ -401,7 +400,6 @@ const reactComment = async (req, res, next) => {
     try {
         const { postId, commentId } = req.params;
         const authorId = req.userId;
-
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
@@ -513,6 +511,8 @@ const reactReply = async (req, res, next) => {
         }
 
         const reply = comment.replies.id(replyId);
+        console.log(reply);
+        console.log(comment);
         if (!reply) {
             return res.status(404).json({ error: 'This reply does not exist' });
         }

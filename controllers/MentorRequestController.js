@@ -75,11 +75,12 @@ const getMentorsRecommendation = async (req, res, next) => {
         if (preferredLanguage) {
             filter.languages = { $in: [preferredLanguage] }; 
         }
-
-        const mentors = await User.find(filter)
+        const mentors = await User.find({ gender: filter.gender })
             .select('_id firstName lastName profilePicture')
             .sort({ rating: -1 })
             .limit(10);
+            console.log(filter.gender);
+        
 
         if (mentors.length === 0) {
             return res.status(400).json({ message: 'No mentors match your request' });
@@ -122,10 +123,12 @@ const RequestRecommendedMentor = async(req, res, next) =>{
     try{
        
         const mentor = await Mentor.findById(req.userId);
+        console.log(mentor);
         if(!mentor){
             return res.status(404).json({ message: 'There is no mentor selected' });   
         }
         const request = await MentorRequest.findById(req.params.id);
+        console.log(req.params.id);
         if(!request){
             return res.status(404).json({ message: 'There is no request' });
         }

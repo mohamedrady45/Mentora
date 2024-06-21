@@ -25,7 +25,29 @@ const isAuth = require('../middlewares/isAuth');
  *           schema:
  *             type: object
  *             properties:
- *               // Specify the properties expected in the request body
+ *               track:
+ *                 type: string
+ *               languagePreference:
+ *                 type: string
+ *               genderPreference:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               Reason:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               minSalary:
+ *                 type: number
+ *               maxSalary:
+ *                 type: number
+ *               sessionDate:
+ *                 type: string
+ *                 format: date
+ *               startTime:
+ *                 type: string
+ *               endTime:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Mentor request created successfully
@@ -37,26 +59,37 @@ router.post('/mentor-request', isAuth, mentorRequestController.createMentorReque
 /**
  * @swagger
  * /api/request/recommend-mentors:
- *   get:
+ *   post:
  *     summary: Get recommended mentors
  *     tags: [Mentor Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               preferredLanguage:
+ *                 type: string
+ *               preferredGender:
+ *                 type: string
+ *               track:
+ *                 type: string
+ *               minSalary:
+ *                 type: string
+ *               maxSalary:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Returns a list of recommended mentors
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Mentor'
  *       404:
  *         description: No mentors found
  */
-router.get('/recommend-mentors', mentorRequestController.getMentorsRecommendation);
+router.post('/recommend-mentors', mentorRequestController.getMentorsRecommendation);
 
 /**
  * @swagger
- * /api/request/{id}/request:
+ * /api/request/{userId}/request:
  *   post:
  *     summary: Request a recommended mentor
  *     tags: [Mentor Requests]
@@ -64,7 +97,7 @@ router.get('/recommend-mentors', mentorRequestController.getMentorsRecommendatio
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userId
  *         schema:
  *           type: string
  *         required: true
@@ -79,7 +112,7 @@ router.post('/:id/request', isAuth, mentorRequestController.RequestRecommendedMe
 
 /**
  * @swagger
- * /api/request/{id}/reject-request:
+ * /api/request/{userId}/reject-request:
  *   post:
  *     summary: Reject a mentor request
  *     tags: [Mentor Requests]
@@ -87,7 +120,7 @@ router.post('/:id/request', isAuth, mentorRequestController.RequestRecommendedMe
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userId
  *         schema:
  *           type: string
  *         required: true
@@ -102,7 +135,7 @@ router.post('/:id/reject-request', isAuth, mentorRequestController.MentorRejectR
 
 /**
  * @swagger
- * /api/request/{id}/accept-request:
+ * /api/request/{userId}/accept-request:
  *   post:
  *     summary: Accept a mentor request
  *     tags: [Mentor Requests]
@@ -110,7 +143,7 @@ router.post('/:id/reject-request', isAuth, mentorRequestController.MentorRejectR
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userId
  *         schema:
  *           type: string
  *         required: true

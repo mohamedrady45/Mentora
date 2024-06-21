@@ -276,11 +276,6 @@ router.get('/:postId/getPostComments', isAuth, postController.getPostComments);
  *             properties:
  *               content:
  *                 type: string
- *               files:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
  *     responses:
  *       200:
  *         description: Comment added successfully
@@ -407,7 +402,7 @@ router.delete('/:postId/:commentId/deleteComment', isAuth, postController.delete
  *       404:
  *         description: Comment not found
  */
-router.post('/:postId/commentId/reactComment', isAuth, postController.reactComment);
+router.post('/:postId/:commentId/reactComment', isAuth, postController.reactComment);
 
 /**
  * @swagger
@@ -433,17 +428,14 @@ router.post('/:postId/commentId/reactComment', isAuth, postController.reactComme
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
+ *               author:
+ *                 type: string
  *               content:
  *                 type: string
- *               files:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
  *     responses:
  *       200:
  *         description: Reply added successfully
