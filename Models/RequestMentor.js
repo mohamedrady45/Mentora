@@ -44,15 +44,15 @@ const mentorRequestSchema = new mongoose.Schema({
     },
     sessionDate: {
         type: Date,
-        required: true
+        // required: true
     },
     startTime: {
         type: String,
-        required: true
+        // required: true
     },
     endTime: {
         type: String,
-        required: true
+        // required: true
     }
 });
 
