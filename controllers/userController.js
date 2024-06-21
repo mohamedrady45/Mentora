@@ -42,6 +42,43 @@ const getUser = async (req, res, next) => {
     next(err);
   }
 };
+const getUserById =async (req, res, next) => {
+  try {
+    const {userId} = req.params;
+    const user = await User.findById(userId)
+    if (!user) {
+      const err = new Error('Can\'t find user');
+      err.statusCode = 404;
+      throw err;
+    }
+    
+    const posts = await postService.getUserPosts({ author: userId }, { path: 'author', select: 'firstName lastName profilePicture' });
+
+    //create user data
+    const userData = {
+      _id: user._id,
+      name: user.firstName + " " + user.lastName,
+      email: user.email,
+      dateOfBirth: user.dateOfBirth,
+      country: user.country,
+      gender: user.gender,
+      profilePicture: user.profilePicture,
+      languages: user.languages,
+      interests: user.interests,
+      posts: posts
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: userData
+      }
+    });
+  } catch (err) {
+    console.error('Error in get this User:', err);
+    next(err);
+  }
+};
 const searchUser = async (req, res, next) => {
   const query = req.query.q;
   const page = parseInt(req.query.page) || 1;
@@ -277,6 +314,7 @@ const scheduleList = async (req, res, next) => {
 }
 module.exports = {
   getUser,
+  getUserById,
   editUserData,
   followUser,
   followerList,

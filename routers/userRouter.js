@@ -12,6 +12,7 @@ router.use(methodOverride('_method'));
 
 
 router.get('/',isAuth,userController.getUser);
+router.get('/:userId',isAuth,userController.getUserById)
 router.put('/updateUserData',isAuth,upload.single('image'),userController.editUserData);
 router.put('/followUser/:followId',isAuth,userController.followUser);
 router.get('/followers',isAuth,userController.followerList);
