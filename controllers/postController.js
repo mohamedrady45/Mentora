@@ -248,14 +248,24 @@ const getPostComments = async (req, res, next) => {
             const userReacted = comment.reacts.users.includes(userId);
             return {
                 _id: comment._id, 
+                authorId: comment.author._id, 
                 authorName: `${comment.author.firstName} ${comment.author.lastName}`,
                 authorProfilePicture: comment.author.profilePicture,
                 date: comment.date,
                 content: comment.content,
                 reactsCount: comment.reacts.count,
                 repliesCount: comment.replies.length,
-                userReacted: userReacted ,
-                replies: comment.replies, 
+                userReacted: userReacted,
+                replies: comment.replies.map(reply => ({
+                    _id: reply._id,
+                    authorId: reply.author._id, 
+                    authorName: `${reply.author.firstName} ${reply.author.lastName}`,
+                    authorProfilePicture: reply.author.profilePicture,
+                    date: reply.date,
+                    content: reply.content,
+                    reactsCount: reply.reacts.count,
+                    userReacted: reply.reacts.users.includes(userId),
+                })),
             };
         });
 
@@ -266,6 +276,7 @@ const getPostComments = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 
@@ -357,6 +368,7 @@ const updateComment = async (req, res, next) => {
 
 const getCommentReplies = async (req, res, next) => {
     try {
+
         const userId = req.userId; 
         const { postId, commentId } = req.params;
 
