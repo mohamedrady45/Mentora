@@ -30,7 +30,8 @@ const getAnotherUserProfile = async (req, res, next) => {
       profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
-      posts: posts
+      posts: posts,
+      bio: user.bio
     }
 
     res.status(200).json({
@@ -70,6 +71,7 @@ const getMyProfile = async (req, res, next) => {
       languages: user.languages,
       interests: user.interests,
       posts: posts,
+      bio: user.bio
     };
 
     res.status(200).json({
