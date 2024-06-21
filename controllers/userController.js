@@ -3,10 +3,12 @@ const postService = require('../services/post')
 const User = require('../Models/user')
 const Schadule = require('../Models/Schedule')
 const cloudinary = require('../services/cloudinary')
+const Post = require('../Models/post').Post;
 
-const getUser = async (req, res, next) => {
+
+const getAnotherUserProfile = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    const userId = req.params.userId;
     const user = await User.findById(userId)
     if (!user) {
       const err = new Error('Can\'t find user');
@@ -42,22 +44,24 @@ const getUser = async (req, res, next) => {
     next(err);
   }
 };
-const getUserById =async (req, res, next) => {
+
+const getMyProfile = async (req, res, next) => {
   try {
-    const {userId} = req.params;
-    const user = await User.findById(userId)
+    const userId = req.userId; 
+    const user = await User.findById(userId);
+    
     if (!user) {
-      const err = new Error('Can\'t find user');
+      const err = new Error('User not found');
       err.statusCode = 404;
       throw err;
     }
-    
-    const posts = await postService.getUserPosts({ author: userId }, { path: 'author', select: 'firstName lastName profilePicture' });
 
-    //create user data
+    // FIXME: Fetch user's posts, comments, reacts, shares, etc.
+     const posts = await Post.find({ author: userId }).populate('author', 'firstName lastName profilePicture');
+    
     const userData = {
       _id: user._id,
-      name: user.firstName + " " + user.lastName,
+      name: `${user.firstName} ${user.lastName}`,
       email: user.email,
       dateOfBirth: user.dateOfBirth,
       country: user.country,
@@ -65,8 +69,8 @@ const getUserById =async (req, res, next) => {
       profilePicture: user.profilePicture,
       languages: user.languages,
       interests: user.interests,
-      posts: posts
-    }
+      posts: posts,
+    };
 
     res.status(200).json({
       success: true,
@@ -75,10 +79,12 @@ const getUserById =async (req, res, next) => {
       }
     });
   } catch (err) {
-    console.error('Error in get this User:', err);
+    console.error('Error fetching user profile:', err);
     next(err);
   }
 };
+
+
 const searchUser = async (req, res, next) => {
   const query = req.query.q;
   const page = parseInt(req.query.page) || 1;
@@ -314,12 +320,12 @@ const scheduleList = async (req, res, next) => {
 }
 module.exports = {
   getUser,
-  getUserById,
   editUserData,
   followUser,
   followerList,
   followingList,
   scheduleList,
-  searchUser
+  searchUser,
+  getMyProfile
 }
 
