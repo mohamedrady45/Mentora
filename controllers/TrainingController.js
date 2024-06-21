@@ -59,6 +59,9 @@ const createTraining = async (req, res, next) => {
         const { name, description, track, level, requirements, Salary, duration, numberOfRequiredMentees, language } = req.body;
         const file =req.file;
         let attachment=null
+        if(!name||!description){
+            return res.status(400).json({message: 'Please fill all fields'})
+        }
 
         if (file) {
             const result = await cloudinary.uploader.upload(file.path, {

@@ -326,6 +326,7 @@ module.exports = {
   followingList,
   scheduleList,
   searchUser,
-  getMyProfile
+  getMyProfile,
+  getAnotherUserProfile
 }
 
