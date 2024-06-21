@@ -172,6 +172,11 @@ const userSchema = new mongoose.Schema({
             type: Number,
         },
     },
+    requests:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MentorRequest',
+
+    }]
 });
 
 const User = mongoose.model('User', userSchema);
