@@ -19,6 +19,7 @@ const isAuth = async (req, res, next) => {
             if (err) {
                 console.error('Invalid signature:', err.message);
                 // Handle the error
+                return res.status(403).json({ message: 'Failed to login' });
             } else {
                 req.userId = payload.userId;
                 next();

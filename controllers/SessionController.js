@@ -21,14 +21,7 @@ const createSession = async (req, res, next) => {
 
         const session = new Session({ title, description, date, mentor: mentorId, price });
         session.mentees.push(menteeId);
-        await session.save();
-
-        mentee.sessions.ids.push(session._id);
-        await mentee.save();
-
-
-        mentor.sessions.ids.push(session._id);
-        await mentor.save();
+        await session.save();        
 
         res.status(201).json({
             message: "Session created successfully", data: {

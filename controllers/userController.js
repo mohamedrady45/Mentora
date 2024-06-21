@@ -2,6 +2,7 @@ const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
 const Schadule = require('../Models/Schedule')
+const cloudinary = require('../services/cloudinary')
 
 const getUser = async (req, res, next) => {
   try {
@@ -41,7 +42,7 @@ const getUser = async (req, res, next) => {
     next(err);
   }
 };
-const searchUser = async(req , res , next)=>{
+const searchUser = async (req, res, next) => {
   const query = req.query.q;
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -49,9 +50,9 @@ const searchUser = async(req , res , next)=>{
 
   try {
     let searchCriteria;
-    
+
     if (query) {
-      const nameParts = query.split(' ').filter(Boolean); 
+      const nameParts = query.split(' ').filter(Boolean);
 
       if (nameParts.length === 1) {
         searchCriteria = {
@@ -102,7 +103,7 @@ const editUserData = async (req, res, next) => {
 
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
-    console.log(req.body, file)
+
 
     //update user
     const user = await userService.findUser('_id', userId);
@@ -111,30 +112,44 @@ const editUserData = async (req, res, next) => {
       throw new Error('User not found');
     }
     //update user data
+
+
+
     if (file) {
-      user.profilePicture = file.path;
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "profilePicture",
+      });
+
+      const attachment =  result.secure_url
+        
+      user.profilePicture = attachment;
+    }
+    if (bio) user.bio = bio;
+    if (country) user.country = country;
+
+
+    if (languages) {
+      languages = languages.split(',');
+      languages.forEach(lang => {
+        user.languages.push(lang);
+      });
+
+    }
+    if (interests) {
+      interests = interests.split(',');
+      interests.forEach(interest => {
+        user.interests.push(interest);
+      });
     }
 
-    user.bio = bio;
-    user.country = country;
-
-
-    languages = languages.split(',');
-    languages.forEach(lang => {
-      user.languages.push(lang);
-    });
-
-    interests = interests.split(',');
-    interests.forEach(interest => {
-      user.interests.push(interest);
-    });
     //save user
     await user.save()
+    const userData = { firstName: user.firstName, lastName: user.lastName, dateOfBirth: user.dateOfBirth, country: user.country, gender: user.country, bio: user.bio, profilePicture: user.profilePicture, languages: user.languages, interests: user.interests, notification: user.notification, followers: user.followers, following: user.Following }
     //send response
     res.status(200).json({
       success: true,
       data: {
-        user: user
+        user: userData
       }
     });
   } catch (err) {
@@ -244,9 +259,9 @@ const followingList = async (req, res, next) => {
 const scheduleList = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const schadule = await Schadule.find({user:userId})
-    .populate('createdBy','fristName lastName')
-    .populate('from','name title');
+    const schadule = await Schadule.find({ user: userId })
+      .populate('createdBy', 'fristName lastName')
+      .populate('from', 'name title');
 
     res.status(200).json({
       success: true,
@@ -266,7 +281,7 @@ module.exports = {
   followUser,
   followerList,
   followingList,
-  scheduleList , 
+  scheduleList,
   searchUser
 }
 

@@ -2,6 +2,8 @@ const MentorRequest = require('../Models/RequestMentor');
 const Mentor = require('../Models/user');
 const Training = require('../Models/Training');
 const User = require('../Models/user');
+const RequestMentor =require('../Models/RequestMentor')
+const { request } = require('express');
 
 const createMentorRequest = async (req, res, next) => {
     try {
@@ -93,8 +95,6 @@ const getMentorsRecommendation = async (req, res, next) => {
 };
 
 
-
-
 const getTrainingsRecommendation = async (req, res, next) => {
     try {
 
@@ -142,7 +142,60 @@ const RequestRecommendedMentor = async(req, res, next) =>{
         next(err);
     }
 };
+const sendRequestToMentor =async(req, res, next) =>{
+    try{
+       
+       const {requestId,mentorId} = req.params;
+        const mentor = await Mentor.findById(mentorId);
+        if(!mentor){
+            return res.status(404).json({ message: 'There is no mentor selected' });
+        }
+        if(mentor.requests.includes(requestId)){
+            return res.status(400).json({ message: 'You already requested this mentor' });
+        }
+        mentor.requests.push(requestId);
+        await mentor.save();
 
+        res.status(200).json({ message: 'Your request send to mentor' });
+
+    }catch(err){
+        console.error('Error sent request to mentor.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const getMentorRequests= async(req, res, next) =>{
+    try{
+       const mentorId = req.userId;
+       const mentor = await Mentor.findById(mentorId).populate('requests');
+
+        res.status(200).json({ message: 'get all mentor requests' ,requests:mentor.requests});
+
+    }catch(err){
+        console.error('Error in fetch mentor requests', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const getMentorRequestById =async(req, res, next) =>{
+    try{
+       const {requestId}=req.params;
+       const request = await MentorRequest.findById(requestId).populate('userId','firstName lastName profilePicture')
+
+        res.status(200).json({ message: 'get all mentor requests' ,request});
+
+    }catch(err){
+        console.error('Error in fetch mentor requests', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
 //Mentor rejects the request
 const MentorRejectRequest = async(req, res, next) =>{
     try{
@@ -201,6 +254,8 @@ const MentorAcceptedRequest = async(req, res, next) =>{
 };
 
 
+
+
 module.exports = {
     createMentorRequest,
     getMentorsRecommendation,
@@ -208,4 +263,7 @@ module.exports = {
     getTrainingsRecommendation,
     MentorRejectRequest,
     MentorAcceptedRequest,
+    getMentorRequests,
+    getMentorRequestById,
+    sendRequestToMentor
 };

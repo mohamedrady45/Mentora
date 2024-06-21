@@ -173,7 +173,7 @@ const login = async (req, res, next) => {
     const refreshToken = await authService.generateRefreshToken(tokenData);
 
 
-    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful' });
+    res.status(200).json({ Token: token, refreshToken: refreshToken, message: 'Login successful',userRole:user.role });
   } catch (err) {
     console.error('Error logging in:', err);
     next(err);

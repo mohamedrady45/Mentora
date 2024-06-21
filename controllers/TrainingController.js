@@ -4,7 +4,11 @@ const Session = require('../Models/Session');
 const Test = require('../Models/Test');
 const MassageModel = require('../Models/message')
 const Announcement = require('../Models/Announcement');
+const MaterialMaodle = require('../Models/Material');
 const { findById } = require('../Models/Task');
+const materialModel = require('../Models/Material');
+const cloudinary = require("../services/cloudinary");
+
 
  const getUserAllTrainings = async (req, res) => {
     try {
@@ -359,6 +363,184 @@ const getMessages = async (req, res, next) => {
         next(err);
     }
 }
+//TODO: test this function
+const uploadMaterial = async (req, res, next) => {
+    try {
+        const {trainigId} = req.params;
+        const { description } = req.body;
+        let files = req.files
+
+        const trainig = await Training.findById(trainigId);
+
+        //upload files in cloud
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Material",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
+            }));
+        }
+        //create new Material
+        const newMaterial =new materialModel({
+            text:description,
+            attachmentsUrl:attachments,
+        });
+        await newMaterial.save();
+
+        //add material to training
+        trainig.material.push(newMaterial);
+        await trainig.save();
+
+        res.status(201).json({
+            message: "Matrial uploaded successfully"
+        });
+
+    } catch (err) {
+        console.log("error in upload new material");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+const editMaterial = async (req, res, next) => {
+    try {
+        const { materialId } = req.params;
+        const { description } = req.body;
+        let files = req.files;
+        let attachments = [];
+
+        const material = await materialModel.findById(materialId);
+
+        if (!material) {
+            const error = new Error('Material not found');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Handle file uploads if there are new files
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Material",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                url: result.secure_url,
+                public_id: result.public_id
+            }));
+
+            // Delete old attachments from cloudinary
+            if (material.attachmentsUrl && material.attachmentsUrl.length > 0) {
+                const deletePromises = material.attachmentsUrl.map(att => {
+                    return cloudinary.uploader.destroy(att.public_id);
+                });
+                await Promise.all(deletePromises);
+            }
+
+            material.attachmentsUrl = attachments;
+        }
+
+        // Update description if provided
+        if (description) {
+            material.text = description;
+        }
+
+        await material.save();
+
+        res.status(200).json({
+            message: "Material updated successfully",
+            material
+        });
+
+    } catch (err) {
+        console.log("error in edit material");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const deleteMaterial = async (req, res, next) => {
+    try {
+        const { materialId } = req.params;
+
+        const material = await materialModel.findById(materialId);
+
+        if (!material) {
+            const error = new Error('Material not found');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Delete attachments from cloudinary
+        if (material.attachmentsUrl && material.attachmentsUrl.length > 0) {
+            const deletePromises = material.attachmentsUrl.map(att => {
+                return cloudinary.uploader.destroy(att.public_id);
+            });
+            await Promise.all(deletePromises);
+        }
+
+        // Remove material from training
+        await Training.updateMany(
+            { material: materialId },
+            { $pull: { material: materialId } }
+        );
+
+        // Delete the material
+        await materialModel.findByIdAndRemove(materialId);
+
+        res.status(200).json({
+            message: "Material deleted successfully"
+        });
+
+    } catch (err) {
+        console.log("error in deleting material");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const getAllMaterials = async (req, res, next) => {
+    try {
+        const { trainingId } = req.params;
+
+        const training = await Training.findById(trainingId).populate('material');
+
+        if (!training) {
+            const error = new Error('Training not found');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        res.status(200).json({
+            message: "Materials fetched successfully",
+            materials: training.material
+        });
+
+    } catch (err) {
+        console.log("error in fetching materials");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+
+
+
+
+
 
 //Enroll mentee in a training
 const enrollInTraining = async (req, res, next) => {
@@ -412,5 +594,9 @@ module.exports = {
     deleteAnnouncement,
     editAnnouncement,
     sendMessage,
-    getMessages
+    getMessages,
+    uploadMaterial,
+    editMaterial,
+    deleteMaterial,
+    getAllMaterials,
 };
