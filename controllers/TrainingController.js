@@ -59,7 +59,7 @@ const createTraining = async (req, res, next) => {
         const { name, description, track, level, requirements, Salary, duration, numberOfRequiredMentees, language } = req.body;
         const file =req.file;
         let attachment=null
-        if(!name||!description||!track||!leavel){
+        if(!name||!description||!track||!level){
             return res.status(400).json({message: 'Please fill all fields'})
         }
 
