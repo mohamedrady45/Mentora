@@ -1,4 +1,5 @@
 const Task = require('../Models/Task');
+const Submission = require('../Models/taskSubission');
 const User = require('../Models/user');
 const cloudinary = require("../services/cloudinary");
 
@@ -50,7 +51,7 @@ const AddTask = async (req, res, next) => {
             const result = await cloudinary.uploader.upload(file.path, {
                 folder: "Task",
             });
-            
+
             attachment = {
                 type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
                 url: result.secure_url,
@@ -111,7 +112,7 @@ const updateTask = async (req, res, next) => {
                 public_id: result.public_id
             };
         }
-
+        console.log(task)
         // Save the updated task
         await task.save();
 
@@ -158,8 +159,8 @@ const deleteTask = async (req, res, next) => {
 const SubmitTask = async (req, res, next) => {
     try {
         const { taskId } = req.params;
-        const menteeId = req.userId; 
-        const file = req.file; 
+        const menteeId = req.userId;
+        const file = req.file;
 
         // Find the task by ID
         const task = await Task.findById(taskId);
@@ -171,7 +172,7 @@ const SubmitTask = async (req, res, next) => {
             const result = await cloudinary.uploader.upload(file.path, {
                 folder: "Task",
             });
-            
+
             attachment = {
                 type: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
                 url: result.secure_url,
@@ -179,18 +180,65 @@ const SubmitTask = async (req, res, next) => {
             };
         }
         // Create a new submission object
-        const newSubmission = {
+        const newSubmission = new Submission({
+            task,
             mentee: menteeId,
             file: attachment
-        };
+        });
+        await newSubmission.save();
 
         // Add the new submission to the task's submissions array
-        task.submission.push(newSubmission);
+        task.submissions.push(newSubmission);
 
         // Save the updated task
         await task.save();
 
         res.status(200).json({ message: 'Task successfully submitted.' });
+    } catch (err) {
+        console.error('Error submitting task.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const getTaskSubmission = async (req, res, next) => {
+    try {
+        const { taskId } = req.params;
+        const task = await Task.findById(taskId).populate('submissions');
+        res.status(200).json({ message: 'Get all task submission', task });
+    } catch (err) {
+        console.error('Error get your submission', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const getAllUserSubmission = async (req, res, next) => {
+    try {
+        const menteeId = req.userId;
+        const { taskId } = req.params;
+        const submissions = await Submission.find({ mentee: menteeId, task: taskId });
+        
+        res.status(200).json({ message: 'Get all your submission', submissions });
+    } catch (err) {
+        console.error('Error get your submission', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+const reviewTask = async (req, res, next) => {
+    try {
+        const { submissionId } = req.params;
+        const { review } = req.body;
+        const submission = await Submission.findById(submissionId);
+        submission.review = review;
+        await submission.save();
+
+        res.status(200).json({ message: 'review add successfully' });
     } catch (err) {
         console.error('Error submitting task.', err);
         if (!err.statusCode) {
@@ -209,5 +257,9 @@ module.exports = {
     AddTask,
     updateTask,
     deleteTask,
-    SubmitTask
+    SubmitTask,
+    getAllUserSubmission,
+    getTaskSubmission,
+    reviewTask,
+
 };

@@ -10,24 +10,9 @@ const attachmentSchema = new mongoose.Schema({
   url: {
     type: String,
     required: true,
-  },
-  reviwe:{
-    type:String,
-    required: true,
-    default:'you don\'t has reviwe yet'
   }
 });
-const submissionSchema = new mongoose.Schema({
-  mentee: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  file: {
-    type: attachmentSchema,
-    required: true,
-  },
-});
+
 
 const taskSchema = new mongoose.Schema({
   
@@ -47,7 +32,10 @@ const taskSchema = new mongoose.Schema({
     type: Date,
   },
   attachment: { type: attachmentSchema },
-  submission:[submissionSchema]
+  submissions:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Submission'
+  }]
 },
   {
     timestamps: true

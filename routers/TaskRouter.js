@@ -6,10 +6,21 @@ const router = express.Router();
 
 //http://localhost:4000/api/task
 router.get('/:trainingId',isAuth, TaskController.getAllTasks);
-router.get('/:id',isAuth, TaskController.getOneTask);
-router.post('/addTask/:trainingId', isAuth, uploadFile.single('task') ,TaskController.AddTask);
-router.put('/:taskId',isAuth, TaskController.updateTask);
-router.delete('/:taskId',isAuth, TaskController.deleteTask);
-router.post('/tasks/:taskId/submit',isAuth,TaskController.SubmitTask);
+
+router.get('/:taskId/oneTask',isAuth, TaskController.getOneTask);
+
+router.post('/addTask/:trainingId', isAuth, uploadFile.single('task') ,TaskController.AddTask);//only Mentor
+
+router.put('/:taskId/editTask',isAuth, uploadFile.single('task'),TaskController.updateTask);//only Mentor
+
+router.delete('/:taskId/deleteTask',isAuth, TaskController.deleteTask);//only Mentor
+
+router.post('/:taskId/submit',isAuth,uploadFile.single('submit'),TaskController.SubmitTask);
+
+router.get('/:taskId/userSubmission',isAuth,TaskController.getAllUserSubmission);
+
+router.get('/:taskId/taskSubmissions',isAuth,TaskController.getTaskSubmission);//only Mentor
+
+
 
 module.exports = router;
