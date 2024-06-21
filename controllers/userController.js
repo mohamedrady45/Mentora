@@ -27,7 +27,7 @@ const getAnotherUserProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
       posts: posts
@@ -66,7 +66,7 @@ const getMyProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
       posts: posts,
@@ -126,7 +126,7 @@ const searchUser = async (req, res, next) => {
       role: user.role,
       country: user.country,
       bio: user.bio,
-      profilePicture: user.profilePicture
+      profilePicture: user.profilePicture.url
     }));
 
     res.json({
@@ -141,65 +141,73 @@ const searchUser = async (req, res, next) => {
 };
 const editUserData = async (req, res, next) => {
   try {
-    //take data 
     const userId = req.userId;
 
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
 
-
-    //update user
     const user = await userService.findUser('_id', userId);
-    //check if user exist
+
     if (!user) {
       throw new Error('User not found');
     }
-    //update user data
 
-
-
+    let attachments = [];
     if (file) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: "profilePicture",
+      const uploadResult = await cloudinary.uploader.upload(file.path, {
+        folder: "Profile",
       });
+      attachments.push({
+        type: 'image',
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      });
+    }
 
-      const attachment =  result.secure_url
-        
-      user.profilePicture = attachment;
+    if (attachments.length > 0) {
+      user.profilePicture = attachments[0];
     }
     if (bio) user.bio = bio;
     if (country) user.country = country;
 
-
     if (languages) {
       languages = languages.split(',');
-      languages.forEach(lang => {
-        user.languages.push(lang);
-      });
-
+      user.languages = languages;
     }
     if (interests) {
       interests = interests.split(',');
-      interests.forEach(interest => {
-        user.interests.push(interest);
-      });
+      user.interests = interests;
     }
 
-    //save user
-    await user.save()
-    const userData = { firstName: user.firstName, lastName: user.lastName, dateOfBirth: user.dateOfBirth, country: user.country, gender: user.country, bio: user.bio, profilePicture: user.profilePicture, languages: user.languages, interests: user.interests, notification: user.notification, followers: user.followers, following: user.Following }
-    //send response
+    await user.save();
+
+    const userData = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      dateOfBirth: user.dateOfBirth,
+      country: user.country,
+      gender: user.gender, 
+      bio: user.bio,
+      profilePicture: user.profilePicture.url,
+      languages: user.languages,
+      interests: user.interests,
+      notification: user.notification,
+      followers: user.followers,
+      following: user.following, 
+    };
+
     res.status(200).json({
       success: true,
       data: {
-        user: userData
-      }
+        user: userData,
+      },
     });
   } catch (err) {
-    console.error('Error in update your data:', err);
+    console.error('Error in updating user data:', err);
     next(err);
   }
 };
+
 
 const followUser = async (req, res, next) => {
   try {

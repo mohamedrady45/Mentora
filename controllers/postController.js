@@ -69,8 +69,9 @@ const getPostById = async (req, res, next) => {
 
         const response = {
             authorName: `${post.author.firstName} ${post.author.lastName}`,
-            authorProfilePicture: post.author.profilePicture,
+            authorProfilePicture: post.author.profilePicture.url,
             date: post.date,
+            attachments: post.attachments,
             content: post.content,
             reactsCount: post.reacts.count,
             commentsCount: post.comments.length,
@@ -167,7 +168,7 @@ const getAllPosts = async (req, res) => {
                 author: post.author ? {
                     firstName: post.author.firstName,
                     lastName: post.author.lastName,
-                    profilePicture: post.author.profilePicture
+                    profilePicture: post.author.profilePicture.url
                 } : null,
                 content: post.content,
                 date: post.date,
@@ -259,7 +260,7 @@ const getPostComments = async (req, res, next) => {
                 _id: comment._id, 
                 authorId: comment.author._id, 
                 authorName: `${comment.author.firstName} ${comment.author.lastName}`,
-                authorProfilePicture: comment.author.profilePicture,
+                authorProfilePicture: comment.author.profilePicture.url,
                 date: comment.date,
                 content: comment.content,
                 reactsCount: comment.reacts.count,
@@ -269,7 +270,7 @@ const getPostComments = async (req, res, next) => {
                     _id: reply._id,
                     authorId: reply.author._id, 
                     authorName: `${reply.author.firstName} ${reply.author.lastName}`,
-                    authorProfilePicture: reply.author.profilePicture,
+                    authorProfilePicture: reply.author.profilePicture.url,
                     date: reply.date,
                     content: reply.content,
                     reactsCount: reply.reacts.count,
@@ -406,7 +407,7 @@ const getCommentReplies = async (req, res, next) => {
                 _id: reply._id, 
                 authorId: reply.author._id, 
                 authorName: `${reply.author.firstName} ${reply.author.lastName}`,
-                authorProfilePicture: reply.author.profilePicture,
+                authorProfilePicture: reply.author.profilePicture.url,
                 date: reply.date,
                 content: reply.content,
                 reactsCount: reply.reacts.count,
