@@ -236,6 +236,15 @@ const getPostComments = async (req, res, next) => {
                 path: 'comments',
                 populate: {
                     path: 'author',
+                    model: 'User',
+                    select: 'firstName lastName profilePicture',
+                }
+            })
+            .populate({
+                path: 'comments.replies',
+                populate: {
+                    path: 'author',
+                    model: 'User',
                     select: 'firstName lastName profilePicture',
                 }
             });
