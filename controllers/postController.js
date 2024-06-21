@@ -383,6 +383,7 @@ const getCommentReplies = async (req, res, next) => {
             const userReacted = reply.reacts.users.includes(userId);
             return {
                 _id: reply._id, 
+                authorId: reply.author._id, 
                 authorName: `${reply.author.firstName} ${reply.author.lastName}`,
                 authorProfilePicture: reply.author.profilePicture,
                 date: reply.date,
@@ -399,6 +400,7 @@ const getCommentReplies = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 
