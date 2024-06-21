@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const mentorRequestSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required: true
     },
     description: {
