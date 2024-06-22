@@ -8,6 +8,7 @@ const Announcement = require('../Models/Announcement');
 const { findById } = require('../Models/Task');
 const materialModel = require('../Models/Material');
 const cloudinary = require("../services/cloudinary");
+const mime = require('mime-types');
 
 
  const getUserAllTrainings = async (req, res) => {
@@ -321,15 +322,27 @@ const sendMessage = async (req, res, next) => {
         let attachments=null;
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => {
+                
                 return cloudinary.uploader.upload(file.path, {
                     folder: "Message",
                 });
             });
             const uploadResults = await Promise.all(uploadPromises);
-            attachments = uploadResults.map(result => ({
-                fileType: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
-                filePath: result.secure_url,
-            }));
+            attachments = uploadResults.map(result => {
+                const mimeType = mime.lookup(result.secure_url);
+                let fileType;
+                if (mimeType.startsWith('image/')) {
+                    fileType = 'image';
+                } else if (mimeType.startsWith('video/')) {
+                    fileType = 'video';
+                } else {
+                    fileType = 'file';
+                }
+                return {
+                    fileType: fileType,
+                    filePath: result.secure_url,
+                };
+            });
         }
         const Nmsg = new MassageModel({
 

@@ -3,7 +3,7 @@ const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
 const { getReceiverSocketId, io } =require('../Socket/socket');
 const cloudinary =require('../services/cloudinary')
-
+const mime = require('mime-types');
 
 
 const sendMessage = async (req, res, next) => {
@@ -22,10 +22,21 @@ const sendMessage = async (req, res, next) => {
                 });
             });
             const uploadResults = await Promise.all(uploadPromises);
-            attachments = uploadResults.map(result => ({
-                fileType: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
-                filePath: result.secure_url,
-            }));
+            attachments = uploadResults.map(result => {
+                const mimeType = mime.lookup(result.secure_url);
+                let fileType;
+                if (mimeType.startsWith('image/')) {
+                    fileType = 'image';
+                } else if (mimeType.startsWith('video/')) {
+                    fileType = 'video';
+                } else {
+                    fileType = 'file';
+                }
+                return {
+                    fileType: fileType,
+                    filePath: result.secure_url,
+                };
+            });
         }
 
         let chat = await ChatModel.findOne({ users: { $all: [senderID, receiveID] } });
