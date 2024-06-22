@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 
 const getAnotherUserProfile = async (req, res, next) => {
   try {
-    const userId = req.params.userId;
+    const {userId} = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       const err = new Error('Invalid user ID');
