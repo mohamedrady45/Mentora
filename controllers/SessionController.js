@@ -146,9 +146,9 @@ const addMatrial = async (req, res, next) => {
 
 
         const session = await Session.findById(sessionId);
-        session.matrial.text = description;
+        session.material.text = description;
         Attachments.map(file => {
-            session.matrial.Attachments.push({
+            session.material.attachments.push({
                 fileType: file.mimetype,
                 filePath: file.path
             })
