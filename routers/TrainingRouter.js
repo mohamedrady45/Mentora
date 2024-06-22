@@ -29,6 +29,7 @@ router.put('/editAnnouncement/:announcementId',isAuth, TrainingController.editAn
 
 router.post('/sendMessage/:trainingId', isAuth,upload.array('files'), TrainingController.sendMessage);
 router.get('/getMessages/:trainingId',isAuth, TrainingController.getMessages);
+router.delete('/deleteMessage/:messageId/:trainingId', isAuth, TrainingController.deleteMessage );
 
 //material
 router.post('/:trainigId/uploadMaterial',isAuth,upload.array('files'),TrainingController.uploadMaterial)//only mentor

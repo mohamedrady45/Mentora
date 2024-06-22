@@ -4,7 +4,7 @@ const Session = require('../Models/Session');
 const Test = require('../Models/Test');
 const MassageModel = require('../Models/message')
 const Announcement = require('../Models/Announcement');
-const MaterialMaodle = require('../Models/Material');
+// const MaterialModle = require('../Models/Material');
 const { findById } = require('../Models/Task');
 const materialModel = require('../Models/Material');
 const cloudinary = require("../services/cloudinary");
@@ -357,6 +357,38 @@ const sendMessage = async (req, res, next) => {
     }
 }
 
+const deleteMessage = async (req, res, next) => {
+    try {
+
+        const {messageId,trainingId} = req.params;
+        
+        const message = await MassageModel.findById(messageId);
+        
+        if(!message){
+         return res.status(400).json({success : false , msg:"No such Message"});
+        }
+        if (message.senderID != req.userId) {
+            throw new Error('Unauthorized access', 'You are not the sender of this message').statusCode = 401;
+        }
+
+        //remove  the messge from chat messages array
+        let training = await Training.findOne({_id:trainingId});
+        training.messages = training.messages.filter((m)=> m!=messageId );
+        await training.save();
+        
+        //delete the message
+        await message.deleteOne();
+        return res.status(201).json({ success: true, msg:'message deleted' });
+
+
+    } catch (err) {
+        console.log("error in edit message");
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
 const getMessages = async (req, res, next) => {
     try {
         const { trainingId } = req.params;
@@ -614,6 +646,7 @@ module.exports = {
     deleteAnnouncement,
     editAnnouncement,
     sendMessage,
+    deleteMessage,
     getMessages,
     uploadMaterial,
     editMaterial,
