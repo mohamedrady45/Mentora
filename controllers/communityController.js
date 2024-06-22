@@ -197,7 +197,16 @@ const getCommunityQuestions = async (req, res) => {
       return res.status(404).json({ message: 'Community not found' });
     }
 
-    const questions = community.questions;
+    const questions = community.questions.map(question => ({
+      _id: question._id,
+      content: question.content,
+      author: {
+        firstName: question.author.firstName,
+        lastName: question.author.lastName,
+        profilePicture: question.author.profilePicture.url
+      },
+      date: question.date
+    }));
 
     res.status(200).json({ questions });
   } catch (error) {
@@ -237,7 +246,16 @@ const getQuestionAnswers = async (req, res) => {
       return res.status(403).json({ message: 'Question does not belong to this community' });
     }
 
-    const answers = question.answers;
+    const answers = question.answers.map(answer => ({
+      _id: answer._id,
+      content: answer.content,
+      author: {
+        firstName: answer.author.firstName,
+        lastName: answer.author.lastName,
+        profilePicture: answer.author.profilePicture.url
+      },
+      date: answer.date
+    }));
 
     res.status(200).json({ answers });
   } catch (error) {
@@ -245,7 +263,6 @@ const getQuestionAnswers = async (req, res) => {
     res.status(500).json({ message: 'Error fetching question answers' });
   }
 };
-
 const searchCommunity = async (req, res) => {
   const { searchQuery } = req.body;
 
@@ -294,13 +311,24 @@ const getOneCommunityQuestion = async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    if (question.community != communityId) {
+    if (question.community.toString() !== communityId) {
       return res.status(403).json({ message: 'Question does not belong to this community' });
     }
 
-    res.status(200).json({ question });
+    const questionData = {
+      _id: question._id,
+      content: question.content,
+      author: {
+        firstName: question.author.firstName,
+        lastName: question.author.lastName,
+        profilePicture: question.author.profilePicture.url
+      },
+      date: question.date
+    };
+
+    res.status(200).json({ question: questionData });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching community question:', error);
     res.status(500).json({ message: 'Error fetching community question' });
   }
 };

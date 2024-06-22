@@ -36,7 +36,7 @@ const getAnotherUserProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
       posts: posts,
@@ -76,7 +76,7 @@ const getMyProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
       posts: posts,
@@ -148,56 +148,59 @@ const searchUser = async (req, res, next) => {
 const editUserData = async (req, res, next) => {
   try {
     const userId = req.userId;
-
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
-    
 
     const user = await userService.findUser('_id', userId);
 
     if (!user) {
-      throw new Error('User not found');
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    let attachment = null;
     if (file) {
+      if (!file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ success: false, message: 'Invalid file type. Only images are allowed.' });
+      }
+
       const uploadResult = await cloudinary.uploader.upload(file.path, {
         folder: "Profile",
       });
-      attachment=uploadResult.secure_url;
+
+      user.profilePicture = {
+        type: 'image', 
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id
+      };
     }
 
-    if (attachment) {
-      user.profilePicture = attachment;
-    }
     if (bio) user.bio = bio;
     if (country) user.country = country;
 
     if (languages) {
-      languages = languages.split(',');
+      languages = languages.split(',').map(lang => lang.trim());
       user.languages = languages;
     }
     if (interests) {
-      interests = interests.split(',');
+      interests = interests.split(',').map(interest => interest.trim());
       user.interests = interests;
     }
 
     await user.save();
 
     const userData = {
-      _id:user._id,
+      _id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       dateOfBirth: user.dateOfBirth,
       country: user.country,
-      gender: user.gender, 
+      gender: user.gender,
       bio: user.bio,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture.url,
       languages: user.languages,
       interests: user.interests,
       notification: user.notification,
       followers: user.followers,
-      following: user.following, 
+      following: user.following,
     };
 
     res.status(200).json({
@@ -211,6 +214,7 @@ const editUserData = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 const followUser = async (req, res, next) => {
