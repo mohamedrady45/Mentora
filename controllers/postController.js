@@ -433,6 +433,11 @@ const deleteComment = async (req, res, next) => {
         const userId = req.userId; 
         const postId = req.params.postId;
         const commentId = req.params.commentId;
+
+        if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(commentId)) {
+            return res.status(400).json({ message: 'Invalid post ID or comment ID' });
+        }
+
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -447,19 +452,18 @@ const deleteComment = async (req, res, next) => {
             return res.status(403).json({ message: "You are not authorized to delete this comment" });
         }
 
-        comment.remove();
+        post.comments.pull(commentId);
         await post.save();
 
         res.status(200).json({ message: 'Your comment has been successfully deleted.' });
     } catch (err) {
-        console.error('Error deleting comment.', err);
+        console.error('Error deleting comment:', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
         next(err);
     }
 };
-
 
 const reactComment = async (req, res, next) => {
     try {
