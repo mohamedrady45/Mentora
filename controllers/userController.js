@@ -4,22 +4,31 @@ const User = require('../Models/user')
 const Schadule = require('../Models/Schedule')
 const cloudinary = require('../services/cloudinary')
 const Post = require('../Models/post').Post;
+const mongoose = require('mongoose');
 
 
 const getAnotherUserProfile = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    const user = await User.findById(userId)
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const user = await User.findById(userId);
     if (!user) {
       const err = new Error('Can\'t find user');
       err.statusCode = 404;
       throw err;
     }
-    //FIXME: coments , react and share
-    //get user posts
+
+    // FIXME: comments, react and share
+    // Get user posts
     const posts = await postService.getUserPosts({ author: userId }, { path: 'author', select: 'firstName lastName profilePicture' });
 
-    //create user data
+    // Create user data
     const userData = {
       _id: user._id,
       name: user.firstName + " " + user.lastName,
@@ -41,7 +50,7 @@ const getAnotherUserProfile = async (req, res, next) => {
       }
     });
   } catch (err) {
-    console.error('Error in get this User:', err);
+    console.error('Error in getAnotherUserProfile:', err);
     next(err);
   }
 };
@@ -88,10 +97,7 @@ const getMyProfile = async (req, res, next) => {
 
 
 const searchUser = async (req, res, next) => {
-  const query = req.query.q;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const query = req.body;
 
   try {
     let searchCriteria;
@@ -117,8 +123,6 @@ const searchUser = async (req, res, next) => {
     }
 
     const users = await User.find(searchCriteria)
-      .skip(skip)
-      .limit(limit)
       .select('firstName lastName role country bio profilePicture');
 
     const count = await User.countDocuments(searchCriteria);
