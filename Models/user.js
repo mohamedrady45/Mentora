@@ -70,6 +70,8 @@ const userSchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
+        required: true,
+        default: 'https://res.cloudinary.com/di4ytdfwq/image/upload/v1719031864/Profile/ijafdlloipckzvwvlvm5.png'
     },
     languages: {
         type: [String],
@@ -131,7 +133,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
     }],
-    
+
     notification: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Notification'
@@ -169,7 +171,7 @@ const userSchema = new mongoose.Schema({
             type: Number,
         },
         reviews: {
-            type: [String], 
+            type: [String],
             default: [],
         },
         rating: {
@@ -177,11 +179,17 @@ const userSchema = new mongoose.Schema({
             default: 0,
         },
     },
-    requests:[{
+    requests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MentorRequest',
 
-    }]
+    }],
+    chats:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Chat',
+        }
+    ]
 });
 
 const User = mongoose.model('User', userSchema);

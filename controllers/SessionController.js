@@ -1,8 +1,9 @@
 const Request = require('../Models/RequestMentor')
 const Session = require('../Models/Session')
 const User = require('../Models/user')
-const Schedule = require('../Models/Schedule'); 
+const Schedule = require('../Models/Schedule');
 const { google } = require('googleapis');
+const cloudinary = require('../services/cloudinary')
 const { v4: uuidv4 } = require('uuid');
 
 const createSession = async (req, res, next) => {
@@ -21,7 +22,7 @@ const createSession = async (req, res, next) => {
 
         const session = new Session({ title, description, date, mentor: mentorId, price });
         session.mentees.push(menteeId);
-        await session.save();        
+        await session.save();
 
         res.status(201).json({
             message: "Session created successfully", data: {
@@ -41,7 +42,7 @@ const createSession = async (req, res, next) => {
 //TODO: need to test
 const confirmSession = async (req, res, next) => {
     try {
-        const { sessionId } = req.params;
+        const { sessionId } = req.params;  
         const session = await Session.findById(sessionId);
 
         if (!session) {
@@ -49,13 +50,15 @@ const confirmSession = async (req, res, next) => {
         }
 
         session.confirmed = true;
-        await session.save();
-
         const meetingLinkResponse = await createGoogleMeet(session.title, session.date);
+        
+        if (!meetingLinkResponse || !meetingLinkResponse.link) {
+            throw new Error('Failed to create Google Meet link');
+        }
+        
         const meetingLink = meetingLinkResponse.link;
         session.meetingLink = meetingLink;
-        await session.save();
-
+        await session.save();  
         const userSchedule = new Schedule({
             user: session.mentees[0],
             title: session.title,
@@ -81,14 +84,15 @@ const confirmSession = async (req, res, next) => {
         res.status(201).json({
             message: 'Session confirmed and added to schedules successfully',
             data: {
-                meetingLink: meetingLink 
+                meetingLink: meetingLink
             }
         });
     } catch (err) {
         console.error('Error confirming session:', err);
-        res.status(err.statusCode || 500).json({ message: err.message || 'An error occurred' });  
+        res.status(err.statusCode || 500).json({ message: err.message || 'An error occurred' });
     }
 };
+
 
 const createGoogleMeet = async (title, startDate) => {
     try {
@@ -106,7 +110,7 @@ const createGoogleMeet = async (title, startDate) => {
                 dateTime: eventEndTime.toISOString(),
                 timeZone: 'UTC',
             },
-            
+
         };
 
         const auth = new google.auth.JWT({
@@ -142,18 +146,24 @@ const addMatrial = async (req, res, next) => {
         const { description } = req.body;
         const sessionId = req.params.sessionId;
         const Attachments = req.files
-
-
+        // return res.status(400).json({ message: "fack error" });
+        if (!description || !Attachments) {
+            return res.status(400).json({ message: "Please fill all the fields" })
+        }
 
         const session = await Session.findById(sessionId);
-        session.matrial.text = description;
-        Attachments.map(file => {
-            session.matrial.Attachments.push({
-                fileType: file.mimetype,
-                filePath: file.path
-            })
-        });
 
+        session.material.text = description;
+
+        const uploadPromises = Attachments.map(file => {
+            return cloudinary.uploader.upload(file.path, {
+                folder: "Material",
+            });
+        });
+        const uploadResults = await Promise.all(uploadPromises);
+        attachments = uploadResults.map(result => ( result.secure_url));
+        session.material.attachments = attachments;
+        
         await session.save();
 
         res.status(201).json({

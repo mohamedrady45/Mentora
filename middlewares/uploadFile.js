@@ -1,7 +1,8 @@
 const multer = require('multer');
-
+const fs = require('fs')
 // Multer Configuration
 const storage = multer.diskStorage({
+    
     destination: (req, file, cb) => {
         cb(null, 'uploads');
     },
@@ -20,7 +21,9 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-
+if(!fs.existsSync('uploads')){
+    fs.mkdirSync('uploads');
+}
 const upload = multer({
      storage:storage,
      fileFilter: fileFilter

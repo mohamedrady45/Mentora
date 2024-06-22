@@ -2,7 +2,8 @@ const ChatModel = require("../Models/chat");
 const UserModel = require("../Models/user");
 const MassageModel = require('../Models/message')
 const { getReceiverSocketId, io } =require('../Socket/socket');
-
+const cloudinary =require('../services/cloudinary')
+const mime = require('mime-types');
 
 
 const sendMessage = async (req, res, next) => {
@@ -12,13 +13,31 @@ const sendMessage = async (req, res, next) => {
         console.log(senderID,receiveID);
         const files = req.files;
 
-
-        const Nfiles = files.map(file => {
-            return {
-                fileType: file.mimetype,
-                filePath: file.path
-            }
-        });
+        
+        let attachments=null;
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Message",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => {
+                const mimeType = mime.lookup(result.secure_url);
+                let fileType;
+                if (mimeType.startsWith('image/')) {
+                    fileType = 'image';
+                } else if (mimeType.startsWith('video/')) {
+                    fileType = 'video';
+                } else {
+                    fileType = 'file';
+                }
+                return {
+                    fileType: fileType,
+                    filePath: result.secure_url,
+                };
+            });
+        }
 
         let chat = await ChatModel.findOne({ users: { $all: [senderID, receiveID] } });
         if (!chat) {
@@ -46,7 +65,7 @@ const sendMessage = async (req, res, next) => {
             chatId: chat._id,
             senderID: senderID,
             message: req.body.message,
-            files: Nfiles,
+            files: attachments,
         })
         await Nmsg.save();
 

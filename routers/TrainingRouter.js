@@ -8,11 +8,11 @@ const router = express.Router();
 //http://localhost:4000/api/training
 
 router.get('/',isAuth, TrainingController.getUserAllTrainings);
-router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
 router.get('/mentor',isAuth,TrainingController.getMentorTrainings);//only mentor
+router.get('/:trainingId',isAuth, TrainingController.getTrainingById);
 
 router.put('/enroll/:trainingId',isAuth, TrainingController.enrollInTraining);
-router.post('/create-training', isAuth, TrainingController.createTraining);//only mentor
+router.post('/create-training', isAuth,upload.single('image'),TrainingController.createTraining);//only mentor
 router.put('/:id',isAuth, TrainingController.updateTraining);//only mentor
 router.delete('/:id',isAuth, TrainingController.deleteTraining);//only mentor
 
@@ -29,6 +29,7 @@ router.put('/editAnnouncement/:announcementId',isAuth, TrainingController.editAn
 
 router.post('/sendMessage/:trainingId', isAuth,upload.array('files'), TrainingController.sendMessage);
 router.get('/getMessages/:trainingId',isAuth, TrainingController.getMessages);
+router.delete('/deleteMessage/:messageId/:trainingId', isAuth, TrainingController.deleteMessage );
 
 //material
 router.post('/:trainigId/uploadMaterial',isAuth,upload.array('files'),TrainingController.uploadMaterial)//only mentor

@@ -1,25 +1,34 @@
 const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
-const Schadule = require('../Models/Schedule')
+const Schedule = require('../Models/Schedule')
 const cloudinary = require('../services/cloudinary')
 const Post = require('../Models/post').Post;
+const mongoose = require('mongoose');
 
 
 const getAnotherUserProfile = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    const user = await User.findById(userId)
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const user = await User.findById(userId);
     if (!user) {
       const err = new Error('Can\'t find user');
       err.statusCode = 404;
       throw err;
     }
-    //FIXME: coments , react and share
-    //get user posts
+
+    // FIXME: comments, react and share
+    // Get user posts
     const posts = await postService.getUserPosts({ author: userId }, { path: 'author', select: 'firstName lastName profilePicture' });
 
-    //create user data
+    // Create user data
     const userData = {
       _id: user._id,
       name: user.firstName + " " + user.lastName,
@@ -30,7 +39,8 @@ const getAnotherUserProfile = async (req, res, next) => {
       profilePicture: user.profilePicture,
       languages: user.languages,
       interests: user.interests,
-      posts: posts
+      posts: posts,
+      bio: user.bio
     }
 
     res.status(200).json({
@@ -40,7 +50,7 @@ const getAnotherUserProfile = async (req, res, next) => {
       }
     });
   } catch (err) {
-    console.error('Error in get this User:', err);
+    console.error('Error in getAnotherUserProfile:', err);
     next(err);
   }
 };
@@ -70,6 +80,7 @@ const getMyProfile = async (req, res, next) => {
       languages: user.languages,
       interests: user.interests,
       posts: posts,
+      bio: user.bio
     };
 
     res.status(200).json({
@@ -86,10 +97,7 @@ const getMyProfile = async (req, res, next) => {
 
 
 const searchUser = async (req, res, next) => {
-  const query = req.query.q;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const query = req.body;
 
   try {
     let searchCriteria;
@@ -115,8 +123,6 @@ const searchUser = async (req, res, next) => {
     }
 
     const users = await User.find(searchCriteria)
-      .skip(skip)
-      .limit(limit)
       .select('firstName lastName role country bio profilePicture');
 
     const count = await User.countDocuments(searchCriteria);
@@ -126,7 +132,7 @@ const searchUser = async (req, res, next) => {
       role: user.role,
       country: user.country,
       bio: user.bio,
-      profilePicture: user.profilePicture
+      profilePicture: user.profilePicture.url
     }));
 
     res.json({
@@ -141,65 +147,71 @@ const searchUser = async (req, res, next) => {
 };
 const editUserData = async (req, res, next) => {
   try {
-    //take data 
     const userId = req.userId;
 
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
+    
 
-
-    //update user
     const user = await userService.findUser('_id', userId);
-    //check if user exist
+
     if (!user) {
       throw new Error('User not found');
     }
-    //update user data
 
-
-
+    let attachment = null;
     if (file) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: "profilePicture",
+      const uploadResult = await cloudinary.uploader.upload(file.path, {
+        folder: "Profile",
       });
+      attachment=uploadResult.secure_url;
+    }
 
-      const attachment =  result.secure_url
-        
+    if (attachment) {
       user.profilePicture = attachment;
     }
     if (bio) user.bio = bio;
     if (country) user.country = country;
 
-
     if (languages) {
       languages = languages.split(',');
-      languages.forEach(lang => {
-        user.languages.push(lang);
-      });
-
+      user.languages = languages;
     }
     if (interests) {
       interests = interests.split(',');
-      interests.forEach(interest => {
-        user.interests.push(interest);
-      });
+      user.interests = interests;
     }
 
-    //save user
-    await user.save()
-    const userData = { firstName: user.firstName, lastName: user.lastName, dateOfBirth: user.dateOfBirth, country: user.country, gender: user.country, bio: user.bio, profilePicture: user.profilePicture, languages: user.languages, interests: user.interests, notification: user.notification, followers: user.followers, following: user.Following }
-    //send response
+    await user.save();
+
+    const userData = {
+      _id:user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      dateOfBirth: user.dateOfBirth,
+      country: user.country,
+      gender: user.gender, 
+      bio: user.bio,
+      profilePicture: user.profilePicture,
+      languages: user.languages,
+      interests: user.interests,
+      notification: user.notification,
+      followers: user.followers,
+      following: user.following, 
+    };
+
     res.status(200).json({
       success: true,
       data: {
-        user: userData
-      }
+        user: userData,
+      },
     });
   } catch (err) {
-    console.error('Error in update your data:', err);
+    console.error('Error in updating user data:', err);
     next(err);
   }
 };
+
 
 const followUser = async (req, res, next) => {
   try {
@@ -302,30 +314,39 @@ const followingList = async (req, res, next) => {
 const scheduleList = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const schadule = await Schadule.find({ user: userId })
-      .populate('createdBy', 'fristName lastName')
-      .populate('from', 'name title');
+    const user = await User.findById(userId);
+    console.log(user);
+    const schedule = await Schedule.find({ user: userId })
+      .populate('createdBy', 'firstName lastName')
+      .populate({
+        path: 'from',
+        select: 'name title', 
+      });
 
     res.status(200).json({
       success: true,
-      data: {
-        schadule: schadule
-      }
+      data: schedule.map(s => ({
+        title: s.title,
+        from: s.from.name, 
+        date: s.date,
+        meetingLink: s.meetingLink
+      }))
     });
-  }
-  catch (err) {
-    console.error('Error in get your schadule:', err);
+  } catch (err) {
+    console.error('Error in get your schedule:', err);
     next(err);
   }
 }
+
 module.exports = {
-  getAnotherUserProfile,
+ 
   editUserData,
   followUser,
   followerList,
   followingList,
   scheduleList,
   searchUser,
-  getMyProfile
+  getMyProfile,
+  getAnotherUserProfile
 }
 
