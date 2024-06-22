@@ -21,6 +21,8 @@ const TrainingSchema = new mongoose.Schema({
     },
     TrainingPicture: {
         type: String,
+        required:true,
+        default:'https://res.cloudinary.com/di4ytdfwq/image/upload/v1719032947/Training/dsdmijywhwkvrs4d6agq.png'
     },
     requirements:{
         type: String,

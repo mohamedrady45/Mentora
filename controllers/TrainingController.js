@@ -318,17 +318,24 @@ const sendMessage = async (req, res, next) => {
         const files = req.files;
 
         //save msg
-        const Nfiles = files.map(file => {
-            return {
-                fileType: file.mimetype,
-                filePath: file.path
-            }
-        });
+        let attachments=null;
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => {
+                return cloudinary.uploader.upload(file.path, {
+                    folder: "Message",
+                });
+            });
+            const uploadResults = await Promise.all(uploadPromises);
+            attachments = uploadResults.map(result => ({
+                fileType: result.resource_type === 'image' ? 'image' : result.resource_type === 'video' ? 'video' : 'file',
+                filePath: result.secure_url,
+            }));
+        }
         const Nmsg = new MassageModel({
 
             senderID: userId,
             message: message,
-            files: Nfiles,
+            files: attachments,
         })
         await Nmsg.save();
 
