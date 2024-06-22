@@ -25,15 +25,6 @@ const ApplicationSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    CV: {
-        public_id: {
-            type: String,
-        },
-        url: {
-            type: String,
-            require: true,
-        }
-    },
     status: {
         type: String,
         enum: ['pending', 'accepted'], 
