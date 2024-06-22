@@ -25,7 +25,7 @@ const cloudinary = require("../services/cloudinary");
 const getMentorTrainings = async (req, res, next) => {
     try {
         const userId = req.userId;
-        const trainigs = await Training.find({ mentor: userId }).select('_id name description track numberOfRequiredMentees status');
+        const trainigs = await Training.find({ mentor: userId }).select('_id name description track numberOfRequiredMentees status TrainingPicture');
         console.log(trainigs);
         res.status(200).json({message: 'Get all trainings', data: {trainigs:{...trainigs, count: trainigs.length}}});
     } catch (err) {
