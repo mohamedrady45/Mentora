@@ -3,6 +3,7 @@ const Session = require('../Models/Session')
 const User = require('../Models/user')
 const Schedule = require('../Models/Schedule');
 const { google } = require('googleapis');
+const cloudinary = require('../services/cloudinary')
 const { v4: uuidv4 } = require('uuid');
 
 const createSession = async (req, res, next) => {
@@ -151,12 +152,15 @@ const addMatrial = async (req, res, next) => {
 
         session.material.text = description;
 
-        Attachments.map(file => {
-            session.material.attachments.push({
-                fileType: file.mimetype,
-                filePath: file.path
-            })
+        const uploadPromises = Attachments.map(file => {
+            return cloudinary.uploader.upload(file.path, {
+                folder: "Post",
+            });
         });
+        const uploadResults = await Promise.all(uploadPromises);
+        attachments = uploadResults.map(result => ( result.secure_url));
+        session.material.attachments = attachments;
+        
 
         await session.save();
 
