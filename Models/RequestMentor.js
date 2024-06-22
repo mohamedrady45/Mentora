@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const mentorRequestSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required: true
     },
     description: {
@@ -44,15 +44,15 @@ const mentorRequestSchema = new mongoose.Schema({
     },
     sessionDate: {
         type: Date,
-        required: true
+        // required: true
     },
     startTime: {
         type: String,
-        required: true
+        // required: true
     },
     endTime: {
         type: String,
-        required: true
+        // required: true
     }
 });
 

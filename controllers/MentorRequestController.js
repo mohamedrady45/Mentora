@@ -169,7 +169,13 @@ const sendRequestToMentor =async(req, res, next) =>{
 const getMentorRequests= async(req, res, next) =>{
     try{
        const mentorId = req.userId;
-       const mentor = await Mentor.findById(mentorId).populate('requests');
+       const mentor = await Mentor.findById(mentorId).populate({
+        path: 'requests',
+        populate:{
+            path: 'userId',
+            select:'firstName lastName profilePicture'
+        }
+       });
 
         res.status(200).json({ message: 'get all mentor requests' ,requests:mentor.requests});
 

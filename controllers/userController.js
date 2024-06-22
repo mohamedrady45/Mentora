@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 
 const getAnotherUserProfile = async (req, res, next) => {
   try {
-    const userId = req.params.userId;
+    const {userId} = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       const err = new Error('Invalid user ID');
@@ -36,7 +36,7 @@ const getAnotherUserProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture.url,
+      profilePicture: user.profilePicture,
       languages: user.languages,
       interests: user.interests,
       posts: posts,
@@ -76,7 +76,7 @@ const getMyProfile = async (req, res, next) => {
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender,
-      profilePicture: user.profilePicture.url,
+      profilePicture: user.profilePicture,
       languages: user.languages,
       interests: user.interests,
       posts: posts,
@@ -151,7 +151,7 @@ const editUserData = async (req, res, next) => {
 
     let { bio, languages, interests, country } = req.body;
     const file = req.file;
-    console.log(file);
+    
 
     const user = await userService.findUser('_id', userId);
 
@@ -159,20 +159,16 @@ const editUserData = async (req, res, next) => {
       throw new Error('User not found');
     }
 
-    let attachments = [];
+    let attachment = null;
     if (file) {
       const uploadResult = await cloudinary.uploader.upload(file.path, {
         folder: "Profile",
       });
-      attachments.push({
-        type: 'image',
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-      });
+      attachment=uploadResult.secure_url;
     }
 
-    if (attachments.length > 0) {
-      user.profilePicture = attachments[0];
+    if (attachment) {
+      user.profilePicture = attachment;
     }
     if (bio) user.bio = bio;
     if (country) user.country = country;
@@ -189,13 +185,14 @@ const editUserData = async (req, res, next) => {
     await user.save();
 
     const userData = {
+      _id:user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       dateOfBirth: user.dateOfBirth,
       country: user.country,
       gender: user.gender, 
       bio: user.bio,
-      profilePicture: user.profilePicture.url,
+      profilePicture: user.profilePicture,
       languages: user.languages,
       interests: user.interests,
       notification: user.notification,
@@ -342,13 +339,14 @@ const scheduleList = async (req, res, next) => {
 }
 
 module.exports = {
-  getAnotherUserProfile,
+ 
   editUserData,
   followUser,
   followerList,
   followingList,
   scheduleList,
   searchUser,
-  getMyProfile
+  getMyProfile,
+  getAnotherUserProfile
 }
 
