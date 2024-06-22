@@ -154,14 +154,13 @@ const addMatrial = async (req, res, next) => {
 
         const uploadPromises = Attachments.map(file => {
             return cloudinary.uploader.upload(file.path, {
-                folder: "Post",
+                folder: "Material",
             });
         });
         const uploadResults = await Promise.all(uploadPromises);
         attachments = uploadResults.map(result => ( result.secure_url));
         session.material.attachments = attachments;
         
-
         await session.save();
 
         res.status(201).json({
