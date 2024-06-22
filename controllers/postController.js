@@ -70,6 +70,7 @@ const getPostById = async (req, res, next) => {
         const response = {
             authorName: `${post.author.firstName} ${post.author.lastName}`,
             authorProfilePicture: post.author.profilePicture.url,
+            authorId : post.author._id,
             date: post.date,
             attachments: post.attachments,
             content: post.content,
@@ -168,7 +169,8 @@ const getAllPosts = async (req, res) => {
                 author: post.author ? {
                     firstName: post.author.firstName,
                     lastName: post.author.lastName,
-                    profilePicture: post.author.profilePicture.url
+                    profilePicture: post.author.profilePicture.url,
+                    id: post.author._id
                 } : null,
                 content: post.content,
                 date: post.date,

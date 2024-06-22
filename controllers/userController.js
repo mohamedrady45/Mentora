@@ -1,7 +1,7 @@
 const userService = require('../services/user')
 const postService = require('../services/post')
 const User = require('../Models/user')
-const Schadule = require('../Models/Schedule')
+const Schedule = require('../Models/Schedule')
 const cloudinary = require('../services/cloudinary')
 const Post = require('../Models/post').Post;
 const mongoose = require('mongoose');
@@ -314,22 +314,30 @@ const followingList = async (req, res, next) => {
 const scheduleList = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const schadule = await Schadule.find({ user: userId })
-      .populate('createdBy', 'fristName lastName')
-      .populate('from', 'name title');
+    const user = await User.findById(userId);
+    console.log(user);
+    const schedule = await Schedule.find({ user: userId })
+      .populate('createdBy', 'firstName lastName')
+      .populate({
+        path: 'from',
+        select: 'name title', 
+      });
 
     res.status(200).json({
       success: true,
-      data: {
-        schadule: schadule
-      }
+      data: schedule.map(s => ({
+        title: s.title,
+        from: s.from.name, 
+        date: s.date,
+        meetingLink: s.meetingLink
+      }))
     });
-  }
-  catch (err) {
-    console.error('Error in get your schadule:', err);
+  } catch (err) {
+    console.error('Error in get your schedule:', err);
     next(err);
   }
 }
+
 module.exports = {
  
   editUserData,
