@@ -41,7 +41,7 @@ const createSession = async (req, res, next) => {
 //TODO: need to test
 const confirmSession = async (req, res, next) => {
     try {
-        const { sessionId } = req.params;
+        const { sessionId } = req.params;  
         const session = await Session.findById(sessionId);
 
         if (!session) {
@@ -49,13 +49,15 @@ const confirmSession = async (req, res, next) => {
         }
 
         session.confirmed = true;
-        await session.save();
-
         const meetingLinkResponse = await createGoogleMeet(session.title, session.date);
+        
+        if (!meetingLinkResponse || !meetingLinkResponse.link) {
+            throw new Error('Failed to create Google Meet link');
+        }
+        
         const meetingLink = meetingLinkResponse.link;
         session.meetingLink = meetingLink;
-        await session.save();
-
+        await session.save();  
         const userSchedule = new Schedule({
             user: session.mentees[0],
             title: session.title,
@@ -86,9 +88,10 @@ const confirmSession = async (req, res, next) => {
         });
     } catch (err) {
         console.error('Error confirming session:', err);
-        res.status(err.statusCode || 500).json({ message: err.message || 'An error occurred' });  
+        res.status(err.statusCode || 500).json({ message: err.message || 'An error occurred' });
     }
 };
+
 
 const createGoogleMeet = async (title, startDate) => {
     try {
