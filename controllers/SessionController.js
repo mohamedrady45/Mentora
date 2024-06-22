@@ -142,7 +142,7 @@ const addMatrial = async (req, res, next) => {
         const { description } = req.body;
         const sessionId = req.params.sessionId;
         const Attachments = req.files
-        return res.status(400).json({ message: "fack error" });
+        // return res.status(400).json({ message: "fack error" });
         if (!description || !Attachments) {
             return res.status(400).json({ message: "Please fill all the fields" })
         }
