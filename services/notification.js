@@ -1,5 +1,5 @@
 const NotificationModel =require('../Models/notification')
-const io =require('../socket').gitIO;
+// const io =require('../socket').gitIO;
 
 
 class notificationService {
