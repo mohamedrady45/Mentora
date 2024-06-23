@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 
 const getAnotherUserProfile = async (req, res, next) => {
   try {
-    const {userId} = req.params;
+    const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       const err = new Error('Invalid user ID');
@@ -57,9 +57,9 @@ const getAnotherUserProfile = async (req, res, next) => {
 
 const getMyProfile = async (req, res, next) => {
   try {
-    const userId = req.userId; 
+    const userId = req.userId;
     const user = await User.findById(userId);
-    
+
     if (!user) {
       const err = new Error('User not found');
       err.statusCode = 404;
@@ -67,8 +67,8 @@ const getMyProfile = async (req, res, next) => {
     }
 
     // FIXME: Fetch user's posts, comments, reacts, shares, etc.
-     const posts = await Post.find({ author: userId }).populate('author', 'firstName lastName profilePicture');
-    
+    const posts = await Post.find({ author: userId }).populate('author', 'firstName lastName profilePicture');
+
     const userData = {
       _id: user._id,
       name: `${user.firstName} ${user.lastName}`,
@@ -167,7 +167,7 @@ const editUserData = async (req, res, next) => {
       });
 
       user.profilePicture = {
-        type: 'image', 
+        type: 'image',
         url: uploadResult.secure_url,
         public_id: uploadResult.public_id
       };
@@ -324,14 +324,14 @@ const scheduleList = async (req, res, next) => {
       .populate('createdBy', 'firstName lastName')
       .populate({
         path: 'from',
-        select: 'name title', 
+        select: 'name title',
       });
 
     res.status(200).json({
       success: true,
       data: schedule.map(s => ({
         title: s.title,
-        from: s.from.name, 
+        from: s.from.name,
         date: s.date,
         meetingLink: s.meetingLink
       }))
@@ -342,8 +342,27 @@ const scheduleList = async (req, res, next) => {
   }
 }
 
+const getMentors = async (req, res, next) => {
+  try {
+    const Mentors = await User.find({ role: "Mentor" });
+    res.status(200).json({
+      success: true,
+      data: Mentors.map(m => ({
+        id: m._id,
+        name: m.firstName + " " + m.lastName,
+        profilePicture: m.profilePicture.url,
+        bio: m.bio
+      }))
+    });
+
+  } catch (err) {
+    console.error('Error in get your schedule:', err);
+    next(err);
+  }
+}
+
 module.exports = {
- 
+
   editUserData,
   followUser,
   followerList,
@@ -351,6 +370,7 @@ module.exports = {
   scheduleList,
   searchUser,
   getMyProfile,
-  getAnotherUserProfile
+  getAnotherUserProfile,
+  getMentors
 }
 

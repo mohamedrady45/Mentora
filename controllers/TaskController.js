@@ -16,8 +16,11 @@ const getAllTasks = async (req, res) => {
         res.status(200).json({ message: "fetch all tasks", tasks: tasks })
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error creating task.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
 
@@ -32,8 +35,11 @@ const getOneTask = async (req, res) => {
         res.status(200).json({ message: "fetch one task", task: task });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error creating task.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
 
