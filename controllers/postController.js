@@ -8,6 +8,8 @@ const upload = require("../middlewares/uploadFile");
 const path = require("path");
 const fs = require("fs");
 const cloudinary = require("../services/cloudinary");
+const addNotification=require('../services/notification').addNotification;
+
 const addPost = async (req, res, next) => {
     try {
         const files = req.files;
@@ -200,7 +202,7 @@ const reactPost = async (req, res, next) => {
         const postId = req.params.postId;
         const userId = req.userId; 
 
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('author','firstName lastName profilePicture');
 
         if (!post) {
             return res.status(404).json({ error: 'This post does not exist' });
@@ -213,6 +215,7 @@ const reactPost = async (req, res, next) => {
             post.reacts.count += 1;
             post.reacts.users.push(userId);
             await post.save();
+            await addNotification(`${post.author.firstName} ${post.author.lastName} liked you post`,post.author.profilePicture.url,[post.author._id],post._id,'Post');
             res.status(200).json({ message: 'You liked the post.' });
         } else {
             post.reacts.count -= 1;

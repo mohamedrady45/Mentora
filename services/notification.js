@@ -4,13 +4,15 @@ const io =require('../socket').gitIO;
 
 class notificationService {
    
-    static async addNotification(message,receiverIds,type)
+    static async addNotification(message,picture,receiverIds,refId,type)
     {
       //add notification to database
       const Notification = new NotificationModel({
         users:receiverIds,
         message:message,
-        type:type
+        picture:picture,
+        type:type,
+        ref:refId
       });
       await Notification.save();
 

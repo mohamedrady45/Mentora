@@ -11,14 +11,27 @@ const notificationSchema = new Schema({
         type: String,
         required: true
     },
+    date:{
+        type: Date,
+        required: true,
+        default: Date.now
+    },
+    picture:{
+        type: String,
+        required: false
+    },
     isRead: {
         type: Boolean,
         default: false
     },
     type: {
         type: String,
-        enum: ['comment', 'reply','question'],
+        enum: ['Comment', 'Reply','Share','Post'],
         required: true,
+    },
+    ref:{
+        type: Schema.Types.ObjectId,
+        refPath: `${this.type}`
     }
 },
     {

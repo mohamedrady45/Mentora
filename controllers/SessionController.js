@@ -50,6 +50,7 @@ const confirmSession = async (req, res, next) => {
         }
 
         session.confirmed = true;
+
         const meetingLinkResponse = await createGoogleMeet(session.title, session.date);
         
         if (!meetingLinkResponse || !meetingLinkResponse.link) {
@@ -57,6 +58,7 @@ const confirmSession = async (req, res, next) => {
         }
         
         const meetingLink = meetingLinkResponse.link;
+
         session.meetingLink = meetingLink;
         await session.save();  
         const userSchedule = new Schedule({
