@@ -7,13 +7,20 @@ const cloudinary = require("../services/cloudinary");
 //get all tasks
 const getAllTasks = async (req, res) => {
     try {
-        const { trainingId } = req.params
-        const tasks = await Task.find({ training: trainingId });;
+        const { trainingId } = req.params;
+        const tasks = await Task.find({ training: trainingId });
+        if(!tasks)
+            {
+                return res.status(403).json({ message: "No tasks found" });
+            }
         res.status(200).json({ message: "fetch all tasks", tasks: tasks })
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error creating task.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
 
@@ -28,8 +35,11 @@ const getOneTask = async (req, res) => {
         res.status(200).json({ message: "fetch one task", task: task });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error creating task.', err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 };
 

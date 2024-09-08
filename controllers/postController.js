@@ -8,6 +8,8 @@ const upload = require("../middlewares/uploadFile");
 const path = require("path");
 const fs = require("fs");
 const cloudinary = require("../services/cloudinary");
+const addNotification = require('../services/notification').addNotification;
+
 const addPost = async (req, res, next) => {
     try {
         const files = req.files;
@@ -37,7 +39,7 @@ const addPost = async (req, res, next) => {
             author: author._id,
             content: content,
             attachments: attachments,
-            date: new Date()  
+            date: new Date()
         });
 
         await newPost.save();
@@ -61,7 +63,7 @@ const getPostById = async (req, res, next) => {
                 path: 'author',
                 select: 'firstName lastName profilePicture',
             })
-            .populate('comments'); 
+            .populate('comments');
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
@@ -70,7 +72,7 @@ const getPostById = async (req, res, next) => {
         const response = {
             authorName: `${post.author.firstName} ${post.author.lastName}`,
             authorProfilePicture: post.author.profilePicture.url,
-            authorId : post.author._id,
+            authorId: post.author._id,
             date: post.date,
             attachments: post.attachments,
             content: post.content,
@@ -103,7 +105,7 @@ const updatePost = async (req, res, next) => {
             return res.status(403).json({ message: 'You are not authorized to edit this post' });
         }
 
-        post.content = req.body.content; 
+        post.content = req.body.content;
         await post.save();
 
         res.status(200).json({ message: 'The post has been successfully updated', data: post });
@@ -121,7 +123,7 @@ const updatePost = async (req, res, next) => {
 const deletePost = async (req, res, next) => {
     try {
         const postId = req.params.postId;
-        const userId = req.userId; 
+        const userId = req.userId;
 
         const post = await Post.findById(postId);
 
@@ -150,7 +152,7 @@ const deletePost = async (req, res, next) => {
 //get all posts
 const getAllPosts = async (req, res) => {
     try {
-        const userId = req.userId; 
+        const userId = req.userId;
 
         const posts = await Post.find()
             .populate('author', 'firstName lastName profilePicture')
@@ -179,7 +181,7 @@ const getAllPosts = async (req, res) => {
                 commentsCount: post.comments.length,
                 reactsCount: post.reacts.count,
                 sharesCount: post.shares.count,
-                userReacted: userReacted 
+                userReacted: userReacted
             };
         });
 
@@ -198,9 +200,10 @@ const getAllPosts = async (req, res) => {
 const reactPost = async (req, res, next) => {
     try {
         const postId = req.params.postId;
-        const userId = req.userId; 
+        const userId = req.userId;
 
-        const post = await Post.findById(postId);
+
+        const post = await Post.findById(postId).populate('author', 'firstName lastName profilePicture');
 
         if (!post) {
             return res.status(404).json({ error: 'This post does not exist' });
@@ -213,6 +216,8 @@ const reactPost = async (req, res, next) => {
             post.reacts.count += 1;
             post.reacts.users.push(userId);
             await post.save();
+            const user = await User.findById(userId);
+            await addNotification(`${user.firstName} ${user.lastName} liked you post`, user.profilePicture.url, [post.author._id], post._id, 'Post');
             res.status(200).json({ message: 'You liked the post.' });
         } else {
             post.reacts.count -= 1;
@@ -231,7 +236,7 @@ const reactPost = async (req, res, next) => {
 
 const getPostComments = async (req, res, next) => {
     try {
-        const userId = req.userId; 
+        const userId = req.userId;
         const postId = req.params.postId;
 
         const post = await Post.findById(postId)
@@ -259,8 +264,8 @@ const getPostComments = async (req, res, next) => {
         const comments = post.comments.map(comment => {
             const userReacted = comment.reacts.users.includes(userId);
             return {
-                _id: comment._id, 
-                authorId: comment.author._id, 
+                _id: comment._id,
+                authorId: comment.author._id,
                 authorName: `${comment.author.firstName} ${comment.author.lastName}`,
                 authorProfilePicture: comment.author.profilePicture.url,
                 date: comment.date,
@@ -270,7 +275,7 @@ const getPostComments = async (req, res, next) => {
                 userReacted: userReacted,
                 replies: comment.replies.map(reply => ({
                     _id: reply._id,
-                    authorId: reply.author._id, 
+                    authorId: reply.author._id,
                     authorName: `${reply.author.firstName} ${reply.author.lastName}`,
                     authorProfilePicture: reply.author.profilePicture.url,
                     date: reply.date,
@@ -297,7 +302,7 @@ const getPostComments = async (req, res, next) => {
 const addComment = async (req, res, next) => {
     try {
         const postId = req.params.postId;
-        const userId = req.userId; 
+        const userId = req.userId;
 
         const post = await Post.findById(postId);
         if (!post) {
@@ -333,6 +338,7 @@ const addComment = async (req, res, next) => {
         post.comments.push(newComment);
         await post.save();
         await newComment.save();
+        await addNotification(`${author.firstName} ${author.lastName} add comment in your post`, author.profilePicture.url, [post.author._id], newComment._id, 'Comment');
         res.status(200).json({ message: 'Your comment was shared.' });
 
     } catch (err) {
@@ -351,7 +357,7 @@ const updateComment = async (req, res, next) => {
     const { content } = req.body;
 
     try {
-        const userId = req.userId; 
+        const userId = req.userId;
 
         const post = await Post.findById(postId);
         if (!post) {
@@ -381,7 +387,7 @@ const updateComment = async (req, res, next) => {
 const getCommentReplies = async (req, res, next) => {
     try {
 
-        const userId = req.userId; 
+        const userId = req.userId;
         const { postId, commentId } = req.params;
 
         const post = await Post.findOne({ _id: postId, 'comments._id': commentId })
@@ -406,8 +412,8 @@ const getCommentReplies = async (req, res, next) => {
         const replies = comment.replies.map(reply => {
             const userReacted = reply.reacts.users.includes(userId);
             return {
-                _id: reply._id, 
-                authorId: reply.author._id, 
+                _id: reply._id,
+                authorId: reply.author._id,
                 authorName: `${reply.author.firstName} ${reply.author.lastName}`,
                 authorProfilePicture: reply.author.profilePicture.url,
                 date: reply.date,
@@ -416,7 +422,7 @@ const getCommentReplies = async (req, res, next) => {
                 userReacted: userReacted,
             };
         });
-
+        const user = await User.findById(userId);
         res.status(200).json({ replies });
     } catch (error) {
         console.error('Error fetching replies:', error);
@@ -430,9 +436,14 @@ const getCommentReplies = async (req, res, next) => {
 
 const deleteComment = async (req, res, next) => {
     try {
-        const userId = req.userId; 
+        const userId = req.userId;
         const postId = req.params.postId;
         const commentId = req.params.commentId;
+
+        if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(commentId)) {
+            return res.status(400).json({ message: 'Invalid post ID or comment ID' });
+        }
+
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -447,19 +458,18 @@ const deleteComment = async (req, res, next) => {
             return res.status(403).json({ message: "You are not authorized to delete this comment" });
         }
 
-        comment.remove();
+        post.comments.pull(commentId);
         await post.save();
 
         res.status(200).json({ message: 'Your comment has been successfully deleted.' });
     } catch (err) {
-        console.error('Error deleting comment.', err);
+        console.error('Error deleting comment:', err);
         if (!err.statusCode) {
             err.statusCode = 500;
         }
         next(err);
     }
 };
-
 
 const reactComment = async (req, res, next) => {
     try {
@@ -485,6 +495,10 @@ const reactComment = async (req, res, next) => {
         if (!userReacted) {
             comment.reacts.count += 1;
             comment.reacts.users.push(authorId);
+            const user=await User.findById(authorId);
+            //add Notification
+            await addNotification(`${user.firstName} ${user.lastName} liked you comment`,user.profilePicture.url,[comment.author._id],comment._id,'Comment');
+
             res.status(200).json({ message: 'You liked the comment.' });
         } else {
             comment.reacts.count -= 1;
@@ -508,7 +522,7 @@ const replyComment = async (req, res, next) => {
     try {
         const { postId, commentId } = req.params;
         const { content } = req.body;
-        const userId = req.userId; 
+        const userId = req.userId;
         const author = await User.findById(userId);
 
         if (!author) {
@@ -552,7 +566,9 @@ const replyComment = async (req, res, next) => {
         comment.count += 1;
 
         await post.save();
-
+        //add notification
+         await addNotification(`${author.firstName} ${author.lastName} add reply in your comment`,author.profilePicture.url,[comment.author._id],commint._id,'Comment');
+       
         res.status(200).json({ message: 'Your reply was shared.' });
     } catch (err) {
         console.error("Error replying to the comment:", err);
@@ -655,8 +671,8 @@ const deleteReply = async (req, res, next) => {
 //save post
 const savePosts = async (req, res, next) => {
     try {
-        const userId = req.userId; 
-        const postId = req.params.postId; 
+        const userId = req.userId;
+        const postId = req.params.postId;
 
         const user = await User.findById(userId);
         if (!user) {
@@ -687,32 +703,32 @@ const savePosts = async (req, res, next) => {
 
 
 //share post
-const  sharePost = async (req, res, next) => {
-    try{
+const sharePost = async (req, res, next) => {
+    try {
         const post = await Post.findById(req.params.postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
         const author = await User.findById(req.userId);
         const sharedPost = new Post({
-            author: author, 
-            content: post.content,   
-          });
-      
-          // Initialize shares if it doesn't exist
-          post.shares = post.shares || {}; 
-          post.shares.count = post.shares.count || 0;
+            author: author,
+            content: post.content,
+        });
 
-          post.shares.users = post.shares.users || []; // Initialize users array if it doesn't exist
-          post.shares.count += 1;
-          post.shares.users.push(author);
-         
-          await sharedPost.save();
-          await post.save();
+        // Initialize shares if it doesn't exist
+        post.shares = post.shares || {};
+        post.shares.count = post.shares.count || 0;
+
+        post.shares.users = post.shares.users || []; // Initialize users array if it doesn't exist
+        post.shares.count += 1;
+        post.shares.users.push(author);
+
+        await sharedPost.save();
+        await post.save();
 
         res.status(200).json({ message: 'You shared the post.' });
 
-    }catch(err){
+    } catch (err) {
         console.error("Error sharing the  post.", err);
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -740,4 +756,4 @@ module.exports = {
     getPostComments,
     getCommentReplies,
     getPostById
-  };
+};

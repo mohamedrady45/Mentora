@@ -42,16 +42,13 @@ const userSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function (value) {
-                // Validate date format (YYYY-MM-DD)
                 if (!moment(value, 'YYYY-MM-DD', true).isValid()) {
                     return false;
                 }
-
                 const eighteenYearsAgo = moment().subtract(18, 'years');
                 if (moment(value).isAfter(eighteenYearsAgo)) {
                     return false;
                 }
-
                 return moment(value).isSameOrBefore(moment());
             },
             message: 'Please enter a valid date of birth (YYYY-MM-DD) and ensure you are at least 18 years old.',
@@ -69,10 +66,24 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     profilePicture: {
-        type: String,
-        required: true,
-        default: 'https://res.cloudinary.com/di4ytdfwq/image/upload/v1719031864/Profile/ijafdlloipckzvwvlvm5.png'
+        type: {
+            type: String,
+            enum: ['image', 'video', 'file'],
+            required: true,
+            default: 'image', 
+        },
+        url: {
+            type: String,
+            required: true,
+            default: 'https://res.cloudinary.com/di4ytdfwq/image/upload/v1719031864/Profile/ijafdlloipckzvwvlvm5.png', 
+        },
+        public_id: {
+            type: String,
+            required: true,
+            default: 'default', 
+        },
     },
+
     languages: {
         type: [String],
         default: [],
@@ -133,7 +144,6 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
     }],
-
     notification: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Notification'

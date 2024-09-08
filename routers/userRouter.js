@@ -11,7 +11,8 @@ const router = express.Router();
 router.use(methodOverride('_method'));
 
 router.get('/',isAuth,userController.getMyProfile);
-router.get('/:userId',isAuth,userController.getAnotherUserProfile);
+router.get('/getUser/:userId',isAuth,userController.getAnotherUserProfile);
+router.get('/getMentors',isAuth,userController.getMentors);
 router.put('/updateUserData',isAuth,upload.single('files'),userController.editUserData);
 router.put('/followUser/:followId',isAuth,userController.followUser);
 router.get('/followers',isAuth,userController.followerList);
@@ -22,6 +23,7 @@ router.patch('/admin/promote/:id',isAuth , OnlyAdmins, adminController.promoteTo
 router.get('/admin/getAllApplications' , isAuth,OnlyAdmins , adminController.getAllApplications);
 router.post('/admin/acceptRequest/:id' , isAuth,OnlyAdmins , adminController.acceptRequest);
 router.post('/admin/rejectRequest/:id' , isAuth,OnlyAdmins , adminController.rejectRequest);
+
 
 module.exports = router;
 
